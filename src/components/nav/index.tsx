@@ -45,17 +45,19 @@ const Modal = styled.div`
   padding: 0px 20px;
   box-sizing: border-box;
   position: absolute;
-  right: 50px;
-  top: 75px;
+  right: 0px;
+  top: 50px;
   background-color: white;
 `
 
 const FlexDiv = styled.div`
   display: flex;
+  position: relative;
 `
 
 interface Props {
   user: any
+  holdingShift: boolean
 }
 
 interface State {
@@ -94,11 +96,13 @@ class Nav extends React.Component<Props, State> {
   }
 
   public render() {
-    if (!this.props.user) {
+    const { user, holdingShift } = this.props
+
+    if (!user) {
       return null
     }
 
-    const { firstName, lastName } = this.props.user
+    const { firstName, lastName } = user
 
     const { redirect, displayModal } = this.state
 
@@ -109,6 +113,14 @@ class Nav extends React.Component<Props, State> {
     const createModal = (
       <Modal>
         <ModalButton onClick={this.addText.bind(this)}>Add Text</ModalButton>
+        <ModalButton onClick={this.addText.bind(this)}>
+          Add Word{" "}
+          <span
+            style={{ color: holdingShift ? colors.green : colors.lightGray }}
+          >
+            (Shift)
+          </span>
+        </ModalButton>
       </Modal>
     )
 
@@ -119,6 +131,9 @@ class Nav extends React.Component<Props, State> {
     )
 
     const modal = (() => {
+      if (holdingShift) {
+        return createModal
+      }
       switch (displayModal) {
         case "Create":
           return createModal

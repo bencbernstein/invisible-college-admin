@@ -21,7 +21,7 @@ const colors = {
   mediumGray: "#BDBEC0",
   gray2: "#58595B",
   brown: "#AF7803",
-  gray: "#828282",
+  gray: "#6D6D6D",
   gray10l: "#8e8e8e",
   mediumLGray: "#BCBEC0",
   lightestGray: "#F2F2F2",

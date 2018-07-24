@@ -102,28 +102,26 @@ class Information extends React.Component<Props, State> {
           type="text"
         />
 
-        <br />
-        <br />
-
         {this.props.isNew && (
-          <Input.file>
-            <input
-              style={{ display: "none" }}
-              type="file"
-              onChange={e => this.handleChange(e.target.files!)}
-            />
-            {fileInputText}
-          </Input.file>
+          <div>
+            <br />
+            <br />
+            <Input.file>
+              <input
+                style={{ display: "none" }}
+                type="file"
+                onChange={e => this.handleChange(e.target.files!)}
+              />
+              {fileInputText}
+            </Input.file>
+            <br />
+            <br />
+            <br />
+            <Button.l disabled={isSaving} onClick={this.save.bind(this)}>
+              Save
+            </Button.l>
+          </div>
         )}
-
-        <br />
-        <br />
-        <br />
-
-        <Button.l disabled={isSaving} onClick={this.save.bind(this)}>
-          Save
-        </Button.l>
-
         <Text.regular color={colors.red}>{error}</Text.regular>
       </Container>
     )

@@ -1,37 +1,34 @@
 import * as React from "react"
 import { Redirect } from "react-router"
-import styled from "styled-components"
 import * as _ from "underscore"
 
 import Information from "./information"
 import Menu from "./menu"
-// import { seed } from "./data"
 
-import { fetchText } from "../../models/text"
+import { addPassages, fetchText, removePassage } from "../../models/text"
 
-import Nav from "../nav"
-import Passage from "./passage"
-
-const Container = styled.div`
-  text-align: left;
-  padding: 0px 50px;
-  box-sizing: border-box;
-  margin: 25px 0px;
-`
-
-interface Props {
-  user: any
-}
+import Passages from "./passages"
+import Read from "./read"
 
 export interface Sentence {
   sentence: string
   found: string[]
 }
 
+export interface Passage {
+  id: string
+  startIdx: number
+  endIdx: number
+  passage: string
+  found: string[]
+}
+
 export interface TextDoc {
+  id: string
   name: string
   source: string
   tokenized: Sentence[]
+  passages: Passage[]
 }
 
 interface State {
@@ -47,8 +44,8 @@ export enum Screen {
   Passages = "Passages"
 }
 
-class Text extends React.Component<Props, State> {
-  constructor(props: Props) {
+class Text extends React.Component<any, State> {
+  constructor(props: any) {
     super(props)
 
     const isNew = _.last(window.location.pathname.split("/")) === "new"
@@ -65,8 +62,10 @@ class Text extends React.Component<Props, State> {
     }
   }
 
-  public updatePassages(ranges: number[][]) {
-    console.log(ranges)
+  public async updatePassages(id: string, ranges: number[][]) {
+    const text = this.state.text
+    text!.passages = (await addPassages(id, ranges)).passages
+    this.setState({ text })
   }
 
   public async loadData() {
@@ -84,6 +83,11 @@ class Text extends React.Component<Props, State> {
     this.setState({ isDisplaying })
   }
 
+  public async removePassage(textId: string, passageId: string) {
+    const result = await removePassage(textId, passageId)
+    console.log(result)
+  }
+
   public render() {
     const { redirect, isDisplaying, text, isNew } = this.state
 
@@ -95,8 +99,15 @@ class Text extends React.Component<Props, State> {
       switch (isDisplaying) {
         case Screen.Read:
           return (
-            <Passage
+            <Read
               updatePassages={this.updatePassages.bind(this)}
+              text={text!}
+            />
+          )
+        case Screen.Passages:
+          return (
+            <Passages
+              removePassage={this.removePassage.bind(this)}
               text={text!}
             />
           )
@@ -114,9 +125,7 @@ class Text extends React.Component<Props, State> {
     const dataLoaded = !isNew && text
 
     return (
-      <Container>
-        <Nav user={this.props.user} />
-
+      <div>
         {isNew && screen}
 
         {dataLoaded && (
@@ -129,7 +138,7 @@ class Text extends React.Component<Props, State> {
             {screen}
           </div>
         )}
-      </Container>
+      </div>
     )
   }
 }

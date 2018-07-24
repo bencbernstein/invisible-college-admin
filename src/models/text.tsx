@@ -25,6 +25,24 @@ export const fetchTexts = async (): Promise<any | Error> => {
 }
 
 export const fetchText = async (id: string): Promise<any | Error> => {
-  const gqlQuery = `query { text(id: "${id}") { id name source tokenized } }`
+  const gqlQuery = `query { text(id: "${id}") { id name source tokenized passages { id startIdx endIdx passage found } } }`
   return query(gqlQuery, "text")
+}
+
+export const addPassages = async (
+  id: string,
+  ranges: number[][]
+): Promise<any | Error> => {
+  const gqlQuery = `mutation { addPassages(id: "${id}", ranges: ${JSON.stringify(
+    ranges
+  )}) { passages { id startIdx endIdx passage found } } }`
+  return query(gqlQuery, "addPassages")
+}
+
+export const removePassage = async (
+  textId: string,
+  passageId: string
+): Promise<any | Error> => {
+  const gqlQuery = `mutation { removePassage(textId: "${textId}", passageId: "${passageId}") { id } }`
+  return query(gqlQuery, "removePassage")
 }

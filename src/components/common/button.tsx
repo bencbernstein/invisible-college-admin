@@ -12,8 +12,12 @@ const Regular = styled.p`
   background-color: ${(p: Props) =>
     p.disabled ? colors.lightestGray : "white"};
   padding: 5px 10px;
+  min-width: 100px;
+  text-align: center
+  text-transform: uppercase;
   display: inline-block;
   cursor: pointer;
+  font-size: 0.9em;
   &:hover {
     color: white;
     background-color: ${(p: Props) =>
@@ -21,12 +25,19 @@ const Regular = styled.p`
   }
 `
 
+const Small = Regular.extend`
+  font-size: 0.8em;
+  min-width: 75px;
+`
+
 const Large = Regular.extend`
-  font-size: 1.3em;
+  font-size: 1.2em;
+  min-width: 150px;
   padding: 5px;
 `
 
 export default {
   l: Large,
-  regular: Regular
+  regular: Regular,
+  s: Small
 }

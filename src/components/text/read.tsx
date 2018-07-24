@@ -9,7 +9,7 @@ import Text from "../common/text"
 import { Sentence, TextDoc } from "./"
 import Navigation from "./navigation"
 
-const DEFAULT_CHAR_LIMIT = 400
+const DEFAULT_CHAR_LIMIT = 1500
 
 const Container = styled.div`
   text-align: left;
@@ -61,10 +61,10 @@ interface State {
 
 interface Props {
   text: TextDoc
-  updatePassages: (ranges: number[][]) => {}
+  updatePassages: (id: string, ranges: number[][]) => {}
 }
 
-class Passage extends React.Component<Props, State> {
+class Read extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
 
@@ -83,13 +83,15 @@ class Passage extends React.Component<Props, State> {
 
   public componentWillUnmount() {
     const ranges = getRanges(this.state.savedSentences)
-    this.props.updatePassages(ranges)
+    this.props.updatePassages(this.props.text.id, ranges)
   }
 
   public getText() {
     const { idx, characterLimit } = this.state
     const text = this.state.text.slice(idx)
+
     let isViewing: Sentence[] = []
+
     for (let i = 0; i < text.length; i++) {
       const textPart = text[i]
 
@@ -100,7 +102,7 @@ class Passage extends React.Component<Props, State> {
           .join(" ").length < characterLimit
 
       if (!underCharacterLimit) {
-        this.setState({ viewingSentencesCount: i })
+        this.setState({ viewingSentencesCount: Math.max(i, 1) })
         return
       } else {
         isViewing = isViewing.concat(textPart)
@@ -115,7 +117,13 @@ class Passage extends React.Component<Props, State> {
     const { text, viewingSentencesCount } = this.state
 
     if (value === "previous highlight") {
-      console.log()
+      const lastHighlightIdx = _.findLastIndex(
+        text.slice(0, idx),
+        t => t.found.length > 0
+      )
+      if (lastHighlightIdx > -1) {
+        idx = lastHighlightIdx
+      }
     } else if (value === "previous") {
       idx = Math.max(0, idx - viewingSentencesCount)
     } else if (value === "keep") {
@@ -125,13 +133,13 @@ class Passage extends React.Component<Props, State> {
         idx = idx + viewingSentencesCount
       }
     } else if (value === "next highlight") {
-      /*const nextHighlightIdx = _.findIndex(
+      const nextHighlightIdx = _.findIndex(
         text.slice(idx),
         t => t.found.length > 0
       )
-      if (nextHighlightIdx) {
-        idx = idx + nextHighlightIdx
-      }*/
+      if (nextHighlightIdx > -1) {
+        idx = idx + viewingSentencesCount + nextHighlightIdx
+      }
     }
 
     this.setState({ idx }, this.getText)
@@ -195,10 +203,10 @@ class Passage extends React.Component<Props, State> {
     return (
       <Container>
         <InfoContainer>
-          <Text.regular>{`Total sentences: ${text.length}`}</Text.regular>
+          <Text.regular>{`Total sentences : ${text.length}`}</Text.regular>
 
           <CharLimitContainer>
-            <Text.regular>Character Limit:</Text.regular>
+            <Text.regular>Character limit :</Text.regular>
             <Space />
             <Input.s
               onChange={e => this.changeCharacterLimit(e.target.value)}
@@ -209,7 +217,7 @@ class Passage extends React.Component<Props, State> {
           </CharLimitContainer>
 
           <Text.regular>
-            {`Showing: ${idx + 1} - ${idx + viewingSentencesCount}`}
+            {`Showing : ${idx + 1} - ${idx + viewingSentencesCount}`}
           </Text.regular>
         </InfoContainer>
         <SentencesContainer>{sentences}</SentencesContainer>
@@ -220,4 +228,4 @@ class Passage extends React.Component<Props, State> {
   }
 }
 
-export default Passage
+export default Read

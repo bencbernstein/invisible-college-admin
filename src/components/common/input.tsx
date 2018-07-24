@@ -29,8 +29,17 @@ const Large = Basic.extend`
   padding: 5px;
 `
 
+const Circular = Basic.extend`
+  border-radius: 20px;
+  background-color: white
+  font-size: 0.9em;
+  margin: 0 auto;
+  padding: 5px 10px;
+`
+
 const Small = Basic.extend`
-  border-bottom: 1px solid black;
+  border-bottom: 1px solid ${colors.gray};
+  color: ${colors.gray};
   font-size: 0.8em;
   padding: 0px;
 `
@@ -51,5 +60,6 @@ export default {
   file: FileLabel,
   m: Medium,
   s: Small,
+  circ: Circular,
   submit: Submit
 }

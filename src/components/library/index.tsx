@@ -1,31 +1,25 @@
 import { get } from "lodash"
 import * as React from "react"
 import { Redirect } from "react-router"
-import styled from "styled-components"
 import * as _ from "underscore"
 
 import Button from "../common/button"
 import Header from "../common/header"
-import Nav from "../nav"
 import List from "./list"
 import Menus from "./menus"
 
+import {
+  addChoice,
+  fetchChoiceSets,
+  removeChoice,
+  removeChoiceSet
+} from "../../models/choiceSet"
 import { fetchTexts } from "../../models/text"
-import { fetchWords } from "../../models/word"
-
-const Container = styled.div`
-  text-align: left;
-  padding: 0px 50px;
-  box-sizing: border-box;
-  margin: 25px 0px;
-`
-
-interface Props {
-  user: any
-}
+import { fetchWords, removeWord } from "../../models/word"
 
 export enum SelectedView {
   All = "All",
+  ChoiceSets = "Choice Sets",
   Texts = "Texts",
   Words = "Words"
 }
@@ -41,22 +35,64 @@ interface State {
   redirect?: string
   words: any[]
   texts: any[]
+  choiceSets: any[]
 }
 
-class Library extends React.Component<Props, State> {
-  constructor(props: Props) {
+class Library extends React.Component<any, State> {
+  constructor(props: any) {
     super(props)
     this.state = {
-      selectedView: SelectedView.Texts,
+      selectedView: SelectedView.Words,
       selectedSortBy: SelectedSortBy.Added,
       words: [],
-      texts: []
+      texts: [],
+      choiceSets: []
     }
   }
 
   public componentDidMount() {
     this.loadWords()
     this.loadTexts()
+    this.loadChoiceSets()
+  }
+
+  public async loadChoiceSets() {
+    const choiceSets = await fetchChoiceSets(["id", "name", "choices"])
+    this.setState({ choiceSets })
+  }
+
+  public async updateChoiceSet(i: number, choice: string, add: boolean) {
+    const choiceSets = this.state.choiceSets
+    const id = choiceSets[i].id
+    let result
+    if (add) {
+      result = await addChoice(id, choice)
+    } else {
+      result = await removeChoice(id, choice)
+    }
+    if (!(result instanceof Error)) {
+      choiceSets[i] = result
+      this.setState({ choiceSets })
+    }
+  }
+
+  public async remove(i: number) {
+    const { choiceSets, selectedView, words } = this.state
+    if (selectedView === "Words") {
+      const id = words[i].id
+      const result = await removeWord(id)
+      if (!(result instanceof Error)) {
+        words.splice(i, 1)
+        this.setState({ words })
+      }
+    } else {
+      const id = choiceSets[i].id
+      const result = await removeChoiceSet(id)
+      if (!(result instanceof Error)) {
+        choiceSets.splice(i, 1)
+        this.setState({ choiceSets })
+      }
+    }
   }
 
   public async loadTexts() {
@@ -79,16 +115,27 @@ class Library extends React.Component<Props, State> {
   }
 
   public render() {
-    const { selectedView, selectedSortBy, redirect, texts, words } = this.state
+    const {
+      choiceSets,
+      selectedView,
+      selectedSortBy,
+      redirect,
+      texts,
+      words
+    } = this.state
 
     if (redirect) {
       return <Redirect to={redirect} />
     }
 
-    return (
-      <Container>
-        <Nav user={this.props.user} />
+    const data = {
+      Words: words,
+      Texts: texts,
+      "Choice Sets": choiceSets
+    }[selectedView]
 
+    return (
+      <div>
         <Header.l>Library</Header.l>
 
         <Menus
@@ -99,8 +146,10 @@ class Library extends React.Component<Props, State> {
         />
 
         <List
+          remove={this.remove.bind(this)}
+          updateChoiceSet={this.updateChoiceSet.bind(this)}
           selectedView={selectedView}
-          data={selectedView === "Words" ? words : texts}
+          data={data}
         />
 
         {selectedView === "Words" && (
@@ -108,7 +157,7 @@ class Library extends React.Component<Props, State> {
             load more
           </Button.regular>
         )}
-      </Container>
+      </div>
     )
   }
 }

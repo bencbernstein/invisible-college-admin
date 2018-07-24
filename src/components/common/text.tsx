@@ -17,7 +17,13 @@ const Regular = Large.extend`
   font-size: 0.85em;
 `
 
+const Garamond = Large.extend`
+  font-family: EBGaramond;
+  font-size: 0.85em;
+`
+
 export default {
   l: Large,
-  regular: Regular
+  regular: Regular,
+  garamond: Garamond
 }

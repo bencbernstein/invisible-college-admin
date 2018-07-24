@@ -63,20 +63,22 @@ class Menus extends React.Component<Props, any> {
       }
     )
 
-    const viewMenuButtons = [SelectedView.Texts, SelectedView.Words].map(
-      (value: SelectedView) => {
-        const color = value === selectedView ? colors.black : undefined
-        return (
-          <MenuButton
-            onClick={() => this.props.didSelectView(value)}
-            key={value}
-            color={color}
-          >
-            {value}
-          </MenuButton>
-        )
-      }
-    )
+    const viewMenuButtons = [
+      SelectedView.ChoiceSets,
+      SelectedView.Texts,
+      SelectedView.Words
+    ].map((value: SelectedView) => {
+      const color = value === selectedView ? colors.black : undefined
+      return (
+        <MenuButton
+          onClick={() => this.props.didSelectView(value)}
+          key={value}
+          color={color}
+        >
+          {value}
+        </MenuButton>
+      )
+    })
 
     return (
       <Container>
