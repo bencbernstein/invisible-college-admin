@@ -79,7 +79,6 @@ export const removeWord = async (id: string): Promise<any | Error> => {
 }
 
 export const updateWord = async (word: Word): Promise<any | Error> => {
-  console.log(word)
   const encoded = encodeURIComponent(JSON.stringify(word))
   const gqlQuery = `mutation {
     updateWord(word: "${encoded}") {

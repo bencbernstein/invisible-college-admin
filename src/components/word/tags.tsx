@@ -41,7 +41,6 @@ interface State {
 class TagsComponent extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
-    console.log(props.word)
     this.state = {
       autocomplete: [],
       tag: ""

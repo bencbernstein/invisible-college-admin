@@ -1,7 +1,6 @@
 import CONFIG from "../lib/config"
 
 const GQL_URL = CONFIG.API_URL + "/graphql"
-console.log(GQL_URL)
 
 export const query = (gqlQuery: string, name: string): any | Error =>
   fetch(GQL_URL, {
@@ -11,7 +10,11 @@ export const query = (gqlQuery: string, name: string): any | Error =>
   })
     .then(res => res.json())
     .then(json => {
+      console.log(`Result for ${GQL_URL}:`)
+      console.log(gqlQuery)
       console.log(json)
+      console.log("\n")
+
       if (json.errors && json.errors.length) {
         console.error("ERR: " + json.errors[0].message)
         return Error(json.errors[0].message)
