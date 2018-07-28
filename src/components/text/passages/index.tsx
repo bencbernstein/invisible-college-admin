@@ -117,7 +117,7 @@ class Passages extends React.Component<Props, State> {
           onClick={() => this.clickedPassage(id, p.id)}
           style={{ textAlign: "left", cursor: "pointer" }}
         >
-          {p.value
+          {(p.value || "")
             .split(" ")
             .map((w: string, idx: number) => span(w, p.found, idx))}
         </CommonText.regular>
