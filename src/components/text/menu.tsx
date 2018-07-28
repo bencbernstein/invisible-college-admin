@@ -1,21 +1,42 @@
 import * as React from "react"
+import { Link } from "react-router-dom"
 import styled from "styled-components"
 
+import { colors } from "../../lib/colors"
 import Header from "../common/header"
 import Text from "../common/text"
 import { Screen } from "./"
 
 const Container = styled.div`
   text-align: left;
-  width: 100%;
 `
 
-const Link = Text.l.extend`
-  cursor: pointer;
+const FlexedDiv = styled.div`
+  display: flex;
+  align-items: flex-start;
+  margin: 50px 0px;
+  justify-content: space-between;
 `
 
 const MenuItems = styled.div`
   margin-top: -30px;
+  width: 100px;
+`
+
+interface MinimizeProps {
+  hide?: boolean
+}
+
+const Minimize = styled.div`
+  visibility: ${(p: MinimizeProps) => (p.hide ? "hidden" : "visible")};
+  width: 12px;
+  height: 2px;
+  border: 5px solid ${colors.gray};
+  background-color: ${colors.gray};
+  cursor: pointer;
+  &:hover {
+    background-color: ${colors.lightestGray};
+  }
 `
 
 interface Props {
@@ -24,30 +45,52 @@ interface Props {
   displayScreen: (isDisplaying: Screen) => {}
 }
 
-class Menu extends React.Component<Props, any> {
+interface State {
+  minimized: boolean
+}
+
+class Menu extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
-    this.state = {}
+    this.state = {
+      minimized: false
+    }
   }
 
   public render() {
+    const { minimized } = this.state
     const { name, isDisplaying } = this.props
 
     const link = (screen: Screen) => (
-      <Link
+      <Text.regular
+        pointer={true}
         onClick={() => this.props.displayScreen(screen)}
         bold={isDisplaying === screen}
         key={screen}
       >
         {screen}
-      </Link>
+      </Text.regular>
     )
     const links = [Screen.Information, Screen.Read, Screen.Passages].map(link)
 
+    const title = minimized ? null : <Header.l>
+      <Link style={{ textDecoration: "none" }} to="/library">
+        <span style={{ color: colors.lightGray }}>TEXTS</span>
+      </Link>
+      <span style={{ color: colors.mediumGray }}> // </span>
+      <span style={{ textTransform: "capitalize" }}>{name}</span>
+    </Header.l>
+    
     return (
       <Container>
-        <Header.l>{name}</Header.l>
-        <MenuItems>{links}</MenuItems>
+        <FlexedDiv>
+          {title}
+          <Minimize
+            hide={isDisplaying !== "Read"}
+            onClick={() => this.setState({ minimized: !minimized })}
+          />
+        </FlexedDiv>
+        {!minimized && <MenuItems>{links}</MenuItems>}
       </Container>
     )
   }

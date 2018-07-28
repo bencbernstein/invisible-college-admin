@@ -14,7 +14,15 @@ const Medium = styled.h3`
   letter-spacing: 1px;
 `
 
+const Small = styled.h5`
+  text-transform: uppercase;
+  font-family: BrandonGrotesqueBold;
+  margin: 15px 0px;
+  letter-spacing: 1px;
+`
+
 export default {
   l: Large,
-  m: Medium
+  m: Medium,
+  s: Small
 }

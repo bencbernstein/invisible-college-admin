@@ -18,6 +18,10 @@
   src: url("../../lib/fonts/EBGaramond_semibld.ttf");
 }
 
+.disabled-link {
+  pointer-events: none;
+}
+
 html,
 body,
 #root {

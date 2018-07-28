@@ -1,44 +1,29 @@
 import * as React from "react"
 import { Redirect } from "react-router"
-import styled from "styled-components"
 import * as _ from "underscore"
+
+import history from "../../history"
 
 import Information from "./information"
 import Menu from "./menu"
-// import { seed } from "./data"
 
-import { fetchText } from "../../models/text"
+import { addPassages, fetchText, removePassage } from "../../models/text"
+import { Text } from "../../models/text"
 
-import Nav from "../nav"
-import Passage from "./passage"
+import Passages from "./passages"
+import Read from "./read"
 
-const Container = styled.div`
-  text-align: left;
-  padding: 0px 50px;
-  box-sizing: border-box;
-  margin: 25px 0px;
-`
-
-interface Props {
-  user: any
-}
-
-export interface Sentence {
-  sentence: string
-  found: string[]
-}
-
-export interface TextDoc {
-  name: string
-  source: string
-  tokenized: Sentence[]
-}
+import { Keywords } from "../app"
 
 interface State {
-  text?: TextDoc
+  text?: Text
   redirect?: string
   isNew: boolean
   isDisplaying: Screen
+}
+
+interface Props {
+  keywords?: Keywords
 }
 
 export enum Screen {
@@ -47,8 +32,8 @@ export enum Screen {
   Passages = "Passages"
 }
 
-class Text extends React.Component<Props, State> {
-  constructor(props: Props) {
+class TextComponent extends React.Component<Props, State> {
+  constructor(props: any) {
     super(props)
 
     const isNew = _.last(window.location.pathname.split("/")) === "new"
@@ -60,32 +45,49 @@ class Text extends React.Component<Props, State> {
   }
 
   public componentDidMount() {
+    const pathname = window.location.pathname
+    const textId = pathname.split("/")[2]
+
     if (!this.state.isNew) {
-      this.loadData()
+      this.loadData(textId)
+    }
+
+    if (pathname.includes("passage")) {
+      this.displayScreen(Screen.Passages)
+    } else if (pathname.includes("read")) {
+      this.displayScreen(Screen.Read)
     }
   }
 
-  public updatePassages(ranges: number[][]) {
-    console.log(ranges)
+  public async updatePassages(id: string, ranges: number[][]) {
+    const text = this.state.text
+    text!.passages = (await addPassages(id, ranges)).passages
+    this.setState({ text })
   }
 
-  public async loadData() {
-    const id = _.last(window.location.pathname.split("/"))
-    const result = await fetchText(id!)
-    if (result instanceof Error) {
-      // TODO: - handle
-    } else {
-      result.tokenized = JSON.parse(result.tokenized)
-      this.setState({ text: result })
-    }
+  public async loadData(id: string) {
+    const text = await fetchText(id!)
+    text.tokenized = JSON.parse(text.tokenized)
+    this.setState({ text })
   }
 
   public displayScreen(isDisplaying: Screen) {
+    const text = this.state.text
+    if (window.location.pathname.includes("/passage") && text) {
+      history.push("/text/" + text.id)
+    }
     this.setState({ isDisplaying })
+  }
+
+  public async removePassage(textId: string, passageId: string) {
+    const text = this.state.text!
+    text.passages = text.passages.filter(p => p.id !== passageId)
+    await removePassage(textId, passageId)
   }
 
   public render() {
     const { redirect, isDisplaying, text, isNew } = this.state
+    const { keywords } = this.props
 
     if (redirect) {
       return <Redirect to={redirect} />
@@ -95,8 +97,17 @@ class Text extends React.Component<Props, State> {
       switch (isDisplaying) {
         case Screen.Read:
           return (
-            <Passage
+            <Read
               updatePassages={this.updatePassages.bind(this)}
+              keywords={keywords}
+              text={text!}
+            />
+          )
+        case Screen.Passages:
+          return (
+            <Passages
+              removePassage={this.removePassage.bind(this)}
+              keywords={keywords}
               text={text!}
             />
           )
@@ -114,9 +125,7 @@ class Text extends React.Component<Props, State> {
     const dataLoaded = !isNew && text
 
     return (
-      <Container>
-        <Nav user={this.props.user} />
-
+      <div>
         {isNew && screen}
 
         {dataLoaded && (
@@ -129,9 +138,9 @@ class Text extends React.Component<Props, State> {
             {screen}
           </div>
         )}
-      </Container>
+      </div>
     )
   }
 }
 
-export default Text
+export default TextComponent

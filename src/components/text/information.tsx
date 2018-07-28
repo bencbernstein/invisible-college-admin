@@ -4,10 +4,10 @@ import styled from "styled-components"
 import { colors } from "../../lib/colors"
 import Button from "../common/button"
 import Input from "../common/input"
-import Text from "../common/text"
+import CommonText from "../common/text"
 
-import { parseText } from "../../models/text"
-import { Screen, TextDoc } from "./"
+import { parseText, Text } from "../../models/text"
+import { Screen } from "./"
 
 const Container = styled.div`
   text-align: center;
@@ -19,7 +19,7 @@ const Container = styled.div`
 `
 
 interface Props {
-  text?: TextDoc
+  text?: Text
   isNew: boolean
   name?: string
   displayScreen: (isDisplaying: Screen) => {}
@@ -102,29 +102,27 @@ class Information extends React.Component<Props, State> {
           type="text"
         />
 
-        <br />
-        <br />
-
         {this.props.isNew && (
-          <Input.file>
-            <input
-              style={{ display: "none" }}
-              type="file"
-              onChange={e => this.handleChange(e.target.files!)}
-            />
-            {fileInputText}
-          </Input.file>
+          <div>
+            <br />
+            <br />
+            <Input.file>
+              <input
+                style={{ display: "none" }}
+                type="file"
+                onChange={e => this.handleChange(e.target.files!)}
+              />
+              {fileInputText}
+            </Input.file>
+            <br />
+            <br />
+            <br />
+            <Button.l disabled={isSaving} onClick={this.save.bind(this)}>
+              Save
+            </Button.l>
+          </div>
         )}
-
-        <br />
-        <br />
-        <br />
-
-        <Button.l disabled={isSaving} onClick={this.save.bind(this)}>
-          Save
-        </Button.l>
-
-        <Text.regular color={colors.red}>{error}</Text.regular>
+        <CommonText.regular color={colors.red}>{error}</CommonText.regular>
       </Container>
     )
   }
