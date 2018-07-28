@@ -1,4 +1,6 @@
-const IMAGE_URL = "http://localhost:3002/image"
+import CONFIG from "../lib/config"
+
+const IMAGE_URL = CONFIG.API_URL + "/image"
 
 const query = (url: string): any | Error =>
   fetch(url, {

@@ -1,6 +1,8 @@
 import { query } from "./query"
 
-const TEXT_URL = "http://localhost:3002/parseText"
+import CONFIG from "../lib/config"
+
+const TEXT_URL = CONFIG.API_URL + "/parseText"
 
 export interface Sentence {
   sentence: string
