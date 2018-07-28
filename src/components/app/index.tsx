@@ -2,10 +2,11 @@
 
 import * as React from "react"
 import { Redirect, Route, Switch } from "react-router"
-import { BrowserRouter } from "react-router-dom"
+import { Router } from "react-router-dom"
 import styled from "styled-components"
 
-import { alertModal } from "../common/modal"
+import history from "../../history"
+
 import Library from "../library"
 import Login from "../login"
 import Nav from "../nav"
@@ -14,10 +15,18 @@ import Word from "../word"
 import WordModal from "../word/modal"
 import "./index.css"
 
+import { fetchKeywords } from "../../models/word"
+
 import { getWordAtPoint } from "../../lib/helpers"
+
+export interface Keywords {
+  choices: string[]
+  words: string[]
+}
 
 interface State {
   user?: any
+  keywords?: Keywords
 }
 
 class App extends React.Component<any, State> {
@@ -31,6 +40,12 @@ class App extends React.Component<any, State> {
     if (user) {
       this.setState({ user: JSON.parse(user) })
     }
+    this.loadKeywords()
+  }
+
+  public async loadKeywords() {
+    const keywords = await fetchKeywords()
+    this.setState({ keywords })
   }
 
   public login(user: any) {
@@ -39,25 +54,31 @@ class App extends React.Component<any, State> {
   }
 
   public render() {
-    const { user } = this.state
+    const { keywords, user } = this.state
 
     return (
-      <BrowserRouter>
+      <Router history={history}>
         <Switch>
           <Route
             exact={true}
             path="/login"
-            render={() => <Login login={this.login.bind(this)} />}
+            render={() =>
+              user ? (
+                <Redirect to={"/library"} />
+              ) : (
+                <Login login={this.login.bind(this)} />
+              )
+            }
           />
-          <Route path="/text" component={contained("text", user)} />
-          <Route path="/word" component={contained("word", user)} />
+          <Route path="/text" component={contained("text", user, keywords)} />
+          <Route path="/word" component={contained("word", user, keywords)} />
           <Route
             exact={true}
             path="/library"
             component={contained("library", user)}
           />
         </Switch>
-      </BrowserRouter>
+      </Router>
     )
   }
 }
@@ -71,24 +92,19 @@ const OuterContainer = styled.div`
   position: relative;
 `
 
-const contained = (component: string, user: any) => () => (
-  <Container component={component} user={user} />
+const contained = (component: string, user: any, keywords?: Keywords) => () => (
+  <Container component={component} user={user} keywords={keywords} />
 )
 
 interface ContainerProps {
   component: string
   user: any
-}
-
-export interface Alert {
-  message: string
-  success: boolean
+  keywords?: Keywords
 }
 
 interface ContainerState {
   wordBelowCursor: string | null
   holdingShift: boolean
-  alert?: Alert
 }
 
 class Container extends React.Component<ContainerProps, ContainerState> {
@@ -134,23 +150,18 @@ class Container extends React.Component<ContainerProps, ContainerState> {
     }
   }
 
-  public alert(alert: Alert) {
-    this.setState({ alert })
-    setTimeout(() => {
-      this.setState({ alert: undefined })
-    }, 1000)
-  }
-
   public render() {
-    const { alert, holdingShift, wordBelowCursor } = this.state
-
-    const { component, user } = this.props
-
-    const loggedIn = localStorage.getItem("user") || true
+    const { holdingShift, wordBelowCursor } = this.state
+    const { component, user, keywords } = this.props
+    const loggedIn = localStorage.getItem("user")
 
     if (!loggedIn && component !== "login") {
       return <Redirect to={"/login"} />
     }
+
+    const definedWords = keywords ? keywords.words : []
+    const displayWordModal =
+      wordBelowCursor && definedWords.indexOf(wordBelowCursor) === -1
 
     return (
       <OuterContainer onMouseMove={this.handleMouseMove.bind(this)}>
@@ -159,16 +170,17 @@ class Container extends React.Component<ContainerProps, ContainerState> {
         {
           {
             library: <Library />,
-            text: <Text />,
-            word: <Word />
+            text: <Text keywords={keywords} />,
+            word: <Word keywords={keywords} />
           }[component]
         }
 
-        {wordBelowCursor && (
-          <WordModal alert={this.alert.bind(this)} value={wordBelowCursor} />
+        {displayWordModal && (
+          <WordModal
+            remove={() => this.setState({ wordBelowCursor: null })}
+            value={wordBelowCursor!}
+          />
         )}
-
-        {alert && alertModal(alert)}
       </OuterContainer>
     )
   }

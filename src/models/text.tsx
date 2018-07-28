@@ -2,6 +2,35 @@ import { query } from "./query"
 
 const TEXT_URL = "http://localhost:3002/parseText"
 
+export interface Sentence {
+  sentence: string
+  found: string[]
+}
+
+export interface Passage {
+  id: string
+  startIdx: number
+  endIdx: number
+  value: string
+  found: string[]
+  tagged: Tag[]
+}
+
+export interface Tag {
+  value: string
+  tag: string
+  isFocusWord: boolean
+  isPunctuation: boolean
+}
+
+export interface Text {
+  id: string
+  name: string
+  source: string
+  tokenized: Sentence[]
+  passages: Passage[]
+}
+
 const parseTextQuery = (formData: FormData, params: string): any | Error =>
   fetch(TEXT_URL + params, {
     body: formData,
@@ -25,7 +54,7 @@ export const fetchTexts = async (): Promise<any | Error> => {
 }
 
 export const fetchText = async (id: string): Promise<any | Error> => {
-  const gqlQuery = `query { text(id: "${id}") { id name source tokenized passages { id startIdx endIdx passage found } } }`
+  const gqlQuery = `query { text(id: "${id}") { id name source tokenized passages { id startIdx endIdx value found tagged { id value tag isFocusWord isPunctuation } } } }`
   return query(gqlQuery, "text")
 }
 
@@ -35,7 +64,7 @@ export const addPassages = async (
 ): Promise<any | Error> => {
   const gqlQuery = `mutation { addPassages(id: "${id}", ranges: ${JSON.stringify(
     ranges
-  )}) { passages { id startIdx endIdx passage found } } }`
+  )}) { passages { id startIdx endIdx value found tagged { id value tag isFocusWord isPunctuation } } } }`
   return query(gqlQuery, "addPassages")
 }
 
@@ -45,4 +74,11 @@ export const removePassage = async (
 ): Promise<any | Error> => {
   const gqlQuery = `mutation { removePassage(textId: "${textId}", passageId: "${passageId}") { id } }`
   return query(gqlQuery, "removePassage")
+}
+
+export const updatePassage = async (passage: Passage): Promise<any | Error> => {
+  const gqlQuery = `mutation { updatePassage(update: "${encodeURIComponent(
+    JSON.stringify(passage)
+  )}") { id } }`
+  return query(gqlQuery, "updatePassage")
 }

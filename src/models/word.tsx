@@ -1,5 +1,7 @@
 import { query } from "./query"
 
+import { Word } from "../components/word"
+
 export const fetchWords = async (
   first: number,
   after?: string
@@ -24,10 +26,26 @@ export const fetchWord = async (id: string): Promise<any | Error> => {
         value
         highlight
       }
+      tags {
+        value
+        id
+        choiceSetIds
+      }
       obscurity
+      images
     }
   }`
   return query(gqlQuery, "word")
+}
+
+export const fetchKeywords = async (): Promise<any | Error> => {
+  const gqlQuery = `query {
+    keywords {
+      words
+      choices
+    }
+  }`
+  return query(gqlQuery, "keywords")
 }
 
 export const enrichWord = async (value: string): Promise<any | Error> => {
@@ -58,4 +76,15 @@ export const removeWord = async (id: string): Promise<any | Error> => {
     }
   }`
   return query(gqlQuery, "removeWord")
+}
+
+export const updateWord = async (word: Word): Promise<any | Error> => {
+  console.log(word)
+  const encoded = encodeURIComponent(JSON.stringify(word))
+  const gqlQuery = `mutation {
+    updateWord(word: "${encoded}") {
+      id
+    }
+  }`
+  return query(gqlQuery, "updateWord")
 }

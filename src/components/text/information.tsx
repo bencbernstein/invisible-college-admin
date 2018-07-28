@@ -4,10 +4,10 @@ import styled from "styled-components"
 import { colors } from "../../lib/colors"
 import Button from "../common/button"
 import Input from "../common/input"
-import Text from "../common/text"
+import CommonText from "../common/text"
 
-import { parseText } from "../../models/text"
-import { Screen, TextDoc } from "./"
+import { parseText, Text } from "../../models/text"
+import { Screen } from "./"
 
 const Container = styled.div`
   text-align: center;
@@ -19,7 +19,7 @@ const Container = styled.div`
 `
 
 interface Props {
-  text?: TextDoc
+  text?: Text
   isNew: boolean
   name?: string
   displayScreen: (isDisplaying: Screen) => {}
@@ -122,7 +122,7 @@ class Information extends React.Component<Props, State> {
             </Button.l>
           </div>
         )}
-        <Text.regular color={colors.red}>{error}</Text.regular>
+        <CommonText.regular color={colors.red}>{error}</CommonText.regular>
       </Container>
     )
   }

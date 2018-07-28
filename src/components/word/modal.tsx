@@ -1,17 +1,21 @@
 import * as React from "react"
 import styled from "styled-components"
-// import * as _ from "underscore"
 
-import { colors } from "../../lib/colors"
-import { Alert } from "../app"
+import Button from "../common/button"
 import Header from "../common/header"
+import Icon from "../common/icon"
 import Text from "../common/text"
 
-import { addWord, enrichWord } from "../../models/word"
-// import { colors } from "../../lib/colors"
+import deleteIconRed from "../../lib/images/icon-delete-red.png"
+import deleteIcon from "../../lib/images/icon-delete.png"
+
+import { addWord } from "../../models/word"
+
+import { colors } from "../../lib/colors"
 
 const Container = styled.div`
-  width: 90%;
+  min-width: 240px;
+  min-height: 140px;
   background-color: white;
   border: 1px solid black;
   bottom: 20px;
@@ -24,11 +28,13 @@ const Container = styled.div`
 
 interface Props {
   value: string
-  alert: (alert: Alert) => {}
+  remove: () => void
 }
 
 interface State {
   isEnriching?: string
+  alert?: string
+  isHoveringDelete?: boolean
 }
 
 class WordModal extends React.Component<Props, State> {
@@ -36,56 +42,54 @@ class WordModal extends React.Component<Props, State> {
     super(props)
 
     this.state = {}
-
-    this.handleKeyDown = this.handleKeyDown.bind(this)
   }
 
-  public componentDidMount() {
-    document.addEventListener("keydown", this.handleKeyDown)
-  }
-
-  public componentWillUnmount() {
-    document.removeEventListener("keydown", this.handleKeyDown)
-  }
-
-  public handleKeyDown(e: any) {
-    if (this.state.isEnriching) {
-      return
-    } else if (e.key === "A") {
-      this.addWord(this.props.value)
-    } else if (e.key === "E") {
-      // retrieve enrichment and show in create box
-      const isEnriching = this.props.value
-      this.setState({ isEnriching }, () => this.enrichWord(isEnriching))
-    }
-  }
-
-  public async addWord(value: string) {
+  public async addWord() {
+    const { value } = this.props
     await addWord(value)
-    this.props.alert({ message: `Word Added! (${value})`, success: true })
+    const alert = value + " added"
+    this.setState({ alert })
+    setTimeout(() => this.props.remove(), 1500)
   }
 
   public async enrichWord(value: string) {
-    const result = await enrichWord(value)
-    console.log(result)
+    // TODO: - disabled for now
   }
 
   public render() {
-    const value = this.props.value.toLowerCase()
-
-    const span = (str: string, color: string) => (
-      <span style={{ color, fontFamily: "EBGaramondSemiBold" }}>{str}</span>
-    )
+    const { alert, isHoveringDelete } = this.state
 
     return (
       <Container>
-        <Header.s>{value}</Header.s>
-        <Text.garamond>
-          Press {span("A", colors.green)} to {span("add", colors.green)}
-        </Text.garamond>
-        <Text.garamond>
-          Press {span("E", colors.orange)} to {span("enrich", colors.orange)}
-        </Text.garamond>
+        <Header.s>{this.props.value}</Header.s>
+
+        <Icon
+          pointer={true}
+          topRight={true}
+          onMouseEnter={() => this.setState({ isHoveringDelete: true })}
+          onMouseLeave={() => this.setState({ isHoveringDelete: undefined })}
+          onClick={e => {
+            this.props.remove()
+          }}
+          src={isHoveringDelete ? deleteIconRed : deleteIcon}
+        />
+
+        {alert && <Text.l>{alert}</Text.l>}
+
+        {!alert && (
+          <div>
+            <Button.circ
+              onClick={this.addWord.bind(this)}
+              marginRight={"10px"}
+              color={colors.green}
+            >
+              add
+            </Button.circ>
+            <Button.circ disabled={true} color={colors.orange}>
+              enrich
+            </Button.circ>
+          </div>
+        )}
       </Container>
     )
   }

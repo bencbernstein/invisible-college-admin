@@ -113,7 +113,7 @@ class Nav extends React.Component<Props, State> {
     const createModal = (
       <Modal>
         <ModalButton onClick={this.addText.bind(this)}>Add Text</ModalButton>
-        <ModalButton onClick={this.addText.bind(this)}>
+        <ModalButton onClick={() => console.log("TODO")}>
           Add Word{" "}
           <span
             style={{ color: holdingShift ? colors.green : colors.lightGray }}

@@ -9,12 +9,18 @@ import Input from "../common/input"
 import { loginUser } from "../../models/user"
 
 const Container = styled.div`
-  text-align: center;
-  width: 100%;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  width: 100vw;
 `
 
 const Form = styled.form`
-  max-width: 300px;
+  width: 300px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -57,7 +63,7 @@ class Login extends React.Component<Props, State> {
       if (response instanceof Error) {
         this.setState({ error: response.message })
       } else {
-        this.setState({ error: undefined, redirect: "/home" })
+        this.setState({ error: undefined, redirect: "/library" })
         this.props.login(response)
       }
     }

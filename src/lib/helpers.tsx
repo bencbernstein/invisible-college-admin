@@ -1,5 +1,23 @@
 /* tslint:disable */
 
+import { Keywords } from "../components/app"
+import { colors } from "./colors"
+
+export const highlight = (value: string, keywords?: Keywords): string => {
+  const [words, choices] = keywords
+    ? [keywords.words, keywords.choices]
+    : [[], []]
+
+  const stripped = value.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "")
+
+  if (words.indexOf(stripped) > -1) {
+    return colors.warmYellow
+  } else if (choices.indexOf(stripped) > -1) {
+    return colors.blue
+  }
+  return colors.gray
+}
+
 export const getRanges = (array: number[]): number[][] => {
   const ranges = []
   let rstart

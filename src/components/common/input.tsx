@@ -1,11 +1,19 @@
 import styled from "styled-components"
 import { colors } from "../../lib/colors"
 
+interface Props {
+  marginRight?: string
+  width?: string
+}
+
 const Basic = styled.input`
   font-family: BrandonGrotesque;
   outline: none;
+  margin-right: ${(p: Props) => p.marginRight || "0"};
   display: block;
+  width: ${(p: Props) => p.width || ""};
   border: none;
+  box-sizing: border-box;
 `
 
 const FileLabel = styled.label`
@@ -18,7 +26,7 @@ const FileLabel = styled.label`
 `
 
 const Medium = Basic.extend`
-  border-bottom: 1px solid black;
+  border-bottom: 1px solid ${colors.gray};
   font-size: 1.1em;
   padding: 5px;
 `

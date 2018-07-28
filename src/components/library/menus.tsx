@@ -48,20 +48,26 @@ class Menus extends React.Component<Props, any> {
   public render() {
     const { selectedSortBy, selectedView } = this.props
 
-    const sortByMenuButtons = [SelectedSortBy.Added, SelectedSortBy.Random].map(
-      (value: SelectedSortBy) => {
-        const color = value === selectedSortBy ? colors.black : undefined
-        return (
-          <MenuButton
-            onClick={() => this.props.didSelectSortBy(value)}
-            key={value}
-            color={color}
-          >
-            {value}
-          </MenuButton>
-        )
-      }
-    )
+    console.log(selectedSortBy)
+    // const sortByMenuButtons = [SelectedSortBy.Added, SelectedSortBy.Random].map(
+    //   (value: SelectedSortBy) => {
+    //     const color = value === selectedSortBy ? colors.black : undefined
+    //     return (
+    //       <MenuButton
+    //         onClick={() => this.props.didSelectSortBy(value)}
+    //         key={value}
+    //         color={color}
+    //       >
+    //         {value}
+    //       </MenuButton>
+    //     )
+    //   }
+    // )
+    // <Menu>
+    //   <Text.regular>Sort By</Text.regular>
+    //   <Line />
+    //   {sortByMenuButtons}
+    // </Menu>
 
     const viewMenuButtons = [
       SelectedView.ChoiceSets,
@@ -86,12 +92,6 @@ class Menus extends React.Component<Props, any> {
           <Text.regular>View</Text.regular>
           <Line />
           {viewMenuButtons}
-        </Menu>
-
-        <Menu>
-          <Text.regular>Sort By</Text.regular>
-          <Line />
-          {sortByMenuButtons}
         </Menu>
       </Container>
     )

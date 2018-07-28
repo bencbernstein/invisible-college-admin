@@ -7,7 +7,6 @@ const Box = styled.div`
   border: 1px solid ${colors.lightGray};
   width: 250px;
   min-height: 250px;
-  margin: 15px 0px;
   padding: 10px;
   box-sizing: border-box;
   display: flex;

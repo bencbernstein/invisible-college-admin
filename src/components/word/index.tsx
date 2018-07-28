@@ -1,87 +1,163 @@
 import * as React from "react"
-import styled from "styled-components"
+// import styled from "styled-components"
+import { Link } from "react-router-dom"
 import * as _ from "underscore"
 
+import DefinitionComponent from "./definition"
+import Gallery from "./gallery"
+import RootsComponent from "./roots"
+import TagsComponent from "./tags"
+
 import Header from "../common/header"
-import Text from "../common/text"
+import Input from "../common/input"
+// import Text from "../common/text"
 
 import { colors } from "../../lib/colors";
-import { fetchWord } from "../../models/word"
 
-const Interpunct = styled.div`
-  width: 3px;
-  height: 3px;
-  border-radius: 5px;
-  margin: 0px 4px;
-  background-color: ${colors.gray};
-`
+import { addImage, fetchImages, removeImage } from "../../models/image"
+import { fetchWord, updateWord } from "../../models/word"
 
-const ComponentText = Text.l.extend`
-  display: flex;
-  align-items: center;
-`
+import { Keywords } from "../app"
 
-interface SpanProps {
+interface State {
+  word?: Word
+  imagesBase64: string[]
+}
+
+interface Props {
+  keywords?: Keywords
+}
+
+export interface Component {
+  value: string
+  isRoot: boolean  
+}
+
+export interface DefinitionPart {
+  value: string
   highlight: boolean
 }
 
-const Span = styled.span`
-  color: ${(p: SpanProps) => p.highlight ? colors.warmYellow : colors.gray};
-`
-
-interface State {
-  word?: any
+export interface Unverified {
+  definition?: string
+  tags?: string[]
+  synonyms?: string[]
 }
 
-class Word extends React.Component<any, State> {
+export interface Tag {
+  id?: string
+  value: string
+  choiceSetIds?: string[]
+}
+
+export interface Word {
+  id: string
+  value: string
+  isDecomposable: boolean
+  components?: Component[]
+  definition: DefinitionPart[]
+  obscurity: number
+  images: string[]
+  tags: Tag[]
+  unverified: Unverified 
+}
+
+class WordComponent extends React.Component<Props, State> {
   constructor(props: any) {
     super(props)
-    this.state = {}
+    this.state = {
+      imagesBase64: [] 
+    }
   }
 
   public componentDidMount() {
     this.loadData()
   }
 
+  public componentWillUnmount() {
+    updateWord(this.state.word!)
+  }
+
   public async loadData() {
     const id = _.last(window.location.pathname.split("/"))
     const word = await fetchWord(id!)
-    if (word instanceof Error) {
-      // TODO: - handle
-    } else {
-      console.log(word)
-      this.setState({ word })
+    this.setState({ word }, this.loadImages)
+  }
+
+  public async loadImages() {
+    const images = this.state.word!.images
+    if (images.length) {
+      const imagesBase64 = await fetchImages(images)
+      this.setState({ imagesBase64 })  
     }
   }
 
+  public async addImage(filelist: FileList) {
+    const response = await addImage(filelist[0], this.state.word!.id)
+    this.setState({ word: response.word }, this.loadImages)
+  }
+
+  public removeImage(imageId: string) {
+    const word = this.state.word!
+    removeImage(word.id, imageId)
+    word.images = word.images.filter((id: any) => id !== imageId)
+    this.setState({ word }, this.loadImages)
+  }  
+
+  public editObscurity(value: string, obscurity: number) {
+    value = value === "10" ? value : value.replace(obscurity.toString(),"")
+    obscurity = parseInt(value, 10)
+    if (_.range(1,11).indexOf(obscurity) > -1) {
+      const word = this.state.word!
+      word.obscurity = obscurity
+      this.setState({ word })
+    }
+  }
+    
   public render() {
-    const word = this.state.word
+    const { word, imagesBase64 } = this.state
 
-    const componentsOfWord = (components: any[]): JSX.Element => <ComponentText>
-      {components.map((c: any): any => <Span key={c.value} highlight={c.isRoot}>
-        {c.value}
-      </Span>).reduce((prev: any, curr: any, i: number) => [prev, <Interpunct key={i} />, curr])}
-    </ComponentText>
+    if (!word) {
+      return null
+    }
 
-    const definitionOfWord = (definition: any[]): JSX.Element => <Text.l>
-      {definition.map((d: any, i: number) => <Span key={i} highlight={d.highlight}>
-        {d.value}
-      </Span>)}
-    </Text.l>
-
-    const content = (data: any) => (
+    return  (
       <div>
-        <Header.l>Word // {data.value}</Header.l>
-        {data.isDecomposable && componentsOfWord(data.components)}
-        <br />
-        {definitionOfWord(data.definition)}
-        <br />
-        {data.obscurity && <Text.l>{`obscurity : ${data.obscurity}`}</Text.l>}
+        <Header.l>
+          <Link style={{ textDecoration: "none" }} to="/library">
+            <span style={{ color: colors.lightGray }}>WORDS</span>
+          </Link>
+          <span style={{ color: colors.mediumGray }}> // </span>
+          <span style={{ textTransform: "capitalize" }}>{word!.value}</span>
+        </Header.l>
+
+        <RootsComponent word={word!} />
+                
+        <DefinitionComponent
+          update={w => this.setState({ word: w })}
+          word={word!} />
+
+        <TagsComponent
+          keywords={this.props.keywords}
+          update={w => this.setState({ word: w })}
+          word={word!} />          
+
+        <Header.s style={{ marginTop: "30px" }}>
+          obscurity
+        </Header.s>
+
+        <Input.m
+          type="text"
+          value={word!.obscurity}
+          onChange={e => this.editObscurity(e.target.value, word!.obscurity)} />
+
+        <Gallery
+          removeImage={this.removeImage.bind(this)}
+          addImage={this.addImage.bind(this)}
+          imagesBase64={imagesBase64} />
       </div>
     )
-
-    return word ? content(word) : null
   }
 }
 
-export default Word
+export default WordComponent

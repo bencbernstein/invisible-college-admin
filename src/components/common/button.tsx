@@ -4,10 +4,12 @@ import { colors } from "../../lib/colors"
 
 interface Props {
   disabled?: boolean
+  color?: string
+  marginRight?: string
 }
 
 const Regular = styled.p`
-  border: 1px solid black;
+  border: 1px solid ${(p: Props) => p.color || "black"};
   pointer-events: ${(p: Props) => (p.disabled ? "none" : "auto")};
   background-color: ${(p: Props) =>
     p.disabled ? colors.lightestGray : "white"};
@@ -18,10 +20,11 @@ const Regular = styled.p`
   display: inline-block;
   cursor: pointer;
   font-size: 0.9em;
+  margin-right: ${(p: Props) => p.marginRight || "0px"};
   &:hover {
     color: white;
     background-color: ${(p: Props) =>
-      p.disabled ? colors.lightGray : "black"};
+      p.disabled ? colors.lightGray : p.color || "black"};
   }
 `
 
@@ -36,8 +39,13 @@ const Large = Regular.extend`
   padding: 5px;
 `
 
+const Circular = Small.extend`
+  border-radius: 20px;
+`
+
 export default {
   l: Large,
   regular: Regular,
-  s: Small
+  s: Small,
+  circ: Circular
 }

@@ -4,6 +4,7 @@ import { colors } from "../../lib/colors"
 interface TextProps {
   color?: string
   bold?: boolean
+  pointer?: boolean
 }
 
 const Large = styled.p`
@@ -11,10 +12,15 @@ const Large = styled.p`
   font-family: ${(p: TextProps) =>
     p.bold ? "BrandonGrotesqueBold" : "BrandonGrotesque"};
   margin: 2.5px 0px;
+  cursor: ${(p: TextProps) => (p.pointer ? "pointer" : "")};
 `
 
 const Regular = Large.extend`
   font-size: 0.85em;
+`
+
+const Small = Large.extend`
+  font-size: 0.7em;
 `
 
 const Garamond = Large.extend`
@@ -25,5 +31,6 @@ const Garamond = Large.extend`
 export default {
   l: Large,
   regular: Regular,
+  s: Small,
   garamond: Garamond
 }

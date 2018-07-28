@@ -19,11 +19,9 @@ import textIcon from "../../lib/images/icon-text.png"
 import wordIcon from "../../lib/images/icon-word.png"
 
 const Container = styled.div`
-  text-align: center;
-  width: 95%;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  display: grid;
+  grid-row-gap: 30px;
+  grid-template-columns: 1fr 1fr 1fr;
   margin: 25px 0px;
 `
 
@@ -114,7 +112,7 @@ class List extends React.Component<Props, State> {
     )
 
     const textBox = (d: any, i: number) => (
-      <Box.regular>
+      <Box.regular key={i}>
         {icons(i)}
         <Link
           key={d.id}
@@ -127,7 +125,7 @@ class List extends React.Component<Props, State> {
     )
 
     const wordBox = (d: any, i: number) => (
-      <Box.regular>
+      <Box.regular key={i}>
         {icons(i)}
         <Link
           key={d.id}
@@ -167,7 +165,7 @@ class List extends React.Component<Props, State> {
         onMouseLeave={() =>
           this.setState({ isHovering: undefined, choice: "" })
         }
-        key={d.id}
+        key={i}
       >
         {icons(i)}
         <Text.l>{d.name}</Text.l>

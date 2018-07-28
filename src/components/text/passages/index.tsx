@@ -1,16 +1,23 @@
 import * as React from "react"
 import styled from "styled-components"
+import * as _ from "underscore"
 
-import Box from "../common/box"
-import Icon from "../common/icon"
-import Text from "../common/text"
+import history from "../../../history"
 
-import { colors } from "../../lib/colors"
-import { Passage, TextDoc } from "./"
+import Box from "../../common/box"
+import Icon from "../../common/icon"
+import CommonText from "../../common/text"
 
-import deleteIconRed from "../../lib/images/icon-delete-red.png"
-import deleteIcon from "../../lib/images/icon-delete.png"
-import passageIcon from "../../lib/images/icon-passage.png"
+import Edit from "./edit"
+
+import { Passage, Text } from "../../../models/text"
+import { Keywords } from "../../app"
+
+import deleteIconRed from "../../../lib/images/icon-delete-red.png"
+import deleteIcon from "../../../lib/images/icon-delete.png"
+import passageIcon from "../../../lib/images/icon-passage.png"
+
+import { colors } from "../../../lib/colors"
 
 const Container = styled.div`
   text-align: center;
@@ -41,12 +48,14 @@ const Span = styled.span`
 `
 
 interface Props {
-  text: TextDoc
+  text: Text
+  keywords?: Keywords
   removePassage: (textId: string, passageId: string) => {}
 }
 
 interface State {
   isHoveringDelete?: number
+  isEditingPassageId?: string
 }
 
 class Passages extends React.Component<Props, State> {
@@ -55,9 +64,28 @@ class Passages extends React.Component<Props, State> {
     this.state = {}
   }
 
+  public componentDidMount() {
+    this.getPath()
+  }
+
+  public clickedPassage(textId: string, passageId: string) {
+    history.push(textId + "/passage/" + passageId)
+    this.getPath()
+  }
+
+  public getPath() {
+    const pathname = window.location.pathname
+    const isEditingPassageId =
+      pathname.includes("passage/") && _.last(pathname.split("passage/"))
+    if (isEditingPassageId) {
+      this.setState({ isEditingPassageId })
+    }
+  }
+
   public render() {
-    const { isHoveringDelete } = this.state
-    const { id, passages } = this.props.text
+    const { isHoveringDelete, isEditingPassageId } = this.state
+    const { keywords, text } = this.props
+    const { id, passages } = text
 
     const icons = (p: Passage, i: number) => (
       <Icons>
@@ -81,20 +109,33 @@ class Passages extends React.Component<Props, State> {
     const passage = (p: Passage, i: number) => (
       <Box.regular key={p.id}>
         {icons(p, i)}
-        <Text.regular bold={true}>
+        <CommonText.regular bold={true}>
           {p.startIdx} - {p.endIdx}
-        </Text.regular>
-        <Text.regular style={{ textAlign: "left" }}>
-          {p.passage
+        </CommonText.regular>
+
+        <CommonText.regular
+          onClick={() => this.clickedPassage(id, p.id)}
+          style={{ textAlign: "left", cursor: "pointer" }}
+        >
+          {p.value
             .split(" ")
             .map((w: string, idx: number) => span(w, p.found, idx))}
-        </Text.regular>
+        </CommonText.regular>
       </Box.regular>
     )
 
     return (
       <Container>
-        {passages.map((p: Passage, i: number) => passage(p, i))}
+        {isEditingPassageId ? (
+          <Edit
+            keywords={keywords}
+            passage={
+              _.find(passages, (p: Passage) => p.id === isEditingPassageId)!
+            }
+          />
+        ) : (
+          passages.map((p: Passage, i: number) => passage(p, i))
+        )}
       </Container>
     )
   }

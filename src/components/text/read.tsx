@@ -2,11 +2,13 @@ import * as React from "react"
 import styled from "styled-components"
 import * as _ from "underscore"
 
+import { Sentence, Text } from "../../models/text"
+import { Keywords } from "../app"
+
 import { colors } from "../../lib/colors"
-import { getRanges } from "../../lib/helpers"
+import { getRanges, highlight } from "../../lib/helpers"
 import Input from "../common/input"
-import Text from "../common/text"
-import { Sentence, TextDoc } from "./"
+import CommonText from "../common/text"
 import Navigation from "./navigation"
 
 const DEFAULT_CHAR_LIMIT = 1500
@@ -36,15 +38,15 @@ const Space = styled.div`
 `
 
 interface SpanProps {
-  highlight?: boolean
+  color?: string
   saved?: boolean
+  previouslySaved?: boolean
 }
 
 const Span = styled.span`
-  color: ${(p: SpanProps) => (p.highlight ? colors.blue : colors.black)};
-  text-decoration: ${(p: SpanProps) => (p.saved ? "underline" : "none")};
-  font-family: ${(p: SpanProps) =>
-    p.highlight ? "BrandonGrotesqueBold" : "BrandonGrotesque"};
+  color: ${(p: SpanProps) => p.color || colors.gray};
+  text-decoration: ${(p: SpanProps) =>
+    p.saved || p.previouslySaved ? "underline" : "none"};
   cursor: pointer;
   &:hover {
     text-decoration: underline;
@@ -55,12 +57,13 @@ interface State {
   viewingSentencesCount: number
   characterLimit: number
   idx: number
-  text: Sentence[]
+  tokenized: Sentence[]
   savedSentences: number[]
 }
 
 interface Props {
-  text: TextDoc
+  text: Text
+  keywords?: Keywords
   updatePassages: (id: string, ranges: number[][]) => {}
 }
 
@@ -73,7 +76,7 @@ class Read extends React.Component<Props, State> {
       characterLimit: DEFAULT_CHAR_LIMIT,
       idx: 0,
       savedSentences: [],
-      text: this.props.text!.tokenized
+      tokenized: this.props.text!.tokenized
     }
   }
 
@@ -88,12 +91,12 @@ class Read extends React.Component<Props, State> {
 
   public getText() {
     const { idx, characterLimit } = this.state
-    const text = this.state.text.slice(idx)
+    const tokenized = this.state.tokenized.slice(idx)
 
     let isViewing: Sentence[] = []
 
-    for (let i = 0; i < text.length; i++) {
-      const textPart = text[i]
+    for (let i = 0; i < tokenized.length; i++) {
+      const textPart = tokenized[i]
 
       const underCharacterLimit =
         isViewing
@@ -109,16 +112,16 @@ class Read extends React.Component<Props, State> {
       }
     }
 
-    this.setState({ viewingSentencesCount: text.length })
+    this.setState({ viewingSentencesCount: tokenized.length })
   }
 
   public handleNavigation(value: string) {
     let { idx } = this.state
-    const { text, viewingSentencesCount } = this.state
+    const { tokenized, viewingSentencesCount } = this.state
 
     if (value === "previous highlight") {
       const lastHighlightIdx = _.findLastIndex(
-        text.slice(0, idx),
+        tokenized.slice(0, idx),
         t => t.found.length > 0
       )
       if (lastHighlightIdx > -1) {
@@ -129,12 +132,12 @@ class Read extends React.Component<Props, State> {
     } else if (value === "keep") {
       this.keepAllSentences()
     } else if (value === "next") {
-      if (idx + viewingSentencesCount < text.length) {
+      if (idx + viewingSentencesCount < tokenized.length) {
         idx = idx + viewingSentencesCount
       }
     } else if (value === "next highlight") {
       const nextHighlightIdx = _.findIndex(
-        text.slice(idx),
+        tokenized.slice(idx),
         t => t.found.length > 0
       )
       if (nextHighlightIdx > -1) {
@@ -172,41 +175,58 @@ class Read extends React.Component<Props, State> {
 
   public render() {
     const {
-      text,
+      tokenized,
       idx,
       viewingSentencesCount,
       characterLimit,
       savedSentences
     } = this.state
 
+    const { keywords } = this.props
+
+    const previouslySavedSentences = _.flatten(
+      this.props.text.passages.map(p => _.range(p.startIdx, p.endIdx))
+    )
+
     const word = (str: string, found: string[], i: number) => (
-      <Span key={i} highlight={found.indexOf(str) > -1}>
+      <Span key={i} color={highlight(str, keywords)}>
         {" "}
         {str}
       </Span>
     )
 
-    const sentences = text
+    const sentences = tokenized
       .slice(idx, idx + viewingSentencesCount)
-      .map((textPart: Sentence, i: number) => (
-        <Span
-          saved={savedSentences.indexOf(idx + i) > -1}
-          onClick={() => this.handleClickedSentence(i)}
-          key={i}
-        >
-          {textPart.sentence
-            .split(" ")
-            .map((w: string, i2: number) => word(w, textPart.found, i2))}
-        </Span>
-      ))
+      .map((textPart: Sentence, i: number) => {
+        const saved = savedSentences.indexOf(idx + i) > -1
+        const previouslySaved = previouslySavedSentences.indexOf(i) > -1
+        return (
+          <Span
+            previouslySaved={previouslySaved}
+            saved={saved}
+            onClick={() => {
+              if (!previouslySaved) {
+                this.handleClickedSentence(i)
+              }
+            }}
+            key={i}
+          >
+            {textPart.sentence
+              .split(" ")
+              .map((w: string, i2: number) => word(w, textPart.found, i2))}
+          </Span>
+        )
+      })
 
     return (
       <Container>
         <InfoContainer>
-          <Text.regular>{`Total sentences : ${text.length}`}</Text.regular>
+          <CommonText.regular>{`Total sentences : ${
+            tokenized.length
+          }`}</CommonText.regular>
 
           <CharLimitContainer>
-            <Text.regular>Character limit :</Text.regular>
+            <CommonText.regular>Character limit :</CommonText.regular>
             <Space />
             <Input.s
               onChange={e => this.changeCharacterLimit(e.target.value)}
@@ -216,9 +236,9 @@ class Read extends React.Component<Props, State> {
             />
           </CharLimitContainer>
 
-          <Text.regular>
+          <CommonText.regular>
             {`Showing : ${idx + 1} - ${idx + viewingSentencesCount}`}
-          </Text.regular>
+          </CommonText.regular>
         </InfoContainer>
         <SentencesContainer>{sentences}</SentencesContainer>
 
