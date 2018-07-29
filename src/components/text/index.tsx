@@ -9,6 +9,7 @@ import Menu from "./menu"
 
 import { addPassages, fetchText, removePassage } from "../../models/text"
 import { Text } from "../../models/text"
+import { Bookmark, fetchUser, saveBookmark, User } from "../../models/user"
 
 import Passages from "./passages"
 import Read from "./read"
@@ -20,9 +21,11 @@ interface State {
   redirect?: string
   isNew: boolean
   isDisplaying: Screen
+  bookmark?: Bookmark
 }
 
 interface Props {
+  user: User
   keywords?: Keywords
 }
 
@@ -66,9 +69,25 @@ class TextComponent extends React.Component<Props, State> {
   }
 
   public async loadData(id: string) {
-    const text = await fetchText(id!)
+    const text = await fetchText(id)
     text.tokenized = JSON.parse(text.tokenized)
     this.setState({ text })
+    this.fetchBookmark(id)
+  }
+
+  public async fetchBookmark(textId: string) {
+    const user = await fetchUser(this.props.user.id)
+    const bookmark = _.find(
+      user.bookmarks,
+      (b: Bookmark) => b.textId === textId
+    )
+    this.setState({ bookmark })
+  }
+
+  public saveBookmark(sentenceIdx: number) {
+    const bookmark = { textId: this.state.text!.id, sentenceIdx }
+    this.setState({ bookmark })
+    saveBookmark(this.props.user.id, bookmark.textId, sentenceIdx)
   }
 
   public displayScreen(isDisplaying: Screen) {
@@ -86,7 +105,7 @@ class TextComponent extends React.Component<Props, State> {
   }
 
   public render() {
-    const { redirect, isDisplaying, text, isNew } = this.state
+    const { bookmark, redirect, isDisplaying, text, isNew } = this.state
     const { keywords } = this.props
 
     if (redirect) {
@@ -98,6 +117,10 @@ class TextComponent extends React.Component<Props, State> {
         case Screen.Read:
           return (
             <Read
+              saveBookmark={(sentenceIdx: number) =>
+                this.saveBookmark(sentenceIdx)
+              }
+              bookmark={bookmark}
               updatePassages={this.updatePassages.bind(this)}
               keywords={keywords}
               text={text!}

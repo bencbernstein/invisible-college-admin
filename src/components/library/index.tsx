@@ -61,6 +61,17 @@ class Library extends React.Component<any, State> {
     this.setState({ choiceSets })
   }
 
+  public async loadTexts() {
+    const texts = await fetchTexts()
+    this.setState({ texts })
+  }
+
+  public async loadWords() {
+    const after = get(_.last(this.state.words), "value")
+    const words = this.state.words.concat(await fetchWords(30, after))
+    this.setState({ words })
+  }
+
   public async updateChoiceSet(i: number, choice: string, add: boolean) {
     const choiceSets = this.state.choiceSets
     const id = choiceSets[i].id
@@ -93,17 +104,6 @@ class Library extends React.Component<any, State> {
         this.setState({ choiceSets })
       }
     }
-  }
-
-  public async loadTexts() {
-    const texts = await fetchTexts()
-    this.setState({ texts })
-  }
-
-  public async loadWords() {
-    const after = get(_.last(this.state.words), "value")
-    const words = this.state.words.concat(await fetchWords(30, after))
-    this.setState({ words })
   }
 
   public didSelectView(selectedView: SelectedView): void {

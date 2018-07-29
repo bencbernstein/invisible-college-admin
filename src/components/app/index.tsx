@@ -15,6 +15,12 @@ import Word from "../word"
 import WordModal from "../word/modal"
 import "./index.css"
 
+import {
+  fetchUserFromStorage,
+  saveUserToStorage,
+  User
+} from "../../models/user"
+
 import { fetchKeywords } from "../../models/word"
 
 import { getWordAtPoint } from "../../lib/helpers"
@@ -25,7 +31,7 @@ export interface Keywords {
 }
 
 interface State {
-  user?: any
+  user?: User
   keywords?: Keywords
 }
 
@@ -36,11 +42,13 @@ class App extends React.Component<any, State> {
   }
 
   public componentDidMount() {
-    const user = localStorage.getItem("user")
-    if (user) {
-      this.setState({ user: JSON.parse(user) })
-    }
+    this.loadUser()
     this.loadKeywords()
+  }
+
+  public loadUser() {
+    const user = fetchUserFromStorage()
+    this.setState({ user })
   }
 
   public async loadKeywords() {
@@ -48,8 +56,8 @@ class App extends React.Component<any, State> {
     this.setState({ keywords })
   }
 
-  public login(user: any) {
-    localStorage.setItem("user", JSON.stringify(user))
+  public login(user: User) {
+    saveUserToStorage(user)
     this.setState({ user })
   }
 
@@ -92,13 +100,15 @@ const OuterContainer = styled.div`
   position: relative;
 `
 
-const contained = (component: string, user: any, keywords?: Keywords) => () => (
-  <Container component={component} user={user} keywords={keywords} />
-)
+const contained = (
+  component: string,
+  user?: User,
+  keywords?: Keywords
+) => () => <Container component={component} user={user} keywords={keywords} />
 
 interface ContainerProps {
   component: string
-  user: any
+  user?: User
   keywords?: Keywords
 }
 
@@ -163,14 +173,14 @@ class Container extends React.Component<ContainerProps, ContainerState> {
     const displayWordModal =
       wordBelowCursor && definedWords.indexOf(wordBelowCursor) === -1
 
-    return (
+    return user ? (
       <OuterContainer onMouseMove={this.handleMouseMove.bind(this)}>
         <Nav holdingShift={holdingShift} user={user} />
 
         {
           {
             library: <Library />,
-            text: <Text keywords={keywords} />,
+            text: <Text user={user} keywords={keywords} />,
             word: <Word keywords={keywords} />
           }[component]
         }
@@ -182,7 +192,7 @@ class Container extends React.Component<ContainerProps, ContainerState> {
           />
         )}
       </OuterContainer>
-    )
+    ) : null
   }
 }
 

@@ -89,6 +89,7 @@ class Information extends React.Component<Props, State> {
         <Input.l
           onChange={e => this.setState({ name: e.target.value })}
           value={name}
+          autoCapitalize={"none"}
           placeholder="Name"
           type="text"
         />
@@ -98,6 +99,7 @@ class Information extends React.Component<Props, State> {
         <Input.l
           onChange={e => this.setState({ source: e.target.value })}
           value={source}
+          autoCapitalize={"none"}
           placeholder="Source"
           type="text"
         />

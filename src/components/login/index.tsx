@@ -82,12 +82,14 @@ class Login extends React.Component<Props, State> {
           <Input.m
             onChange={e => this.setState({ email: e.target.value })}
             value={this.state.email}
+            autoCapitalize={"none"}
             placeholder="Email"
             type="text"
           />
           <Input.m
             onChange={e => this.setState({ password: e.target.value })}
             value={this.state.password}
+            autoCapitalize={"none"}
             placeholder="Password"
             type="text"
           />
