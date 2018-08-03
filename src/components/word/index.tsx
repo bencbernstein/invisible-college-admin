@@ -1,18 +1,17 @@
 import * as React from "react"
-// import styled from "styled-components"
-import { Link } from "react-router-dom"
 import * as _ from "underscore"
 
 import DefinitionComponent from "./definition"
 import Gallery from "./gallery"
 import RootsComponent from "./roots"
+import SynonymsComponent from "./synonyms"
 import TagsComponent from "./tags"
+import UnverifiedComponent from "./unverified"
+
+import Subnav from "../nav/subnav"
 
 import Header from "../common/header"
 import Input from "../common/input"
-// import Text from "../common/text"
-
-import { colors } from "../../lib/colors";
 
 import { addImage, fetchImages, removeImage } from "../../models/image"
 import { fetchWord, updateWord } from "../../models/word"
@@ -26,11 +25,12 @@ interface State {
 
 interface Props {
   keywords?: Keywords
+  play: (link: string) => {}
 }
 
 export interface Component {
   value: string
-  isRoot: boolean  
+  isRoot: boolean
 }
 
 export interface DefinitionPart {
@@ -53,20 +53,21 @@ export interface Tag {
 export interface Word {
   id: string
   value: string
+  synonyms: string[]
   isDecomposable: boolean
   components?: Component[]
   definition: DefinitionPart[]
   obscurity: number
   images: string[]
   tags: Tag[]
-  unverified: Unverified 
+  unverified: Unverified
 }
 
 class WordComponent extends React.Component<Props, State> {
   constructor(props: any) {
     super(props)
     this.state = {
-      imagesBase64: [] 
+      imagesBase64: []
     }
   }
 
@@ -88,7 +89,7 @@ class WordComponent extends React.Component<Props, State> {
     const images = this.state.word!.images
     if (images.length) {
       const imagesBase64 = await fetchImages(images)
-      this.setState({ imagesBase64 })  
+      this.setState({ imagesBase64 })
     }
   }
 
@@ -102,18 +103,37 @@ class WordComponent extends React.Component<Props, State> {
     removeImage(word.id, imageId)
     word.images = word.images.filter((id: any) => id !== imageId)
     this.setState({ word }, this.loadImages)
-  }  
+  }
 
   public editObscurity(value: string, obscurity: number) {
-    value = value === "10" ? value : value.replace(obscurity.toString(),"")
+    value = value === "10" ? value : value.replace(obscurity.toString(), "")
     obscurity = parseInt(value, 10)
-    if (_.range(1,11).indexOf(obscurity) > -1) {
+    if (_.range(1, 11).indexOf(obscurity) > -1) {
       const word = this.state.word!
       word.obscurity = obscurity
       this.setState({ word })
     }
   }
-    
+
+  public addUnverified(attr: string, value: string) {
+    const word = this.state.word!
+
+    if (attr === "definition") {
+      delete word.unverified.definition
+      word.definition = [{ value, highlight: false }]
+    } else if (attr === "synonyms") {
+      word.unverified.synonyms = word.unverified.synonyms!.filter(
+        v => v !== value
+      )
+      word.synonyms.push(value)
+    } else {
+      word.unverified.tags = word.unverified.tags!.filter(v => v !== value)
+      word.tags.push({ value })
+    }
+
+    this.setState({ word })
+  }
+
   public render() {
     const { word, imagesBase64 } = this.state
 
@@ -121,40 +141,52 @@ class WordComponent extends React.Component<Props, State> {
       return null
     }
 
-    return  (
+    return (
       <div>
-        <Header.l>
-          <Link style={{ textDecoration: "none" }} to="/library">
-            <span style={{ color: colors.lightGray }}>WORDS</span>
-          </Link>
-          <span style={{ color: colors.mediumGray }}> // </span>
-          <span style={{ textTransform: "capitalize" }}>{word!.value}</span>
-        </Header.l>
+        <Subnav
+          title={word!.value}
+          subtitle={"words"}
+          subtitleLink={"/library"}
+          play={() => this.props.play(word!.id)}
+        />
 
         <RootsComponent word={word!} />
-                
+
         <DefinitionComponent
           update={w => this.setState({ word: w })}
-          word={word!} />
+          word={word!}
+        />
+
+        <SynonymsComponent
+          keywords={this.props.keywords}
+          update={w => this.setState({ word: w })}
+          word={word!}
+        />
 
         <TagsComponent
           keywords={this.props.keywords}
           update={w => this.setState({ word: w })}
-          word={word!} />          
+          word={word!}
+        />
 
-        <Header.s style={{ marginTop: "30px" }}>
-          obscurity
-        </Header.s>
+        <UnverifiedComponent
+          addUnverified={this.addUnverified.bind(this)}
+          unverified={word!.unverified}
+        />
+
+        <Header.s style={{ marginTop: "30px" }}>obscurity</Header.s>
 
         <Input.m
           type="text"
           value={word!.obscurity}
-          onChange={e => this.editObscurity(e.target.value, word!.obscurity)} />
+          onChange={e => this.editObscurity(e.target.value, word!.obscurity)}
+        />
 
         <Gallery
           removeImage={this.removeImage.bind(this)}
           addImage={this.addImage.bind(this)}
-          imagesBase64={imagesBase64} />
+          imagesBase64={imagesBase64}
+        />
       </div>
     )
   }

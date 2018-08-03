@@ -1,10 +1,12 @@
 import * as React from "react"
-import { Link } from "react-router-dom"
 import styled from "styled-components"
 
 import { colors } from "../../lib/colors"
-import Header from "../common/header"
+
 import Text from "../common/text"
+
+import Subnav from "../nav/subnav"
+
 import { Screen } from "./"
 
 const Container = styled.div`
@@ -71,20 +73,15 @@ class Menu extends React.Component<Props, State> {
         {screen}
       </Text.regular>
     )
+
     const links = [Screen.Information, Screen.Read, Screen.Passages].map(link)
 
-    const title = minimized ? null : <Header.l>
-      <Link style={{ textDecoration: "none" }} to="/library">
-        <span style={{ color: colors.lightGray }}>TEXTS</span>
-      </Link>
-      <span style={{ color: colors.mediumGray }}> // </span>
-      <span style={{ textTransform: "capitalize" }}>{name}</span>
-    </Header.l>
-    
     return (
       <Container>
         <FlexedDiv>
-          {title}
+          {!minimized && (
+            <Subnav title={name} subtitle={"texts"} subtitleLink={"/library"} />
+          )}
           <Minimize
             hide={isDisplaying !== "Read"}
             onClick={() => this.setState({ minimized: !minimized })}

@@ -4,6 +4,8 @@ import { Link } from "react-router-dom"
 import styled from "styled-components"
 import { colors } from "../../lib/colors"
 
+import { User } from "../../models/user"
+
 const InvisibleCollege = styled.p`
   text-transform: uppercase;
   font-family: BrandonGrotesqueBold;
@@ -56,7 +58,7 @@ const FlexDiv = styled.div`
 `
 
 interface Props {
-  user: any
+  user: User
   holdingShift: boolean
 }
 
@@ -144,7 +146,7 @@ class Nav extends React.Component<Props, State> {
       }
     })()
 
-    return this.props.user ? (
+    return (
       <Container>
         <Link style={{ textDecoration: "none" }} to="/library">
           <InvisibleCollege>invisible college</InvisibleCollege>
@@ -163,7 +165,7 @@ class Nav extends React.Component<Props, State> {
           {modal}
         </FlexDiv>
       </Container>
-    ) : null
+    )
   }
 }
 

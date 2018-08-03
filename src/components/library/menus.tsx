@@ -46,9 +46,9 @@ class Menus extends React.Component<Props, any> {
   }
 
   public render() {
-    const { selectedSortBy, selectedView } = this.props
+    const { /*selectedSortBy,*/ selectedView } = this.props
 
-    console.log(selectedSortBy)
+    // console.log(selectedSortBy)
     // const sortByMenuButtons = [SelectedSortBy.Added, SelectedSortBy.Random].map(
     //   (value: SelectedSortBy) => {
     //     const color = value === selectedSortBy ? colors.black : undefined

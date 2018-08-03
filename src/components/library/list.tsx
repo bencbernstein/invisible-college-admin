@@ -152,6 +152,7 @@ class List extends React.Component<Props, State> {
               this.setState({ choice: e.target.value })
             }}
             value={choice}
+            autoCapitalize={"none"}
             autoFocus={true}
             type="text"
           />

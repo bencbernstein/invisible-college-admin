@@ -17,7 +17,7 @@ import deleteIconRed from "../../../lib/images/icon-delete-red.png"
 import deleteIcon from "../../../lib/images/icon-delete.png"
 import passageIcon from "../../../lib/images/icon-passage.png"
 
-import { colors } from "../../../lib/colors"
+import { highlight } from "../../../lib/helpers"
 
 const Container = styled.div`
   text-align: center;
@@ -40,11 +40,11 @@ const Icons = styled.div`
 `
 
 interface SpanProps {
-  highlight: boolean
+  color: string
 }
 
 const Span = styled.span`
-  color: ${(p: SpanProps) => (p.highlight ? colors.blue : colors.gray)};
+  color: ${(p: SpanProps) => p.color};
 `
 
 interface Props {
@@ -100,8 +100,8 @@ class Passages extends React.Component<Props, State> {
       </Icons>
     )
 
-    const span = (word: string, found: string[], idx: number) => (
-      <Span highlight={found.indexOf(word) > -1} key={idx}>
+    const span = (word: string, idx: number) => (
+      <Span color={highlight(word, keywords)} key={idx}>
         {word + " "}
       </Span>
     )
@@ -117,9 +117,9 @@ class Passages extends React.Component<Props, State> {
           onClick={() => this.clickedPassage(id, p.id)}
           style={{ textAlign: "left", cursor: "pointer" }}
         >
-          {p.value
+          {(p.value || "")
             .split(" ")
-            .map((w: string, idx: number) => span(w, p.found, idx))}
+            .map((w: string, idx: number) => span(w, idx))}
         </CommonText.regular>
       </Box.regular>
     )
@@ -134,7 +134,9 @@ class Passages extends React.Component<Props, State> {
             }
           />
         ) : (
-          passages.map((p: Passage, i: number) => passage(p, i))
+          _
+            .sortBy(passages, "startIdx")
+            .map((p: Passage, i: number) => passage(p, i))
         )}
       </Container>
     )

@@ -64,7 +64,6 @@ class Gallery extends React.Component<Props, State> {
   public render() {
     const { imagesBase64 } = this.props
     const { isHoveringDelete } = this.state
-    console.log(imagesBase64[0])
 
     const img = (image: any, i: number) => (
       <ImageContainer key={i}>

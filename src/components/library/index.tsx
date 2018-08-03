@@ -4,7 +4,7 @@ import { Redirect } from "react-router"
 import * as _ from "underscore"
 
 import Button from "../common/button"
-import Header from "../common/header"
+import Subnav from "../nav/subnav"
 import List from "./list"
 import Menus from "./menus"
 
@@ -61,6 +61,17 @@ class Library extends React.Component<any, State> {
     this.setState({ choiceSets })
   }
 
+  public async loadTexts() {
+    const texts = await fetchTexts()
+    this.setState({ texts })
+  }
+
+  public async loadWords() {
+    const after = get(_.last(this.state.words), "value")
+    const words = this.state.words.concat(await fetchWords(30, after))
+    this.setState({ words })
+  }
+
   public async updateChoiceSet(i: number, choice: string, add: boolean) {
     const choiceSets = this.state.choiceSets
     const id = choiceSets[i].id
@@ -95,17 +106,6 @@ class Library extends React.Component<any, State> {
     }
   }
 
-  public async loadTexts() {
-    const texts = await fetchTexts()
-    this.setState({ texts })
-  }
-
-  public async loadWords() {
-    const after = get(_.last(this.state.words), "value")
-    const words = this.state.words.concat(await fetchWords(30, after))
-    this.setState({ words })
-  }
-
   public didSelectView(selectedView: SelectedView): void {
     this.setState({ selectedView })
   }
@@ -136,7 +136,7 @@ class Library extends React.Component<any, State> {
 
     return (
       <div>
-        <Header.l>Library</Header.l>
+        <Subnav title={"library"} />
 
         <Menus
           didSelectView={this.didSelectView.bind(this)}

@@ -3,6 +3,7 @@ import styled from "styled-components"
 import * as _ from "underscore"
 
 import { Sentence, Text } from "../../models/text"
+import { Bookmark } from "../../models/user"
 import { Keywords } from "../app"
 
 import { colors } from "../../lib/colors"
@@ -63,7 +64,9 @@ interface State {
 
 interface Props {
   text: Text
+  bookmark?: Bookmark
   keywords?: Keywords
+  saveBookmark: (sentenceIdx: number) => void
   updatePassages: (id: string, ranges: number[][]) => {}
 }
 
@@ -74,7 +77,7 @@ class Read extends React.Component<Props, State> {
     this.state = {
       viewingSentencesCount: 0,
       characterLimit: DEFAULT_CHAR_LIMIT,
-      idx: 0,
+      idx: props.bookmark ? props.bookmark.sentenceIdx : 0,
       savedSentences: [],
       tokenized: this.props.text!.tokenized
     }
@@ -87,6 +90,7 @@ class Read extends React.Component<Props, State> {
   public componentWillUnmount() {
     const ranges = getRanges(this.state.savedSentences)
     this.props.updatePassages(this.props.text.id, ranges)
+    this.props.saveBookmark(this.state.idx)
   }
 
   public getText() {
