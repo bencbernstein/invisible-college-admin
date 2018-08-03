@@ -18,6 +18,7 @@ export const fetchWord = async (id: string): Promise<any | Error> => {
       id
       value
       isDecomposable
+      synonyms
       components {
         value
         isRoot
@@ -30,6 +31,11 @@ export const fetchWord = async (id: string): Promise<any | Error> => {
         value
         id
         choiceSetIds
+      }
+      unverified {
+        definition
+        tags
+        synonyms
       }
       obscurity
       images

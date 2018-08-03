@@ -12,7 +12,7 @@ interface Props {
   word: Word
 }
 
-const Interpunct = styled.div`
+const Interpunct = styled.span`
   width: 3px;
   height: 3px;
   border-radius: 5px;

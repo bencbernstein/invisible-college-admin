@@ -4,7 +4,7 @@ import { Redirect } from "react-router"
 import * as _ from "underscore"
 
 import Button from "../common/button"
-import Header from "../common/header"
+import Subnav from "../nav/subnav"
 import List from "./list"
 import Menus from "./menus"
 
@@ -136,7 +136,7 @@ class Library extends React.Component<any, State> {
 
     return (
       <div>
-        <Header.l>Library</Header.l>
+        <Subnav title={"library"} />
 
         <Menus
           didSelectView={this.didSelectView.bind(this)}

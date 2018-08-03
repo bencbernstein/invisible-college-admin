@@ -10,6 +10,7 @@ import history from "../../history"
 import Library from "../library"
 import Login from "../login"
 import Nav from "../nav"
+import QuestionComponent from "../question"
 import Text from "../text"
 import Word from "../word"
 import WordModal from "../word/modal"
@@ -22,6 +23,8 @@ import {
 } from "../../models/user"
 
 import { fetchKeywords } from "../../models/word"
+
+import { fetchQuestionsForWord, Question } from "../../models/question"
 
 import { getWordAtPoint } from "../../lib/helpers"
 
@@ -71,11 +74,7 @@ class App extends React.Component<any, State> {
             exact={true}
             path="/login"
             render={() =>
-              user ? (
-                <Redirect to={"/library"} />
-              ) : (
-                <Login login={this.login.bind(this)} />
-              )
+              <Login login={this.login.bind(this)} />
             }
           />
           <Route path="/text" component={contained("text", user, keywords)} />
@@ -91,13 +90,18 @@ class App extends React.Component<any, State> {
   }
 }
 
+interface OuterContainerProps {
+  isPlaying: boolean
+}
+
 const OuterContainer = styled.div`
   text-align: left;
   max-width: 900px;
   margin: 0 auto;
   margin-top: 25px;
   margin-bottom: 25px;
-  position: relative;
+  position: ${(p: OuterContainerProps) => (p.isPlaying ? "fixed" : "relative")};
+  overflow: ${(p: OuterContainerProps) => p.isPlaying && "hidden"};
 `
 
 const contained = (
@@ -115,6 +119,7 @@ interface ContainerProps {
 interface ContainerState {
   wordBelowCursor: string | null
   holdingShift: boolean
+  questions: Question[]
 }
 
 class Container extends React.Component<ContainerProps, ContainerState> {
@@ -122,7 +127,8 @@ class Container extends React.Component<ContainerProps, ContainerState> {
     super(props)
     this.state = {
       holdingShift: false,
-      wordBelowCursor: null
+      wordBelowCursor: null,
+      questions: []
     }
 
     this.handleKeyDown = this.handleKeyDown.bind(this)
@@ -160,8 +166,15 @@ class Container extends React.Component<ContainerProps, ContainerState> {
     }
   }
 
+  public async play(link: string) {
+    const questions = await fetchQuestionsForWord(link)
+    if (!(questions instanceof Error)) {
+      this.setState({ questions })
+    }
+  }
+
   public render() {
-    const { holdingShift, wordBelowCursor } = this.state
+    const { holdingShift, wordBelowCursor, questions } = this.state
     const { component, user, keywords } = this.props
     const loggedIn = localStorage.getItem("user")
 
@@ -170,27 +183,41 @@ class Container extends React.Component<ContainerProps, ContainerState> {
     }
 
     const definedWords = keywords ? keywords.words : []
+
     const displayWordModal =
       wordBelowCursor && definedWords.indexOf(wordBelowCursor) === -1
 
+    const wordModal = displayWordModal && (
+      <WordModal
+        remove={() => this.setState({ wordBelowCursor: null })}
+        value={wordBelowCursor!}
+      />
+    )
+
+    const questionsModal = questions.length > 0 && (
+      <QuestionComponent
+        done={() => this.setState({ questions: [] })}
+        questions={questions}
+      />
+    )
+
     return user ? (
-      <OuterContainer onMouseMove={this.handleMouseMove.bind(this)}>
+      <OuterContainer
+        isPlaying={questions.length > 0}
+        onMouseMove={this.handleMouseMove.bind(this)}
+      >
         <Nav holdingShift={holdingShift} user={user} />
 
         {
           {
             library: <Library />,
             text: <Text user={user} keywords={keywords} />,
-            word: <Word keywords={keywords} />
+            word: <Word play={this.play.bind(this)} keywords={keywords} />
           }[component]
         }
 
-        {displayWordModal && (
-          <WordModal
-            remove={() => this.setState({ wordBelowCursor: null })}
-            value={wordBelowCursor!}
-          />
-        )}
+        {questionsModal}
+        {wordModal}
       </OuterContainer>
     ) : null
   }
