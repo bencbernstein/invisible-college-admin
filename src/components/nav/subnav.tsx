@@ -11,6 +11,7 @@ const Container = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
 `
 
 interface SpanProps {
@@ -24,9 +25,10 @@ const Span = styled.span`
 
 interface Props {
   title: string
+  invert?: boolean
   subtitle?: string
   subtitleLink?: string
-  play?: () => {}
+  play?: () => void
 }
 
 interface State {
@@ -42,18 +44,25 @@ class Subnav extends React.Component<Props, State> {
 
   public render() {
     const { redirect } = this.state
-    const { title, subtitle, subtitleLink, play } = this.props
+    const { title, subtitle, subtitleLink, play, invert } = this.props
 
     if (redirect) {
       return <Redirect to={redirect} />
     }
-    
-    const subtitleComponent = subtitle && subtitleLink && <span>
-      <Link style={{ textDecoration: "none" }} to={subtitleLink}>
-        <Span color={colors.lightGray}>{subtitle}</Span>
+
+    const headerComponents = (() => {
+      const header = <Span key={1}>{title}</Span>
+      const subheader = <Link style={{ textDecoration: "none" }} to={subtitleLink!}>
+        <Span key={2} color={colors.lightGray}>{subtitle}</Span>
       </Link>
-      <Span color={colors.mediumGray}> // </Span>
-    </span>
+      const divider = <Span key={3} color={colors.mediumGray}> // </Span>
+      if (!subtitle) {
+        return title
+      }
+      return invert
+        ? [subheader, divider, header]
+        : [header, divider, subheader]
+    })()
 
     const playButton = play && <Button.circ onClick={() => play()}>
       Play
@@ -62,8 +71,7 @@ class Subnav extends React.Component<Props, State> {
     return (
       <Container>
         <Header.l>
-          {subtitleComponent}
-          <Span>{title}</Span>
+          {headerComponents}
         </Header.l>
         {playButton}
       </Container>

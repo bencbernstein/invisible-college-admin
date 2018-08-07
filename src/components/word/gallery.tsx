@@ -3,9 +3,9 @@ import styled from "styled-components"
 
 import { colors } from "../../lib/colors"
 import Box from "../common/box"
+import ListContainer from "../common/listContainer"
 import Header from "../common/header"
 import Icon from "../common/icon"
-// import Text from "../common/text"
 
 import deleteIconRed from "../../lib/images/icon-delete-red.png"
 import deleteIcon from "../../lib/images/icon-delete.png"
@@ -37,12 +37,6 @@ const PositionedIcon = Icon.extend`
   position: absolute;
   top: 5px;
   right: 5px;
-`
-
-const ImagesContainer = styled.div`
-  display: grid;
-  grid-row-gap: 30px;
-  grid-template-columns: 1fr 1fr 1fr;
 `
 
 interface Props {
@@ -98,10 +92,10 @@ class Gallery extends React.Component<Props, State> {
     return (
       <div style={{ marginTop: "30px" }}>
         <Header.s>images</Header.s>
-        <ImagesContainer>
+        <ListContainer>
           {imagesBase64.map((image: any, i: number) => img(image, i))}
           {addImg}
-        </ImagesContainer>
+        </ListContainer>
       </div>
     )
   }

@@ -4,6 +4,7 @@ interface Props {
   pointer?: boolean
   topRight?: boolean
   large?: boolean
+  hide?: boolean
 }
 
 export default styled.img`
@@ -13,4 +14,5 @@ export default styled.img`
   position: ${(p: Props) => (p.topRight ? "absolute" : "")};
   top: ${(p: Props) => (p.topRight ? "5px" : "")};
   right: ${(p: Props) => (p.topRight ? "5px" : "")};
+  visibility: ${(p: Props) => (p.hide ? "hidden" : "visible")};
 `

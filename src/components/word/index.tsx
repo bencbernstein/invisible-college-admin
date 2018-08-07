@@ -25,7 +25,7 @@ interface State {
 
 interface Props {
   keywords?: Keywords
-  play: (link: string) => {}
+  play: (id: string) => {}
 }
 
 export interface Component {
@@ -148,6 +148,7 @@ class WordComponent extends React.Component<Props, State> {
           subtitle={"words"}
           subtitleLink={"/library"}
           play={() => this.props.play(word!.id)}
+          invert={true}
         />
 
         <RootsComponent word={word!} />

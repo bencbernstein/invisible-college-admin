@@ -21,8 +21,16 @@ const Small = styled.h5`
   letter-spacing: 1px;
 `
 
+const ForInput = Small.extend`
+  text-align: center;
+  font-family: BrandonGrotesque;
+  margin: 0px 0px 5px 0px;
+  text-transform: none;
+`
+
 export default {
   l: Large,
   m: Medium,
-  s: Small
+  s: Small,
+  forInput: ForInput
 }

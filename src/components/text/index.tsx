@@ -27,6 +27,7 @@ interface State {
 interface Props {
   user: User
   keywords?: Keywords
+  play: (id: string) => {}
 }
 
 export enum Screen {
@@ -157,6 +158,7 @@ class TextComponent extends React.Component<Props, State> {
               displayScreen={this.displayScreen.bind(this)}
               isDisplaying={isDisplaying}
               name={text!.name}
+              play={() => this.props.play(text!.id)}
             />
             {screen}
           </div>

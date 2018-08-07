@@ -7,10 +7,12 @@ import styled from "styled-components"
 
 import history from "../../history"
 
+import Gameplay from "../gameplay"
 import Library from "../library"
 import Login from "../login"
 import Nav from "../nav"
 import QuestionComponent from "../question"
+import Sequence from "../sequence"
 import Text from "../text"
 import Word from "../word"
 import WordModal from "../word/modal"
@@ -24,7 +26,7 @@ import {
 
 import { fetchKeywords } from "../../models/word"
 
-import { fetchQuestionsForWord, Question } from "../../models/question"
+import { fetchQuestionsForWord, fetchQuestionsForText, Question } from "../../models/question"
 
 import { getWordAtPoint } from "../../lib/helpers"
 
@@ -79,10 +81,16 @@ class App extends React.Component<any, State> {
           />
           <Route path="/text" component={contained("text", user, keywords)} />
           <Route path="/word" component={contained("word", user, keywords)} />
+          <Route path="/sequence" component={contained("sequence", user)} />
           <Route
             exact={true}
             path="/library"
             component={contained("library", user)}
+          />
+          <Route
+            exact={true}
+            path="/gameplay"
+            component={contained("gameplay", user)}
           />
         </Switch>
       </Router>
@@ -166,8 +174,15 @@ class Container extends React.Component<ContainerProps, ContainerState> {
     }
   }
 
-  public async play(link: string) {
-    const questions = await fetchQuestionsForWord(link)
+  public async play(model: string, id: string) {
+    let questions
+
+    if (model === "word") {
+      questions = await fetchQuestionsForWord(id)
+    } else {
+      questions = await fetchQuestionsForText(id)
+    }
+
     if (!(questions instanceof Error)) {
       this.setState({ questions })
     }
@@ -211,8 +226,16 @@ class Container extends React.Component<ContainerProps, ContainerState> {
         {
           {
             library: <Library />,
-            text: <Text user={user} keywords={keywords} />,
-            word: <Word play={this.play.bind(this)} keywords={keywords} />
+            gameplay: <Gameplay />,
+            text: <Text
+              play={(id: string) => this.play("text", id)}
+              user={user}
+              keywords={keywords} />,
+            word: <Word
+              play={(id: string) => this.play("word", id)}
+              keywords={keywords} />,
+            sequence: <Sequence
+              play={(sequenceQuestions: Question[]) => this.setState({ questions: sequenceQuestions })} />
           }[component]
         }
 

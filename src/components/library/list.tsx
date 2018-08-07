@@ -3,9 +3,13 @@ import { Redirect } from "react-router"
 import { Link } from "react-router-dom"
 import styled from "styled-components"
 
+import AddBox from "../common/addBox"
 import Box from "../common/box"
 import Icon from "../common/icon"
+import IconsContainer from "../common/iconsContainer"
+import Header from "../common/header"
 import Input from "../common/input"
+import ListContainer from "../common/listContainer"
 import Text from "../common/text"
 
 import { colors } from "../../lib/colors"
@@ -17,24 +21,6 @@ import deleteIconRed from "../../lib/images/icon-delete-red.png"
 import deleteIcon from "../../lib/images/icon-delete.png"
 import textIcon from "../../lib/images/icon-text.png"
 import wordIcon from "../../lib/images/icon-word.png"
-
-const Container = styled.div`
-  display: grid;
-  grid-row-gap: 30px;
-  grid-template-columns: 1fr 1fr 1fr;
-  margin: 25px 0px;
-`
-
-const Icons = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: absolute;
-  top: 5px;
-  width: 100%;
-  padding: 0px 5px;
-  box-sizing: border-box;
-`
 
 const Removable = styled.span`
   cursor: pointer;
@@ -48,15 +34,6 @@ const Choices = Text.regular.extend`
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-`
-
-const AddChoiceBox = styled.div`
-  background-color: ${colors.lightGray};
-  position: absolute;
-  width: 100%;
-  bottom: 0;
-  padding: 10px;
-  box-sizing: border-box;
 `
 
 interface Props {
@@ -91,7 +68,7 @@ class List extends React.Component<Props, State> {
     const { data, selectedView } = this.props
 
     const icons = (i: number) => (
-      <Icons>
+      <IconsContainer>
         <Icon
           pointer={true}
           onMouseEnter={() => this.setState({ isHoveringDelete: i })}
@@ -104,11 +81,11 @@ class List extends React.Component<Props, State> {
         <Icon
           src={
             { Texts: textIcon, Words: wordIcon, "Choice Sets": choiceSetIcon }[
-              selectedView
+            selectedView
             ]
           }
         />
-      </Icons>
+      </IconsContainer>
     )
 
     const textBox = (d: any, i: number) => (
@@ -139,7 +116,11 @@ class List extends React.Component<Props, State> {
     )
 
     const inputBox = (i: number) => (
-      <AddChoiceBox>
+      <AddBox>
+        <Header.forInput>
+          Add to Choice Set
+        </Header.forInput>
+
         <form
           onSubmit={e => {
             e.preventDefault()
@@ -157,7 +138,7 @@ class List extends React.Component<Props, State> {
             type="text"
           />
         </form>
-      </AddChoiceBox>
+      </AddBox>
     )
 
     const choiceSetBox = (d: any, i: number) => (
@@ -191,9 +172,7 @@ class List extends React.Component<Props, State> {
       "Choice Sets": choiceSetBox
     }[selectedView]
 
-    const box = (d: any, i: number) => constructor(d, i)
-
-    return <Container>{data.map((d: any, i: number) => box(d, i))}</Container>
+    return <ListContainer>{data.map((d: any, i: number) => constructor(d, i))}</ListContainer>
   }
 }
 
