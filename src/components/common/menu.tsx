@@ -3,11 +3,9 @@ import styled from "styled-components"
 
 import { colors } from "../../lib/colors"
 import Text from "../common/text"
-import { SelectedSortBy, SelectedView } from "./"
 
 const Container = styled.div`
   text-align: center;
-  width: 100%;
   display: flex;
 `
 
@@ -33,10 +31,9 @@ const MenuButton = Text.regular.extend`
 `
 
 interface Props {
-  selectedView: SelectedView
-  selectedSortBy: SelectedSortBy
-  didSelectView: (selectedView: SelectedView) => void
-  didSelectSortBy: (selectedSortBy: SelectedSortBy) => void
+  selectedViews: any[]
+  selectedView: any
+  didSelectView: (selectedView: any) => void
 }
 
 class Menus extends React.Component<Props, any> {
@@ -46,34 +43,9 @@ class Menus extends React.Component<Props, any> {
   }
 
   public render() {
-    const { /*selectedSortBy,*/ selectedView } = this.props
+    const { selectedView, selectedViews } = this.props
 
-    // console.log(selectedSortBy)
-    // const sortByMenuButtons = [SelectedSortBy.Added, SelectedSortBy.Random].map(
-    //   (value: SelectedSortBy) => {
-    //     const color = value === selectedSortBy ? colors.black : undefined
-    //     return (
-    //       <MenuButton
-    //         onClick={() => this.props.didSelectSortBy(value)}
-    //         key={value}
-    //         color={color}
-    //       >
-    //         {value}
-    //       </MenuButton>
-    //     )
-    //   }
-    // )
-    // <Menu>
-    //   <Text.regular>Sort By</Text.regular>
-    //   <Line />
-    //   {sortByMenuButtons}
-    // </Menu>
-
-    const viewMenuButtons = [
-      SelectedView.ChoiceSets,
-      SelectedView.Texts,
-      SelectedView.Words
-    ].map((value: SelectedView) => {
+    const viewMenuButtons = selectedViews.map((value: any) => {
       const color = value === selectedView ? colors.black : undefined
       return (
         <MenuButton

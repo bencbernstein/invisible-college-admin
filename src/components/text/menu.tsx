@@ -45,6 +45,7 @@ interface Props {
   name: string
   isDisplaying: Screen
   displayScreen: (isDisplaying: Screen) => {}
+  play: () => {}
 }
 
 interface State {
@@ -80,7 +81,12 @@ class Menu extends React.Component<Props, State> {
       <Container>
         <FlexedDiv>
           {!minimized && (
-            <Subnav title={name} subtitle={"texts"} subtitleLink={"/library"} />
+            <Subnav
+              title={name}
+              subtitle={"texts"}
+              subtitleLink={"/library"}
+              play={this.props.play.bind(this)}
+              invert={true} />
           )}
           <Minimize
             hide={isDisplaying !== "Read"}

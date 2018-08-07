@@ -6,7 +6,7 @@ import * as _ from "underscore"
 import Button from "../common/button"
 import Subnav from "../nav/subnav"
 import List from "./list"
-import Menus from "./menus"
+import Menus from "../common/menu"
 
 import {
   addChoice,
@@ -106,7 +106,7 @@ class Library extends React.Component<any, State> {
     }
   }
 
-  public didSelectView(selectedView: SelectedView): void {
+  public didSelectView(selectedView: any): void {
     this.setState({ selectedView })
   }
 
@@ -118,7 +118,6 @@ class Library extends React.Component<any, State> {
     const {
       choiceSets,
       selectedView,
-      selectedSortBy,
       redirect,
       texts,
       words
@@ -136,13 +135,15 @@ class Library extends React.Component<any, State> {
 
     return (
       <div>
-        <Subnav title={"library"} />
+        <Subnav
+          subtitle={"gameplay"}
+          subtitleLink={"/gameplay"}
+          title={"library"} />
 
         <Menus
           didSelectView={this.didSelectView.bind(this)}
-          didSelectSortBy={this.didSelectSortBy.bind(this)}
           selectedView={selectedView}
-          selectedSortBy={selectedSortBy}
+          selectedViews={[SelectedView.ChoiceSets, SelectedView.Texts, SelectedView.Words]}
         />
 
         <List
