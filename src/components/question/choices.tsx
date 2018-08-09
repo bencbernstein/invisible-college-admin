@@ -23,7 +23,7 @@ interface ChoiceProps {
 const Button = styled.p`
   pointer-events: ${(p: ChoiceProps) => (p.disabled ? "none" : "auto")};
   background-color: ${(p: ChoiceProps) => p.backgroundColor};
-  font-size: 1.3em;
+  font-size: 1.1em;
   color: white;
   border-radius: 10px;
   padding: 10px 20px;

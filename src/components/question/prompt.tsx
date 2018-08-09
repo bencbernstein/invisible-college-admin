@@ -45,9 +45,9 @@ export default class Prompt extends React.Component<Props, any> {
 
     const promptComponent = isImage
       ? <Image src={prompt[0].value} />
-      : <Text.xl>
+      : <Text.l>
         {prompt.map((p: PromptPart, i: number) => span(p, i))}
-      </Text.xl>
+      </Text.l>
 
     return (
       <Container>
