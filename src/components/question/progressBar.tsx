@@ -2,8 +2,6 @@ import * as React from "react"
 import styled from "styled-components"
 import { colors } from "../../lib/colors"
 
-import Text from "../common/text"
-
 const Container = styled.div`
   width: 80%;
   position: relative;
@@ -29,22 +27,8 @@ const Progress = styled.div`
   top: 0;
 `
 
-const LinksContainer = styled.div`
-  margin-top: 20px;
-  width: 100%;
-  position: absolute;
-  display: flex;
-  justify-content: space-between;
-`
-
-const Link = Text.s.extend`
-  transform: rotate(20deg);
-  cursor: pointer;
-`
-
 interface Props {
   completion: number
-  questionLinks: string[]
   goTo: (newIdx: number) => void
 }
 
@@ -54,19 +38,12 @@ export default class ProgressBar extends React.Component<Props, any> {
   }
 
   public render() {
-    const { completion, questionLinks } = this.props
-
-    const linkComponents = questionLinks.map((l: string, i: number) => (
-      <Link onClick={() => this.props.goTo(i)} key={i}>
-        {l}
-      </Link>
-    ))
+    const { completion } = this.props
 
     return (
       <Container>
         <Background />
         <Progress completion={completion} />
-        <LinksContainer>{linkComponents}</LinksContainer>
       </Container>
     )
   }

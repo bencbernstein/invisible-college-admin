@@ -11,6 +11,7 @@ const Container = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0px 5%;
 `
 
 interface SpanProps {
@@ -22,7 +23,7 @@ const Span = styled.span`
 `
 
 const Image = styled.img`
-  max-height: 65%;
+  max-height: 100%;
 `
 
 interface Props {
@@ -30,29 +31,32 @@ interface Props {
   type: string
 }
 
+const isPunc = (char: string) => [".", ",", ")", "'"].indexOf(char) > -1
+
 export default class Prompt extends React.Component<Props, any> {
   public render() {
-    const {
-      prompt,
-      type
-    } = this.props
+    const { prompt, type } = this.props
 
     const span = (p: PromptPart, i: number) => (
-      <Span key={i} highlight={p.highlight}>{p.value + " "}</Span>
+      <Span key={i} highlight={p.highlight}>
+        {isPunc(p.value) ? p.value : ` ${p.value}`}
+      </Span>
     )
 
-    const isImage = type === "WORD_TO_IMG" && prompt[0].value.startsWith("data:image")
+    const isImage =
+      type === "WORD_TO_IMG" && prompt[0].value.startsWith("data:image")
 
-    const promptComponent = isImage
-      ? <Image src={prompt[0].value} />
-      : <Text.xl>
+    const length = prompt.map(p => p.value).join("").length
+    const TextForSize = length < 50 ? Text.xl : Text.l
+
+    const promptComponent = isImage ? (
+      <Image src={prompt[0].value} />
+    ) : (
+      <TextForSize>
         {prompt.map((p: PromptPart, i: number) => span(p, i))}
-      </Text.xl>
-
-    return (
-      <Container>
-        {promptComponent}
-      </Container>
+      </TextForSize>
     )
+
+    return <Container>{promptComponent}</Container>
   }
 }
