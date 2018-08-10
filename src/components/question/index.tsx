@@ -62,11 +62,34 @@ class QuestionComponent extends React.Component<Props, State> {
       idx: 0,
       guessedCorrectly: []
     }
+
+    this.handleKeyDown = this.handleKeyDown.bind(this)
+  }
+
+  public componentWillMount() {
+    document.addEventListener("keydown", this.handleKeyDown, false)
+  }
+
+  public componentWillUnmount() {
+    document.removeEventListener("keydown", this.handleKeyDown, false)
+  }
+
+  public handleKeyDown(e: any) {
+    let idx = this.state.idx
+    if (e.key === "ArrowRight") {
+      idx = Math.min(this.props.questions.length - 1, idx + 1)
+    } else if (e.key === "ArrowLeft") {
+      idx = Math.max(0, idx - 1)
+    }
+    this.setState({ idx })
   }
 
   public guessed(choice: string, buttonIdx: number, answerValues: string[]) {
     const { guessedCorrectly } = this.state
-    const correctValue = _.find(_.without(answerValues, ...guessedCorrectly), value => value === choice)
+    const correctValue = _.find(
+      _.without(answerValues, ...guessedCorrectly),
+      value => value === choice
+    )
     if (correctValue) {
       guessedCorrectly.push(correctValue)
     }
@@ -94,15 +117,12 @@ class QuestionComponent extends React.Component<Props, State> {
 
     const { prompt, answer, redHerrings, TYPE } = questions[idx]
 
-    const questionLinks = questions.map(q => q.TYPE).concat("")
-
     return (
       <Container>
         <TopContainer>
           <TopDiv />
           <ProgressBar
             goTo={(newIdx: number) => this.setState({ idx: newIdx })}
-            questionLinks={questionLinks}
             completion={idx / questions.length}
           />
           <TopDiv>
@@ -115,21 +135,21 @@ class QuestionComponent extends React.Component<Props, State> {
           </TopDiv>
         </TopContainer>
 
-        <Prompt
-          type={TYPE}
-          prompt={prompt} />
+        <Prompt type={TYPE} prompt={prompt} />
 
         <Answer
           type={TYPE}
           guessedCorrectly={guessedCorrectly}
-          answer={answer} />
+          answer={answer}
+        />
 
         <Choices
           answer={answer}
           guess={guess}
           guessed={this.guessed.bind(this)}
           redHerrings={redHerrings}
-          type={TYPE} />
+          type={TYPE}
+        />
       </Container>
     )
   }

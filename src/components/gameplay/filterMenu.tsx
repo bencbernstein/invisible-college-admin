@@ -75,34 +75,41 @@ class FilterMenu extends React.Component<Props, State> {
       "WORD_TO_TAG",
       "WORD_TO_IMG",
       "SENTENCE_TO_POS",
-      "SENTENCE_TO_TRUTH"]
+      "SENTENCE_TO_TRUTH"
+    ]
 
-    const dropdown = <Dropdown
-      value={[filter]}
-      multiple={true}
-      onChange={e => {
-        this.setState({ displayDropdown: false })
-        this.props.filterBy(e.target.value)
-      }}>
-      {TYPES.map(t => <option value={t} key={t}>
-        {t}
-      </option>)}
-    </Dropdown>
+    const dropdown = (
+      <Dropdown
+        value={[filter]}
+        multiple={true}
+        onChange={e => {
+          this.setState({ displayDropdown: false })
+          this.props.filterBy(e.target.value)
+        }}
+      >
+        {TYPES.map(t => (
+          <option value={t} key={t}>
+            {t}
+          </option>
+        ))}
+      </Dropdown>
+    )
 
     return (
       <Container>
         <Menu>
           <Text.regular>Filter</Text.regular>
           <Line />
-          {displayDropdown
-            ?
+          {displayDropdown ? (
             dropdown
-            :
-            <MenuButton onClick={() => this.setState({ displayDropdown: true })}>
+          ) : (
+            <MenuButton
+              onClick={() => this.setState({ displayDropdown: true })}
+            >
               {"Question Type"}
               {filter && ` - ${filter}`}
             </MenuButton>
-          }
+          )}
         </Menu>
       </Container>
     )

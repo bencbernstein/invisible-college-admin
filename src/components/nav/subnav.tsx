@@ -46,23 +46,32 @@ class Subnav extends React.Component<Props, State> {
     const { redirect } = this.state
     const { title, subtitle, subtitleLink, play, invert } = this.props
 
-    if (redirect) {
-      return <Redirect to={redirect} />
-    }
+    if (redirect) { return <Redirect to={redirect} /> }
 
-    const headerComponents = (() => {
-      const header = <Span key={1}>{title}</Span>
-      const subheader = <Link style={{ textDecoration: "none" }} to={subtitleLink!}>
-        <Span key={2} color={colors.lightGray}>{subtitle}</Span>
+    const headerComponents = () => {
+      const header = <Span key={1}>
+        {title}
+      </Span>
+      
+      const subheader = <Link
+        key={2}
+        style={{ textDecoration: "none" }}
+        to={subtitleLink!}>
+        <Span key={3} color={colors.lightGray}>
+          {subtitle}
+        </Span>
       </Link>
-      const divider = <Span key={3} color={colors.mediumGray}> // </Span>
+
+      const divider = <Span key={4} color={colors.mediumGray}> // </Span>
+
       if (!subtitle) {
         return title
       }
+
       return invert
         ? [subheader, divider, header]
         : [header, divider, subheader]
-    })()
+    }
 
     const playButton = play && <Button.circ onClick={() => play()}>
       Play
@@ -71,7 +80,7 @@ class Subnav extends React.Component<Props, State> {
     return (
       <Container>
         <Header.l>
-          {headerComponents}
+          {headerComponents()}
         </Header.l>
         {playButton}
       </Container>

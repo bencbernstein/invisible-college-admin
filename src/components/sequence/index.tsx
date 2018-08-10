@@ -14,18 +14,28 @@ import Text from "../common/text"
 import Subnav from "../nav/subnav"
 
 import { Question } from "../../models/question"
-import { fetchQuestionSequence, updateQuestionSequence, QuestionSequence } from "../../models/questionSequence"
+import {
+  fetchQuestionSequence,
+  updateQuestionSequence,
+  QuestionSequence
+} from "../../models/questionSequence"
 
 import { move } from "../../lib/helpers"
 
 import deleteIcon from "../../lib/images/icon-delete.png"
 import questionIcon from "../../lib/images/icon-question.png"
 
-const indexInputIsValid = (indexInput: string, i: number, questions: string[]) => {
+const indexInputIsValid = (
+  indexInput: string,
+  i: number,
+  questions: string[]
+) => {
   const indexInputNumber = parseInt(indexInput, 10)
-  return indexInputNumber > -1 &&
-    indexInputNumber < questions.length
-    && indexInputNumber !== i
+  return (
+    indexInputNumber > -1 &&
+    indexInputNumber < questions.length &&
+    indexInputNumber !== i
+  )
 }
 
 interface Props {
@@ -77,7 +87,11 @@ class Sequence extends React.Component<Props, State> {
     }
   }
 
-  public changeIndex(i: number, indexInput: string, questionSequence: QuestionSequence) {
+  public changeIndex(
+    i: number,
+    indexInput: string,
+    questionSequence: QuestionSequence
+  ) {
     const questions = questionSequence.questions
     if (indexInputIsValid(indexInput, i, questions)) {
       questionSequence.questions = move(questions, i, parseInt(indexInput, 10))
@@ -105,49 +119,46 @@ class Sequence extends React.Component<Props, State> {
       </IconsContainer>
     )
 
-    const addBox = (i: number) => <AddBox key={i}>
-      <Header.forInput>
-        Change Index
-      </Header.forInput>
+    const addBox = (i: number) => (
+      <AddBox key={i}>
+        <Header.forInput>Change Index</Header.forInput>
 
-      <form
-        onSubmit={e => {
-          e.preventDefault()
-          this.changeIndex(i, indexInput, questionSequence)
-        }}
+        <form
+          onSubmit={e => {
+            e.preventDefault()
+            this.changeIndex(i, indexInput, questionSequence)
+          }}
+        >
+          <Input.circ
+            onChange={e => this.handleIndexInput(e.target.value, i, questions)}
+            value={indexInput}
+            autoCapitalize={"none"}
+            autoFocus={true}
+            type="text"
+          />
+        </form>
+      </AddBox>
+    )
+
+    const box = (q: Question, i: number) => (
+      <Box.regular
+        onMouseOver={() => this.setState({ isHovering: i })}
+        onMouseLeave={() =>
+          this.setState({ isHovering: undefined, indexInput: "" })
+        }
+        key={q.id}
       >
-        <Input.circ
-          onChange={e => this.handleIndexInput(e.target.value, i, questions)}
-          value={indexInput}
-          autoCapitalize={"none"}
-          autoFocus={true}
-          type="text"
-        />
-      </form>
-    </AddBox>
+        {icons(q.id)}
 
-    const box = (q: Question, i: number) => <Box.regular
-      onMouseOver={() => this.setState({ isHovering: i })}
-      onMouseLeave={() =>
-        this.setState({ isHovering: undefined, indexInput: "" })
-      }
-      key={q.id}>
-      {icons(q.id)}
+        <Text.l>{get(q.sources.word || q.sources.text, "value")}</Text.l>
 
-      <Text.l>
-        {get(q.sources.word || q.sources.text, "value")}
-      </Text.l>
+        <Text.regular>{q.TYPE}</Text.regular>
 
-      <Text.regular>
-        {q.TYPE}
-      </Text.regular>
+        <Header.s>{`no. ${i + 1}`}</Header.s>
 
-      <Header.s>
-        {`no. ${i + 1}`}
-      </Header.s>
-
-      {isHovering === i && addBox(i)}
-    </Box.regular>
+        {isHovering === i && addBox(i)}
+      </Box.regular>
+    )
 
     return (
       <div>
@@ -161,7 +172,7 @@ class Sequence extends React.Component<Props, State> {
 
         <ListContainer>
           {questions
-            .map(q => _.find((fullQuestions || []), f => f.id === q))
+            .map(q => _.find(fullQuestions || [], f => f.id === q))
             .map(box)}
         </ListContainer>
       </div>
