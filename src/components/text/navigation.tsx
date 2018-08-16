@@ -35,13 +35,14 @@ const Hotkey = styled.p`
 const DATA = [
   { value: "previous highlight", hotkeyName: "n", hotkey: "n" },
   { value: "previous", hotkeyName: "left arrow", hotkey: "ArrowLeft" },
-  { value: "keep", hotkeyName: "space", hotkey: "Space" },
+  { value: "keep", hotkeyName: "k", hotkey: "k" },
   { value: "next", hotkeyName: "right arrow", hotkey: "ArrowRight" },
   { value: "next highlight", hotkeyName: "m", hotkey: "m" }
 ]
 
 interface Props {
   handleNavigation: (value: string) => {}
+  isPreFiltered: boolean
 }
 
 class Navigation extends React.Component<Props, any> {
@@ -67,15 +68,17 @@ class Navigation extends React.Component<Props, any> {
   }
 
   public render() {
-    const buttons = DATA.map(d => (
-      <ButtonContainer
-        key={d.hotkey}
-        onClick={() => this.props.handleNavigation(d.value)}
-      >
-        <Value>{d.value}</Value>
-        <Hotkey>{d.hotkeyName}</Hotkey>
-      </ButtonContainer>
-    ))
+    const buttons = (this.props.isPreFiltered ? DATA.slice(1, 4) : DATA).map(
+      d => (
+        <ButtonContainer
+          key={d.hotkey}
+          onClick={() => this.props.handleNavigation(d.value)}
+        >
+          <Value>{d.value}</Value>
+          <Hotkey>{d.hotkeyName}</Hotkey>
+        </ButtonContainer>
+      )
+    )
     return <Container>{buttons}</Container>
   }
 }

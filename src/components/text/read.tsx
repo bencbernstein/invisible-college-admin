@@ -60,6 +60,7 @@ interface State {
   idx: number
   tokenized: Sentence[]
   savedSentences: number[]
+  isPreFiltered: boolean
 }
 
 interface Props {
@@ -76,6 +77,7 @@ class Read extends React.Component<Props, State> {
 
     this.state = {
       viewingSentencesCount: 0,
+      isPreFiltered: false,
       characterLimit: DEFAULT_CHAR_LIMIT,
       idx: props.bookmark ? props.bookmark.sentenceIdx : 0,
       savedSentences: [],
@@ -84,7 +86,8 @@ class Read extends React.Component<Props, State> {
   }
 
   public componentDidMount() {
-    this.getText()
+    const { isPreFiltered } = this.props.text
+    this.setState({ isPreFiltered }, this.getText)
   }
 
   public componentWillUnmount() {
@@ -94,7 +97,7 @@ class Read extends React.Component<Props, State> {
   }
 
   public getText() {
-    const { idx, characterLimit } = this.state
+    const { idx, characterLimit, isPreFiltered } = this.state
     const tokenized = this.state.tokenized.slice(idx)
 
     let isViewing: Sentence[] = []
@@ -102,13 +105,14 @@ class Read extends React.Component<Props, State> {
     for (let i = 0; i < tokenized.length; i++) {
       const textPart = tokenized[i]
 
-      const underCharacterLimit =
-        isViewing
-          .concat(textPart)
-          .map((t: Sentence) => t.sentence)
-          .join(" ").length < characterLimit
+      const stop = isPreFiltered
+        ? textPart.sentence === "%END%"
+        : isViewing
+            .concat(textPart)
+            .map((t: Sentence) => t.sentence)
+            .join(" ").length > characterLimit
 
-      if (!underCharacterLimit) {
+      if (stop) {
         this.setState({ viewingSentencesCount: Math.max(i, 1) })
         return
       } else {
@@ -121,6 +125,7 @@ class Read extends React.Component<Props, State> {
 
   public handleNavigation(value: string) {
     let { idx } = this.state
+    const { isPreFiltered } = this.state
     const { tokenized, viewingSentencesCount } = this.state
 
     if (value === "previous highlight") {
@@ -132,12 +137,14 @@ class Read extends React.Component<Props, State> {
         idx = lastHighlightIdx
       }
     } else if (value === "previous") {
-      idx = Math.max(0, idx - viewingSentencesCount)
+      const newIdx = idx - (isPreFiltered ? 12 : viewingSentencesCount)
+      idx = Math.max(0, newIdx)
     } else if (value === "keep") {
       this.keepAllSentences()
     } else if (value === "next") {
-      if (idx + viewingSentencesCount < tokenized.length) {
-        idx = idx + viewingSentencesCount
+      const newIdx = idx + viewingSentencesCount + (isPreFiltered ? 1 : 0)
+      if (newIdx < tokenized.length) {
+        idx = newIdx
       }
     } else if (value === "next highlight") {
       const nextHighlightIdx = _.findIndex(
@@ -157,10 +164,12 @@ class Read extends React.Component<Props, State> {
   }
 
   public keepAllSentences() {
-    const { idx, viewingSentencesCount } = this.state
+    const { idx, viewingSentencesCount, isPreFiltered } = this.state
     let { savedSentences } = this.state
     savedSentences = _.uniq(
-      savedSentences.concat(_.range(idx, idx + viewingSentencesCount))
+      savedSentences.concat(
+        _.range(idx + (isPreFiltered ? 1 : 0), idx + viewingSentencesCount)
+      )
     )
     this.setState({ savedSentences })
   }
@@ -181,6 +190,7 @@ class Read extends React.Component<Props, State> {
     const {
       tokenized,
       idx,
+      isPreFiltered,
       viewingSentencesCount,
       characterLimit,
       savedSentences
@@ -203,7 +213,7 @@ class Read extends React.Component<Props, State> {
       .slice(idx, idx + viewingSentencesCount)
       .map((textPart: Sentence, i: number) => {
         const saved = savedSentences.indexOf(idx + i) > -1
-        const previouslySaved = previouslySavedSentences.indexOf(i) > -1
+        const previouslySaved = previouslySavedSentences.indexOf(idx + i) > -1
         return (
           <Span
             previouslySaved={previouslySaved}
@@ -222,31 +232,50 @@ class Read extends React.Component<Props, State> {
         )
       })
 
+    let prefilteredPassageDetails: string[] = []
+
+    if (isPreFiltered) {
+      sentences.shift()
+      prefilteredPassageDetails = tokenized[idx].sentence.split("%%")
+    }
+
+    const info = isPreFiltered ? (
+      <InfoContainer>
+        {prefilteredPassageDetails.map(str => (
+          <CommonText.regular>{str}</CommonText.regular>
+        ))}
+      </InfoContainer>
+    ) : (
+      <InfoContainer>
+        <CommonText.regular>{`Total sentences : ${
+          tokenized.length
+        }`}</CommonText.regular>
+
+        <CharLimitContainer>
+          <CommonText.regular>Character limit :</CommonText.regular>
+          <Space />
+          <Input.s
+            onChange={e => this.changeCharacterLimit(e.target.value)}
+            value={characterLimit}
+            placeholder="ex. 500"
+            type="text"
+          />
+        </CharLimitContainer>
+
+        <CommonText.regular>
+          {`Showing : ${idx + 1} - ${idx + viewingSentencesCount}`}
+        </CommonText.regular>
+      </InfoContainer>
+    )
+
     return (
       <Container>
-        <InfoContainer>
-          <CommonText.regular>{`Total sentences : ${
-            tokenized.length
-          }`}</CommonText.regular>
-
-          <CharLimitContainer>
-            <CommonText.regular>Character limit :</CommonText.regular>
-            <Space />
-            <Input.s
-              onChange={e => this.changeCharacterLimit(e.target.value)}
-              value={characterLimit}
-              placeholder="ex. 500"
-              type="text"
-            />
-          </CharLimitContainer>
-
-          <CommonText.regular>
-            {`Showing : ${idx + 1} - ${idx + viewingSentencesCount}`}
-          </CommonText.regular>
-        </InfoContainer>
+        {info}
         <SentencesContainer>{sentences}</SentencesContainer>
-
-        <Navigation handleNavigation={this.handleNavigation.bind(this)} />
+        <Navigation
+          isPreFiltered={isPreFiltered}
+          handleNavigation={this.handleNavigation.bind(this)}
+        />
       </Container>
     )
   }
