@@ -27,6 +27,7 @@ export interface Tag {
 
 export interface Text {
   id: string
+  isPreFiltered: boolean
   name: string
   source: string
   tokenized: Sentence[]
@@ -56,7 +57,7 @@ export const fetchTexts = async (): Promise<any | Error> => {
 }
 
 export const fetchText = async (id: string): Promise<any | Error> => {
-  const gqlQuery = `query { text(id: "${id}") { id name source tokenized passages { id startIdx endIdx value found tagged { id value tag isFocusWord isPunctuation } } } }`
+  const gqlQuery = `query { text(id: "${id}") { id name isPreFiltered source tokenized passages { id startIdx endIdx value found tagged { id value tag isFocusWord isPunctuation } } } }`
   return query(gqlQuery, "text")
 }
 
