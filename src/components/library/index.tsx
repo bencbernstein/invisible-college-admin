@@ -14,7 +14,7 @@ import {
   removeChoice,
   removeChoiceSet
 } from "../../models/choiceSet"
-import { fetchTexts } from "../../models/text"
+import { fetchTexts, removeText } from "../../models/text"
 import { fetchWords, removeWord } from "../../models/word"
 
 export enum SelectedView {
@@ -88,13 +88,20 @@ class Library extends React.Component<any, State> {
   }
 
   public async remove(i: number) {
-    const { choiceSets, selectedView, words } = this.state
+    const { choiceSets, selectedView, words, texts } = this.state
     if (selectedView === "Words") {
       const id = words[i].id
       const result = await removeWord(id)
       if (!(result instanceof Error)) {
         words.splice(i, 1)
         this.setState({ words })
+      }
+    } else if (selectedView === "Texts") {
+      const id = texts[i].id
+      const result = await removeText(id)
+      if (!(result instanceof Error)) {
+        texts.splice(i, 1)
+        this.setState({ texts })
       }
     } else {
       const id = choiceSets[i].id
@@ -115,13 +122,7 @@ class Library extends React.Component<any, State> {
   }
 
   public render() {
-    const {
-      choiceSets,
-      selectedView,
-      redirect,
-      texts,
-      words
-    } = this.state
+    const { choiceSets, selectedView, redirect, texts, words } = this.state
 
     if (redirect) {
       return <Redirect to={redirect} />
@@ -138,12 +139,17 @@ class Library extends React.Component<any, State> {
         <Subnav
           subtitle={"gameplay"}
           subtitleLink={"/gameplay"}
-          title={"library"} />
+          title={"library"}
+        />
 
         <Menus
           didSelectView={this.didSelectView.bind(this)}
           selectedView={selectedView}
-          selectedViews={[SelectedView.ChoiceSets, SelectedView.Texts, SelectedView.Words]}
+          selectedViews={[
+            SelectedView.ChoiceSets,
+            SelectedView.Texts,
+            SelectedView.Words
+          ]}
         />
 
         <List

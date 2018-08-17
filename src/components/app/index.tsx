@@ -25,8 +25,13 @@ import {
 } from "../../models/user"
 
 import { fetchKeywords } from "../../models/word"
+import { fetchUser } from "../../models/user"
 
-import { fetchQuestionsForWord, fetchQuestionsForText, Question } from "../../models/question"
+import {
+  fetchQuestionsForWord,
+  fetchQuestionsForText,
+  Question
+} from "../../models/question"
 
 import { getWordAtPoint } from "../../lib/helpers"
 
@@ -51,9 +56,15 @@ class App extends React.Component<any, State> {
     this.loadKeywords()
   }
 
-  public loadUser() {
+  public async loadUser() {
     const user = fetchUserFromStorage()
-    this.setState({ user })
+    if (user) {
+      this.setState({ user })
+      const result = await fetchUser(user.id)
+      if (result instanceof Error) {
+        localStorage.removeItem("user")
+      }
+    }
   }
 
   public async loadKeywords() {
@@ -76,7 +87,11 @@ class App extends React.Component<any, State> {
             exact={true}
             path="/login"
             render={() =>
-              <Login login={this.login.bind(this)} />
+              user && fetchUserFromStorage() ? (
+                <Redirect to="/library" />
+              ) : (
+                <Login login={this.login.bind(this)} />
+              )
             }
           />
           <Route path="/text" component={contained("text", user, keywords)} />
@@ -227,15 +242,26 @@ class Container extends React.Component<ContainerProps, ContainerState> {
           {
             library: <Library />,
             gameplay: <Gameplay />,
-            text: <Text
-              play={(id: string) => this.play("text", id)}
-              user={user}
-              keywords={keywords} />,
-            word: <Word
-              play={(id: string) => this.play("word", id)}
-              keywords={keywords} />,
-            sequence: <Sequence
-              play={(sequenceQuestions: Question[]) => this.setState({ questions: sequenceQuestions })} />
+            text: (
+              <Text
+                play={(id: string) => this.play("text", id)}
+                user={user}
+                keywords={keywords}
+              />
+            ),
+            word: (
+              <Word
+                play={(id: string) => this.play("word", id)}
+                keywords={keywords}
+              />
+            ),
+            sequence: (
+              <Sequence
+                play={(sequenceQuestions: Question[]) =>
+                  this.setState({ questions: sequenceQuestions })
+                }
+              />
+            )
           }[component]
         }
 
