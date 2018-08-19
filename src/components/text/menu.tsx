@@ -46,6 +46,7 @@ interface Props {
   isDisplaying: Screen
   displayScreen: (isDisplaying: Screen) => {}
   play: () => {}
+  displayNav: (displayNav: boolean) => void
 }
 
 interface State {
@@ -58,6 +59,12 @@ class Menu extends React.Component<Props, State> {
     this.state = {
       minimized: false
     }
+  }
+
+  public minimize() {
+    const minimized = !this.state.minimized
+    this.setState({ minimized })
+    this.props.displayNav(!minimized)
   }
 
   public render() {
@@ -86,11 +93,12 @@ class Menu extends React.Component<Props, State> {
               subtitle={"texts"}
               subtitleLink={"/library"}
               play={this.props.play.bind(this)}
-              invert={true} />
+              invert={true}
+            />
           )}
           <Minimize
             hide={isDisplaying !== "Read"}
-            onClick={() => this.setState({ minimized: !minimized })}
+            onClick={this.minimize.bind(this)}
           />
         </FlexedDiv>
         {!minimized && <MenuItems>{links}</MenuItems>}

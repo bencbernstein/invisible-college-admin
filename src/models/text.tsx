@@ -85,3 +85,12 @@ export const updatePassage = async (passage: Passage): Promise<any | Error> => {
   )}") { id } }`
   return query(gqlQuery, "updatePassage")
 }
+
+export const removeText = async (id: string): Promise<any | Error> => {
+  const gqlQuery = `mutation {
+    removeText(id: "${id}") {
+      id
+    }
+  }`
+  return query(gqlQuery, "removeText")
+}

@@ -81,7 +81,7 @@ class List extends React.Component<Props, State> {
         <Icon
           src={
             { Texts: textIcon, Words: wordIcon, "Choice Sets": choiceSetIcon }[
-            selectedView
+              selectedView
             ]
           }
         />
@@ -117,9 +117,7 @@ class List extends React.Component<Props, State> {
 
     const inputBox = (i: number) => (
       <AddBox>
-        <Header.forInput>
-          Add to Choice Set
-        </Header.forInput>
+        <Header.forInput>Add to Choice Set</Header.forInput>
 
         <form
           onSubmit={e => {
@@ -172,7 +170,11 @@ class List extends React.Component<Props, State> {
       "Choice Sets": choiceSetBox
     }[selectedView]
 
-    return <ListContainer>{data.map((d: any, i: number) => constructor(d, i))}</ListContainer>
+    return (
+      <ListContainer>
+        {data.map((d: any, i: number) => constructor(d, i))}
+      </ListContainer>
+    )
   }
 }
 

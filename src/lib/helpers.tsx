@@ -15,7 +15,7 @@ export const highlight = (value: string, keywords?: Keywords): string => {
   } else if (choices.indexOf(stripped) > -1) {
     return colors.blue
   }
-  return colors.gray
+  return "black"
 }
 
 export const getRanges = (array: number[]): number[][] => {

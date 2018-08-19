@@ -63,9 +63,7 @@ class Login extends React.Component<Props, State> {
       if (response instanceof Error) {
         this.setState({ error: response.message })
       } else {
-        this.setState({ error: undefined, redirect: "/library" })
         this.props.login(response)
-        this.setState({ redirect: "/library" })
       }
     }
   }
