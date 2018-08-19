@@ -143,6 +143,7 @@ interface ContainerState {
   wordBelowCursor: string | null
   holdingShift: boolean
   questions: Question[]
+  displayNav: boolean
 }
 
 class Container extends React.Component<ContainerProps, ContainerState> {
@@ -151,6 +152,7 @@ class Container extends React.Component<ContainerProps, ContainerState> {
     this.state = {
       holdingShift: false,
       wordBelowCursor: null,
+      displayNav: true,
       questions: []
     }
 
@@ -236,7 +238,9 @@ class Container extends React.Component<ContainerProps, ContainerState> {
         isPlaying={questions.length > 0}
         onMouseMove={this.handleMouseMove.bind(this)}
       >
-        <Nav holdingShift={holdingShift} user={user} />
+        {this.state.displayNav && (
+          <Nav holdingShift={holdingShift} user={user} />
+        )}
 
         {
           {
@@ -244,6 +248,7 @@ class Container extends React.Component<ContainerProps, ContainerState> {
             gameplay: <Gameplay />,
             text: (
               <Text
+                displayNav={(displayNav: true) => this.setState({ displayNav })}
                 play={(id: string) => this.play("text", id)}
                 user={user}
                 keywords={keywords}

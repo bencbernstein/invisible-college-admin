@@ -26,6 +26,13 @@ const InfoContainer = styled.div`
 
 const SentencesContainer = styled.div`
   margin: 50px 0px;
+  font-family: GeorgiaRegular;
+  --x-height-multiplier: 0.375;
+  --baseline-multiplier: 0.17;
+  font-style: normal;
+  font-size: 18px;
+  line-height: 1.58;
+  letter-spacing: -0.003em;
 `
 
 const CharLimitContainer = styled.div`
@@ -42,9 +49,12 @@ interface SpanProps {
   color?: string
   saved?: boolean
   previouslySaved?: boolean
+  block?: boolean
 }
 
 const Span = styled.span`
+  display: ${(p: SpanProps) => p.block && "block"};
+  margin: ${(p: SpanProps) => p.block && "3px 0px"};
   color: ${(p: SpanProps) => p.color || colors.gray};
   text-decoration: ${(p: SpanProps) =>
     p.saved || p.previouslySaved ? "underline" : "none"};
@@ -216,6 +226,7 @@ class Read extends React.Component<Props, State> {
         const previouslySaved = previouslySavedSentences.indexOf(idx + i) > -1
         return (
           <Span
+            block={true}
             previouslySaved={previouslySaved}
             saved={saved}
             onClick={() => {
@@ -241,9 +252,19 @@ class Read extends React.Component<Props, State> {
 
     const info = isPreFiltered ? (
       <InfoContainer>
-        {prefilteredPassageDetails.map(str => (
-          <CommonText.regular>{str}</CommonText.regular>
-        ))}
+        {prefilteredPassageDetails
+          .map(
+            (str: any): any => (
+              <CommonText.regular style={{ display: "inline-block" }}>
+                {str}
+              </CommonText.regular>
+            )
+          )
+          .reduce((prev: any, curr: any, i: number) => [
+            prev,
+            <Span key={i}>{"   /   "}</Span>,
+            curr
+          ])}
       </InfoContainer>
     ) : (
       <InfoContainer>

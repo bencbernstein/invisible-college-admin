@@ -28,6 +28,7 @@ interface Props {
   user: User
   keywords?: Keywords
   play: (id: string) => {}
+  displayNav: (displayNav: boolean) => void
 }
 
 export enum Screen {
@@ -97,6 +98,7 @@ class TextComponent extends React.Component<Props, State> {
       history.push("/text/" + text.id)
     }
     this.setState({ isDisplaying })
+    this.props.displayNav(true)
   }
 
   public async removePassage(textId: string, passageId: string) {
@@ -155,6 +157,7 @@ class TextComponent extends React.Component<Props, State> {
         {dataLoaded && (
           <div>
             <Menu
+              displayNav={this.props.displayNav.bind(this)}
               displayScreen={this.displayScreen.bind(this)}
               isDisplaying={isDisplaying}
               name={text!.name}

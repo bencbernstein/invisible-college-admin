@@ -18,6 +18,21 @@
   src: url("../../lib/fonts/EBGaramond_semibld.ttf");
 }
 
+@font-face {
+  font-family: GeorgiaItalic;
+  src: url("../../lib/fonts/GeorgiaItalic.ttf");
+}
+
+@font-face {
+  font-family: GeorgiaBold;
+  src: url("../../lib/fonts/GeorgiaBold.ttf");
+}
+
+@font-face {
+  font-family: GeorgiaRegular;
+  src: url("../../lib/fonts/GeorgiaRegular.ttf");
+}
+
 .disabled-link {
   pointer-events: none;
 }
