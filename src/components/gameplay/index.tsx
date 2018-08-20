@@ -18,7 +18,7 @@ import {
   fetchQuestionSequences,
   removeQuestionSequence,
   QuestionSequence
-} from "../../models/questionSequence";
+} from "../../models/questionSequence"
 
 const MenusContainer = styled.div`
   display: flex;
@@ -87,17 +87,29 @@ class Gameplay extends React.Component<any, State> {
     this.setState({ questionSequences })
   }
 
-  public async addQuestionToSequence(questionId: string, sequence?: QuestionSequence, sequenceName?: string) {
+  public async addQuestionToSequence(
+    questionId: string,
+    sequence?: QuestionSequence,
+    sequenceName?: string
+  ) {
     let questionSequences = this.state.questionSequences
 
     if (sequence) {
       const questions = sequence.questions.concat(questionId)
-      const questionSequence = await updateQuestionSequence(sequence.id, questions)
+      const questionSequence = await updateQuestionSequence(
+        sequence.id,
+        questions
+      )
       if (!(questionSequence instanceof Error)) {
-        questionSequences = questionSequences.map(q => q.id === questionSequence.id ? questionSequence : q)
+        questionSequences = questionSequences.map(
+          q => (q.id === questionSequence.id ? questionSequence : q)
+        )
       }
     } else if (sequenceName) {
-      const questionSequence = await createQuestionSequence(sequenceName, questionId)
+      const questionSequence = await createQuestionSequence(
+        sequenceName,
+        questionId
+      )
       if (!(questionSequence instanceof Error)) {
         questionSequences.push(questionSequence)
       }
@@ -132,29 +144,31 @@ class Gameplay extends React.Component<any, State> {
         <Subnav
           subtitle={"library"}
           subtitleLink={"/library"}
-          title={"gameplay"} />
+          title={"gameplay"}
+        />
 
         <MenusContainer>
-
           <Menus
-            didSelectView={this.didSelectView.bind(this)}
-            selectedView={selectedView}
-            selectedViews={[SelectedView.Questions, SelectedView.Sequences]}
+            title={"View"}
+            didSelect={this.didSelectView.bind(this)}
+            chosen={selectedView}
+            options={[SelectedView.Questions, SelectedView.Sequences]}
           />
 
           {selectedView === "Questions" && (
-            <FilterMenu
-              filterBy={this.filterBy.bind(this)}
-              filters={filters} />)}
-
+            <FilterMenu filterBy={this.filterBy.bind(this)} filters={filters} />
+          )}
         </MenusContainer>
 
         <List
           questionSequences={questionSequences}
           removeSequence={this.removeSequence.bind(this)}
           addQuestionToSequence={this.addQuestionToSequence.bind(this)}
-          data={{ Questions: questions, Sequences: questionSequences }[selectedView]}
-          selectedView={selectedView} />
+          data={
+            { Questions: questions, Sequences: questionSequences }[selectedView]
+          }
+          selectedView={selectedView}
+        />
 
         {selectedView === "Questions" && (
           <Button.regular onClick={this.loadQuestions.bind(this)}>

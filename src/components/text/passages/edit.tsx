@@ -66,11 +66,13 @@ const Textarea = styled.textarea`
 interface Props {
   keywords?: Keywords
   passage: Passage
+  isEnriching: boolean
 }
 
 interface State {
   passage: Passage
   isHoveringDelete?: number
+  didEdit: boolean
 }
 
 class EditPassage extends React.Component<Props, State> {
@@ -78,12 +80,24 @@ class EditPassage extends React.Component<Props, State> {
     super(props)
 
     this.state = {
-      passage: this.props.passage
+      passage: this.props.passage,
+      didEdit: false
     }
   }
 
   public componentWillUnmount() {
-    updatePassage(this.state.passage)
+    if (this.state.didEdit) {
+      updatePassage(this.state.passage)
+    }
+  }
+
+  public componentWillReceiveProps(nextProps: Props) {
+    const passage = nextProps.passage
+    const currentPassage = this.state.passage
+    if (this.state.didEdit) {
+      updatePassage(currentPassage)
+    }
+    this.setState({ passage, didEdit: false })
   }
 
   public editValue(value: string) {
@@ -98,13 +112,13 @@ class EditPassage extends React.Component<Props, State> {
       isFocusWord: false
     }))
 
-    this.setState({ passage })
+    this.setState({ passage, didEdit: true })
   }
 
   public switchFocus(i: number) {
     const passage = this.state.passage
     passage.tagged[i].isFocusWord = !passage.tagged[i].isFocusWord
-    this.setState({ passage })
+    this.setState({ passage, didEdit: true })
   }
 
   public render() {

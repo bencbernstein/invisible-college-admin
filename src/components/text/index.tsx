@@ -22,6 +22,7 @@ interface State {
   isNew: boolean
   isDisplaying: Screen
   bookmark?: Bookmark
+  isEnriching: boolean
 }
 
 interface Props {
@@ -45,6 +46,7 @@ class TextComponent extends React.Component<Props, State> {
 
     this.state = {
       isNew,
+      isEnriching: false,
       isDisplaying: Screen.Information
     }
   }
@@ -53,12 +55,14 @@ class TextComponent extends React.Component<Props, State> {
     const pathname = window.location.pathname
     const textId = pathname.split("/")[2]
 
+    const isEnriching = window.location.search.indexOf("enriching") > -1
+
     if (!this.state.isNew) {
       this.loadData(textId)
     }
 
-    if (pathname.includes("passage")) {
-      this.displayScreen(Screen.Passages)
+    if (pathname.includes("passage") || isEnriching) {
+      this.setState({ isEnriching }, () => this.displayScreen(Screen.Passages))
     } else if (pathname.includes("read")) {
       this.displayScreen(Screen.Read)
     }
@@ -107,8 +111,24 @@ class TextComponent extends React.Component<Props, State> {
     await removePassage(textId, passageId)
   }
 
+  public next() {
+    const passageId = window.location.pathname.split("/passage/")[1]
+    const text = this.state.text!
+    const idx = _.findIndex(text.passages, p => p.id === passageId)
+    text.passages[idx].isEnriched = true
+    this.setState({ text })
+  }
+
   public render() {
-    const { bookmark, redirect, isDisplaying, text, isNew } = this.state
+    const {
+      bookmark,
+      redirect,
+      isDisplaying,
+      text,
+      isNew,
+      isEnriching
+    } = this.state
+
     const { keywords } = this.props
 
     if (redirect) {
@@ -132,6 +152,7 @@ class TextComponent extends React.Component<Props, State> {
         case Screen.Passages:
           return (
             <Passages
+              isEnriching={isEnriching}
               removePassage={this.removePassage.bind(this)}
               keywords={keywords}
               text={text!}
@@ -162,6 +183,8 @@ class TextComponent extends React.Component<Props, State> {
               isDisplaying={isDisplaying}
               name={text!.name}
               play={() => this.props.play(text!.id)}
+              next={this.next.bind(this)}
+              isEnriching={isEnriching}
             />
             {screen}
           </div>

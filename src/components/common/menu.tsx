@@ -31,9 +31,10 @@ const MenuButton = Text.regular.extend`
 `
 
 interface Props {
-  selectedViews: any[]
-  selectedView: any
-  didSelectView: (selectedView: any) => void
+  title: string
+  options: any[]
+  chosen: string
+  didSelect: (option: string) => void
 }
 
 class Menus extends React.Component<Props, any> {
@@ -43,13 +44,13 @@ class Menus extends React.Component<Props, any> {
   }
 
   public render() {
-    const { selectedView, selectedViews } = this.props
+    const { chosen, options, title } = this.props
 
-    const viewMenuButtons = selectedViews.map((value: any) => {
-      const color = value === selectedView ? colors.black : undefined
+    const menuButtons = options.map((value: any) => {
+      const color = value === chosen ? colors.black : undefined
       return (
         <MenuButton
-          onClick={() => this.props.didSelectView(value)}
+          onClick={() => this.props.didSelect(value)}
           key={value}
           color={color}
         >
@@ -61,9 +62,9 @@ class Menus extends React.Component<Props, any> {
     return (
       <Container>
         <Menu>
-          <Text.regular>View</Text.regular>
+          <Text.regular>{title}</Text.regular>
           <Line />
-          {viewMenuButtons}
+          {menuButtons}
         </Menu>
       </Container>
     )

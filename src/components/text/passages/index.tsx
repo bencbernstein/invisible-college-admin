@@ -49,6 +49,7 @@ const Span = styled.span`
 
 interface Props {
   text: Text
+  isEnriching: boolean
   keywords?: Keywords
   removePassage: (textId: string, passageId: string) => {}
 }
@@ -56,35 +57,66 @@ interface Props {
 interface State {
   isHoveringDelete?: number
   isEditingPassageId?: string
+  passagesToEnrich: string[]
 }
 
 class Passages extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
-    this.state = {}
+
+    this.state = {
+      passagesToEnrich: []
+    }
   }
 
   public componentDidMount() {
-    this.getPath()
+    this.checkIsEnriching(this.props)
   }
 
-  public clickedPassage(textId: string, passageId: string) {
-    history.push(textId + "/passage/" + passageId)
-    this.getPath()
+  public componentWillReceiveProps(nextProps: Props) {
+    this.checkIsEnriching(nextProps)
   }
 
-  public getPath() {
-    const pathname = window.location.pathname
-    const isEditingPassageId =
-      pathname.includes("passage/") && _.last(pathname.split("passage/"))
-    if (isEditingPassageId) {
-      this.setState({ isEditingPassageId })
+  public checkIsEnriching(props: Props) {
+    const passagesToEnrich = _.sortBy(
+      props.text.passages.filter(p => !p.isEnriched),
+      "startIdx"
+    ).map(p => p.id)
+
+    const next =
+      this.props.isEnriching &&
+      this.state.passagesToEnrich.length !== passagesToEnrich.length
+
+    const done = passagesToEnrich.length === 0
+
+    if (next) {
+      if (done) {
+        this.setState({ isEditingPassageId: undefined })
+      } else {
+        this.setState({ passagesToEnrich }, () =>
+          this.editPassage(passagesToEnrich[0])
+        )
+      }
     }
+  }
+
+  public editPassage(isEditingPassageId: string) {
+    const { isEnriching, text } = this.props
+
+    const path =
+      "/text/" +
+      text.id +
+      "/passage/" +
+      isEditingPassageId +
+      (isEnriching ? "?enriching=true" : "")
+
+    history.push(path)
+    this.setState({ isEditingPassageId })
   }
 
   public render() {
     const { isHoveringDelete, isEditingPassageId } = this.state
-    const { keywords, text } = this.props
+    const { keywords, text, isEnriching } = this.props
     const { id, passages } = text
 
     const icons = (p: Passage, i: number) => (
@@ -114,7 +146,7 @@ class Passages extends React.Component<Props, State> {
         </CommonText.regular>
 
         <CommonText.regular
-          onClick={() => this.clickedPassage(id, p.id)}
+          onClick={() => this.editPassage(p.id)}
           style={{ textAlign: "left", cursor: "pointer" }}
         >
           {(p.value || "")
@@ -128,15 +160,16 @@ class Passages extends React.Component<Props, State> {
       <Container>
         {isEditingPassageId ? (
           <Edit
+            isEnriching={isEnriching}
             keywords={keywords}
             passage={
               _.find(passages, (p: Passage) => p.id === isEditingPassageId)!
             }
           />
         ) : (
-          _
-            .sortBy(passages, "startIdx")
-            .map((p: Passage, i: number) => passage(p, i))
+          _.sortBy(passages, "startIdx").map((p: Passage, i: number) =>
+            passage(p, i)
+          )
         )}
       </Container>
     )

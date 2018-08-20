@@ -46,7 +46,9 @@ interface Props {
   isDisplaying: Screen
   displayScreen: (isDisplaying: Screen) => {}
   play: () => {}
+  next: () => {}
   displayNav: (displayNav: boolean) => void
+  isEnriching: boolean
 }
 
 interface State {
@@ -69,7 +71,7 @@ class Menu extends React.Component<Props, State> {
 
   public render() {
     const { minimized } = this.state
-    const { name, isDisplaying } = this.props
+    const { name, isDisplaying, isEnriching } = this.props
 
     const link = (screen: Screen) => (
       <Text.regular
@@ -89,9 +91,11 @@ class Menu extends React.Component<Props, State> {
         <FlexedDiv>
           {!minimized && (
             <Subnav
+              next={this.props.next.bind(this)}
               title={name}
               subtitle={"texts"}
               subtitleLink={"/library"}
+              isEnriching={isEnriching}
               play={this.props.play.bind(this)}
               invert={true}
             />
