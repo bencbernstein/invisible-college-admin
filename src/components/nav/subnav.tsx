@@ -14,6 +14,10 @@ const Container = styled.div`
   width: 100%;
 `
 
+const ButtonsContainer = styled.div`
+  display: flex;
+`
+
 interface SpanProps {
   color?: string
 }
@@ -29,6 +33,8 @@ interface Props {
   subtitle?: string
   subtitleLink?: string
   play?: () => void
+  next?: () => void
+  isEnriching?: boolean
 }
 
 interface State {
@@ -44,7 +50,7 @@ class Subnav extends React.Component<Props, State> {
 
   public render() {
     const { redirect } = this.state
-    const { title, subtitle, subtitleLink, play, invert } = this.props
+    const { title, subtitle, subtitleLink, invert, play, next, isEnriching } = this.props
 
     if (redirect) { return <Redirect to={redirect} /> }
 
@@ -73,7 +79,13 @@ class Subnav extends React.Component<Props, State> {
         : [header, divider, subheader]
     }
 
-    const playButton = play && <Button.circ onClick={() => play()}>
+    const nextButton = next && <Button.circ 
+      marginRight={"10px"}
+      onClick={next.bind(this)}>
+      Next
+    </Button.circ>
+
+    const playButton = play && <Button.circ onClick={play.bind(this)}>
       Play
     </Button.circ>
 
@@ -82,7 +94,10 @@ class Subnav extends React.Component<Props, State> {
         <Header.l>
           {headerComponents()}
         </Header.l>
-        {playButton}
+        <ButtonsContainer>
+          {isEnriching && nextButton}
+          {playButton}
+        </ButtonsContainer>
       </Container>
     )
   }

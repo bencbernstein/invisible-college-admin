@@ -19,6 +19,7 @@ export const highlight = (value: string, keywords?: Keywords): string => {
 }
 
 export const getRanges = (array: number[]): number[][] => {
+  array = array.sort()
   const ranges = []
   let rstart
   let rend

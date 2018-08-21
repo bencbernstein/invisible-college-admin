@@ -1,4 +1,5 @@
 import { get } from "lodash"
+import styled from "styled-components"
 import * as React from "react"
 import { Redirect } from "react-router"
 import * as _ from "underscore"
@@ -17,6 +18,10 @@ import {
 import { fetchTexts, removeText } from "../../models/text"
 import { fetchWords, removeWord } from "../../models/word"
 
+const FlexedDiv = styled.div`
+  display: flex;
+`
+
 export enum SelectedView {
   All = "All",
   ChoiceSets = "Choice Sets",
@@ -24,9 +29,10 @@ export enum SelectedView {
   Words = "Words"
 }
 
-export enum SelectedSortBy {
-  Added = "Added",
-  Random = "Random"
+enum SelectedSortBy {
+  Name = "Name",
+  Passages = "# Passages",
+  UnenrichedPassages = "# Unenriched Passages"
 }
 
 interface State {
@@ -43,7 +49,7 @@ class Library extends React.Component<any, State> {
     super(props)
     this.state = {
       selectedView: SelectedView.Words,
-      selectedSortBy: SelectedSortBy.Added,
+      selectedSortBy: SelectedSortBy.Passages,
       words: [],
       texts: [],
       choiceSets: []
@@ -63,7 +69,7 @@ class Library extends React.Component<any, State> {
 
   public async loadTexts() {
     const texts = await fetchTexts()
-    this.setState({ texts })
+    this.setState({ texts }, () => this.didSelectSortBy(SelectedSortBy.Name))
   }
 
   public async loadWords() {
@@ -117,12 +123,29 @@ class Library extends React.Component<any, State> {
     this.setState({ selectedView })
   }
 
-  public didSelectSortBy(selectedSortBy: SelectedSortBy): void {
-    this.setState({ selectedSortBy })
+  public didSelectSortBy(selectedSortBy: any): void {
+    let texts = this.state.texts
+    if (selectedSortBy === SelectedSortBy.Name) {
+      texts = _.sortBy(texts, "name")
+    } else {
+      const sortBy =
+        selectedSortBy === SelectedSortBy.Passages
+          ? "passagesCount"
+          : "unenrichedPassagesCount"
+      texts = _.sortBy(texts, sortBy).reverse()
+    }
+    this.setState({ selectedSortBy, texts })
   }
 
   public render() {
-    const { choiceSets, selectedView, redirect, texts, words } = this.state
+    const {
+      choiceSets,
+      selectedView,
+      selectedSortBy,
+      redirect,
+      texts,
+      words
+    } = this.state
 
     if (redirect) {
       return <Redirect to={redirect} />
@@ -142,15 +165,31 @@ class Library extends React.Component<any, State> {
           title={"library"}
         />
 
-        <Menus
-          didSelectView={this.didSelectView.bind(this)}
-          selectedView={selectedView}
-          selectedViews={[
-            SelectedView.ChoiceSets,
-            SelectedView.Texts,
-            SelectedView.Words
-          ]}
-        />
+        <FlexedDiv>
+          <Menus
+            title={"View"}
+            didSelect={this.didSelectView.bind(this)}
+            chosen={selectedView}
+            options={[
+              SelectedView.ChoiceSets,
+              SelectedView.Texts,
+              SelectedView.Words
+            ]}
+          />
+
+          {selectedView === "Texts" && (
+            <Menus
+              title={"Sort By"}
+              didSelect={this.didSelectSortBy.bind(this)}
+              chosen={selectedSortBy}
+              options={[
+                SelectedSortBy.Name,
+                SelectedSortBy.Passages,
+                SelectedSortBy.UnenrichedPassages
+              ]}
+            />
+          )}
+        </FlexedDiv>
 
         <List
           remove={this.remove.bind(this)}

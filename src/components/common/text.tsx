@@ -5,9 +5,11 @@ interface TextProps {
   color?: string
   bold?: boolean
   pointer?: boolean
+  center?: boolean
 }
 
 const Large = styled.p`
+  text-align: ${(p: TextProps) => p.center && "center"};
   color: ${(p: TextProps) => p.color || colors.gray};
   font-family: ${(p: TextProps) =>
     p.bold ? "BrandonGrotesqueBold" : "BrandonGrotesque"};

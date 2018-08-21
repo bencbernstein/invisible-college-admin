@@ -5,6 +5,7 @@ import styled from "styled-components"
 
 import AddBox from "../common/addBox"
 import Box from "../common/box"
+import Button from "../common/button"
 import Icon from "../common/icon"
 import IconsContainer from "../common/iconsContainer"
 import Header from "../common/header"
@@ -30,10 +31,24 @@ const Removable = styled.span`
   }
 `
 
+const LinkButton = Button.regular.extend`
+  border: 0;
+  margin: 0;
+  padding: 10px 0px;
+  width: 100%;
+`
+
 const Choices = Text.regular.extend`
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+`
+
+const DescriptionText = styled.div`
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
 `
 
 interface Props {
@@ -88,16 +103,40 @@ class List extends React.Component<Props, State> {
       </IconsContainer>
     )
 
-    const textBox = (d: any, i: number) => (
-      <Box.regular key={i}>
-        {icons(i)}
+    const textLinksBox = (id: string) => (
+      <AddBox style={{ display: "flex", padding: "0" }} key={id}>
         <Link
-          key={d.id}
-          style={{ textDecoration: "none" }}
-          to={`/text/${d.id}`}
+          style={{ textDecoration: "none", color: "black", width: "50%" }}
+          to={`/text/${id}`}
         >
-          <Text.l>{d.name}</Text.l>
+          <LinkButton>View</LinkButton>
         </Link>
+        <Link
+          style={{ textDecoration: "none", color: "black", width: "50%" }}
+          to={`/text/${id}?enriching=true`}
+        >
+          <LinkButton>Enrich</LinkButton>
+        </Link>
+      </AddBox>
+    )
+
+    const textBox = (d: any, i: number) => (
+      <Box.regular
+        onMouseOver={() => this.setState({ isHovering: i })}
+        onMouseLeave={() =>
+          this.setState({ isHovering: undefined, choice: "" })
+        }
+        key={i}
+      >
+        {icons(i)}
+        <Text.l center={true}>{d.name}</Text.l>
+        <DescriptionText>
+          <Text.s center={true}>{d.source}</Text.s>
+          <Text.xs center={true}>
+            {d.passagesCount} passages / {d.unenrichedPassagesCount} unenriched
+          </Text.xs>
+        </DescriptionText>
+        {isHovering === i && textLinksBox(d.id)}
       </Box.regular>
     )
 

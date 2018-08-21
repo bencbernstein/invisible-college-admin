@@ -16,6 +16,7 @@ export interface Passage {
   value: string
   found: string[]
   tagged: Tag[]
+  isEnriched: boolean
 }
 
 export interface Tag {
@@ -32,6 +33,8 @@ export interface Text {
   source: string
   tokenized: Sentence[]
   passages: Passage[]
+  passagesCount: number
+  unenrichedPassagesCount: number
 }
 
 const parseTextQuery = (formData: FormData, params: string): any | Error =>
@@ -52,12 +55,12 @@ export const parseText = async (
 }
 
 export const fetchTexts = async (): Promise<any | Error> => {
-  const gqlQuery = `query { texts { id name source } }`
+  const gqlQuery = `query { texts { id name source passagesCount unenrichedPassagesCount } }`
   return query(gqlQuery, "texts")
 }
 
 export const fetchText = async (id: string): Promise<any | Error> => {
-  const gqlQuery = `query { text(id: "${id}") { id name isPreFiltered source tokenized passages { id startIdx endIdx value found tagged { id value tag isFocusWord isPunctuation } } } }`
+  const gqlQuery = `query { text(id: "${id}") { id name isPreFiltered source tokenized passages { id startIdx endIdx value found isEnriched tagged { id value tag isFocusWord isPunctuation } } } }`
   return query(gqlQuery, "text")
 }
 
