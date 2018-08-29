@@ -138,7 +138,7 @@ class Read extends React.Component<Props, State> {
     const { tokenized, viewingSentencesCount } = this.state
 
     if (value === "previous") {
-      const newIdx = idx - (isPreFiltered ? 12 : viewingSentencesCount)
+      const newIdx = idx - (isPreFiltered ? 13 : viewingSentencesCount)
       idx = Math.max(0, newIdx)
     } else if (value === "keep") {
       this.keepAllSentences()
