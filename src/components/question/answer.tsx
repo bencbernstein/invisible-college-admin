@@ -5,72 +5,83 @@ import styled from "styled-components"
 import Text from "../common/text"
 
 import { AnswerPart } from "../../models/question"
-// import { colors } from "../../lib/colors"
+import { isPunc } from "../../lib/helpers"
+
+interface ContainerProps {
+  height: string
+}
 
 const Container = styled.div`
-  height: 20%;
+  height: ${(p: ContainerProps) => p.height};
   display: flex;
   align-items: center;
-  justify-content: center;  
+  justify-content: center;
 `
 
-const AnswerSpace = styled.div`
-  text-align: center;
-  margin: 0px 10px;
+interface AnswerSpaceProps {
+  hide: boolean
+}
+
+const AnswerSpace = styled.span`
+  color: ${(p: AnswerSpaceProps) => (p.hide ? "white" : "black")};
+  display: ${(p: AnswerSpaceProps) => p.hide && "inline-block"};
 `
 
 const Underline = styled.div`
-  height: 5px;
-  border-radius: 10px;
-  margin: 0px -5px;
+  height: 4px;
   background-color: black;
+  border-radius: 5px;
 `
 
 const Image = styled.img`
   max-height: 65%;
 `
 
-interface AnswerTextProps {
-  hide: boolean
-}
-
 const AnswerText = Text.xl.extend`
   color: black;
-  opacity: ${(p: AnswerTextProps) => p.hide ? "0" : "1"};
 `
 
 interface Props {
   answer: AnswerPart[]
   type: string
+  height: string
   guessedCorrectly: string[]
 }
 
 export default class Answer extends React.Component<Props, any> {
   public render() {
-    const { answer, type, guessedCorrectly } = this.props
-
-    const useUnderline = type === "WORD_TO_ROOTS"
+    const { answer, type, guessedCorrectly, height } = this.props
 
     const displayImage =
       type === "WORD_TO_IMG" &&
       answer[0].value.startsWith("data:image") &&
       guessedCorrectly.length
 
-    const answerSpace = (part: AnswerPart, i: number) => <AnswerSpace key={i}>
-      <AnswerText hide={!part.prefill && !_.includes(guessedCorrectly, part.value)}>
-        {part.value}
-      </AnswerText>
-      {useUnderline && <Underline />}
-    </AnswerSpace>
-
-    const answerComponent = displayImage
-      ? <Image src={answer[0].value} />
-      : answer.map((a, i) => answerSpace(a, i))
-
-    return (
-      <Container>
-        {answerComponent}
-      </Container>
+    const withUnderline = (value: string) => (
+      <span
+        style={{ display: "flex", flexDirection: "column", margin: "0px 10px" }}
+      >
+        {value}
+        <Underline />
+      </span>
     )
+
+    const answerSpace = (part: AnswerPart, i: number) => {
+      const hide = !part.prefill && !_.includes(guessedCorrectly, part.value)
+      const formattedValue = isPunc(part.value) ? part.value : ` ${part.value}`
+      return (
+        <AnswerSpace hide={hide} key={i}>
+          {hide ? withUnderline(formattedValue) : formattedValue}
+        </AnswerSpace>
+      )
+    }
+
+    const answerComponent = displayImage ? (
+      <Image src={answer[0].value} />
+    ) : (
+      <AnswerText>{answer.map((a, i) => answerSpace(a, i))}</AnswerText>
+    )
+
+    return <Container height={height}>{answerComponent}</Container>
   }
 }

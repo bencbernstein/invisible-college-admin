@@ -6,6 +6,8 @@ import Text from "../common/text"
 import { PromptPart } from "../../models/question"
 import { colors } from "../../lib/colors"
 
+import { isPunc } from "../../lib/helpers"
+
 const Container = styled.div`
   height: 25%;
   display: flex;
@@ -20,10 +22,21 @@ interface SpanProps {
 
 const Span = styled.span`
   color: ${(p: SpanProps) => (p.highlight ? colors.warmYellow : colors.black)};
+  font-family: ${(p: SpanProps) => p.highlight && "BrandonGrotesqueBold"};
 `
 
 const Image = styled.img`
   max-height: 100%;
+`
+
+const Underline = styled.div`
+  width: 100px;
+  height: 4px;
+  background-color: black;
+  display: inline-block;
+  bottom: 0;
+  margin: 0px 10px;
+  border-radius: 5px;
 `
 
 interface Props {
@@ -31,17 +44,18 @@ interface Props {
   type: string
 }
 
-const isPunc = (char: string) => [".", ",", ")", "'"].indexOf(char) > -1
-
 export default class Prompt extends React.Component<Props, any> {
   public render() {
     const { prompt, type } = this.props
 
-    const span = (p: PromptPart, i: number) => (
-      <Span key={i} highlight={p.highlight}>
-        {isPunc(p.value) ? p.value : ` ${p.value}`}
-      </Span>
-    )
+    const span = (p: PromptPart, i: number) =>
+      p.value === "_underline_" ? (
+        <Underline />
+      ) : (
+        <Span key={i} highlight={p.highlight}>
+          {isPunc(p.value) ? p.value : ` ${p.value}`}
+        </Span>
+      )
 
     const isImage =
       type === "WORD_TO_IMG" && prompt[0].value.startsWith("data:image")

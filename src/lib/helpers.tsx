@@ -95,3 +95,5 @@ export const move = (arr: any[], old_index: number, new_index: number) => {
   arr.splice(new_index, 0, arr.splice(old_index, 1)[0])
   return arr
 }
+
+export const isPunc = (char: string) => [".", ",", ")", "'"].indexOf(char) > -1

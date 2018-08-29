@@ -1,6 +1,7 @@
 import pos from "pos"
 import * as React from "react"
 import styled from "styled-components"
+import * as _ from "underscore"
 
 import Text from "../../common/text"
 
@@ -94,9 +95,11 @@ class EditPassage extends React.Component<Props, State> {
   public componentWillReceiveProps(nextProps: Props) {
     const passage = nextProps.passage
     const currentPassage = this.state.passage
+
     if (this.state.didEdit) {
       updatePassage(currentPassage)
     }
+
     this.setState({ passage, didEdit: false })
   }
 
@@ -122,7 +125,7 @@ class EditPassage extends React.Component<Props, State> {
   }
 
   public render() {
-    const { passage } = this.state
+    const { tagged, value } = this.state.passage
     const { keywords } = this.props
 
     const span = (t: Tag, i: number) => (
@@ -140,12 +143,12 @@ class EditPassage extends React.Component<Props, State> {
 
     return (
       <Container>
-        <div>{passage.tagged.map((t: Tag, i: number) => span(t, i))}</div>
+        <div>{_.flatten(tagged).map((t: Tag, i: number) => span(t, i))}</div>
 
         <Textarea
           spellCheck={false}
           onChange={e => this.editValue(e.target.value)}
-          value={passage.value}
+          value={value}
         />
       </Container>
     )
