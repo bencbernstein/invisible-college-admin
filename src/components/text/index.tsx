@@ -68,17 +68,20 @@ class TextComponent extends React.Component<Props, State> {
     }
   }
 
-  public async updatePassages(id: string, ranges: number[][]) {
-    const text = this.state.text
-    text!.passages = (await addPassages(id, ranges)).passages
-    this.setState({ text })
+  public async updatePassages(ranges: number[][]) {
+    const text = await addPassages(this.state.text!.id, ranges)
+    if (!(text instanceof Error)) {
+      this.setState({ text })
+    }
   }
 
   public async loadData(id: string) {
     const text = await fetchText(id)
-    text.tokenized = JSON.parse(text.tokenized)
-    this.setState({ text })
-    this.fetchBookmark(id)
+    if (!(text instanceof Error)) {
+      text.tokenized = JSON.parse(text.tokenized)
+      this.setState({ text })
+      this.fetchBookmark(id)
+    }
   }
 
   public async fetchBookmark(textId: string) {

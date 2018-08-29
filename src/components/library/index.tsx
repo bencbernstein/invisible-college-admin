@@ -69,7 +69,9 @@ class Library extends React.Component<any, State> {
 
   public async loadTexts() {
     const texts = await fetchTexts()
-    this.setState({ texts }, () => this.didSelectSortBy(SelectedSortBy.Name))
+    if (!(texts instanceof Error)) {
+      this.setState({ texts }, () => this.didSelectSortBy(SelectedSortBy.Name))
+    }
   }
 
   public async loadWords() {

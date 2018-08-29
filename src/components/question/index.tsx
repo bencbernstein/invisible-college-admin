@@ -116,6 +116,7 @@ class QuestionComponent extends React.Component<Props, State> {
     const { idx, guess, guessedCorrectly } = this.state
 
     const { prompt, answer, redHerrings, TYPE } = questions[idx]
+    const noPrompt = prompt.length === 0
 
     return (
       <Container>
@@ -135,10 +136,11 @@ class QuestionComponent extends React.Component<Props, State> {
           </TopDiv>
         </TopContainer>
 
-        <Prompt type={TYPE} prompt={prompt} />
+        {!noPrompt && <Prompt type={TYPE} prompt={prompt} />}
 
         <Answer
           type={TYPE}
+          height={noPrompt ? "45%" : "20%"}
           guessedCorrectly={guessedCorrectly}
           answer={answer}
         />

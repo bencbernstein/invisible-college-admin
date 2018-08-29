@@ -4,19 +4,13 @@ import CONFIG from "../lib/config"
 
 const TEXT_URL = CONFIG.API_URL + "/parseText"
 
-export interface Sentence {
-  sentence: string
-  found: string[]
-}
-
 export interface Passage {
   id: string
   startIdx: number
   endIdx: number
   value: string
-  found: string[]
   tagged: Tag[]
-  isEnriched: boolean
+  isEnriched?: boolean
 }
 
 export interface Tag {
@@ -31,11 +25,15 @@ export interface Text {
   isPreFiltered: boolean
   name: string
   source: string
-  tokenized: Sentence[]
+  tokenized: any
   passages: Passage[]
   passagesCount: number
   unenrichedPassagesCount: number
 }
+
+const taggedData =
+  "id value tag isFocusWord isPunctuation isConnector wordId choiceSetId"
+const passageData = `id startIdx endIdx value isEnriched metadata { date author name source } tagged { ${taggedData} }`
 
 const parseTextQuery = (formData: FormData, params: string): any | Error =>
   fetch(TEXT_URL + params, {
@@ -54,23 +52,25 @@ export const parseText = async (
   return parseTextQuery(formData, params)
 }
 
-export const fetchTexts = async (): Promise<any | Error> => {
+export const fetchTexts = async (): Promise<Text[] | Error> => {
   const gqlQuery = `query { texts { id name source passagesCount unenrichedPassagesCount } }`
   return query(gqlQuery, "texts")
 }
 
-export const fetchText = async (id: string): Promise<any | Error> => {
-  const gqlQuery = `query { text(id: "${id}") { id name isPreFiltered source tokenized passages { id startIdx endIdx value found isEnriched tagged { id value tag isFocusWord isPunctuation } } } }`
+export const fetchText = async (id: string): Promise<Text | Error> => {
+  const gqlQuery = `query { text(id: "${id}") { id name author date isPreFiltered source tokenized passages { ${passageData} } } }`
   return query(gqlQuery, "text")
 }
 
 export const addPassages = async (
   id: string,
   ranges: number[][]
-): Promise<any | Error> => {
+): Promise<Text | Error> => {
   const gqlQuery = `mutation { addPassages(id: "${id}", ranges: ${JSON.stringify(
     ranges
-  )}) { passages { id startIdx endIdx value found tagged { id value tag isFocusWord isPunctuation } } } }`
+  )}) { passages { ${passageData} } } }`
+  console.log(ranges)
+  console.log(gqlQuery)
   return query(gqlQuery, "addPassages")
 }
 
@@ -82,7 +82,9 @@ export const removePassage = async (
   return query(gqlQuery, "removePassage")
 }
 
-export const updatePassage = async (passage: Passage): Promise<any | Error> => {
+export const updatePassage = async (
+  passage: Passage
+): Promise<Text | Error> => {
   const gqlQuery = `mutation { updatePassage(update: "${encodeURIComponent(
     JSON.stringify(passage)
   )}") { id } }`

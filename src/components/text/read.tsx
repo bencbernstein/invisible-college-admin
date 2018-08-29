@@ -2,7 +2,7 @@ import * as React from "react"
 import styled from "styled-components"
 import * as _ from "underscore"
 
-import { Sentence, Text } from "../../models/text"
+import { Text } from "../../models/text"
 import { Bookmark } from "../../models/user"
 import { Keywords } from "../app"
 
@@ -68,7 +68,7 @@ interface State {
   viewingSentencesCount: number
   characterLimit: number
   idx: number
-  tokenized: Sentence[]
+  tokenized: string[]
   savedSentences: number[]
   isPreFiltered: boolean
 }
@@ -78,7 +78,7 @@ interface Props {
   bookmark?: Bookmark
   keywords?: Keywords
   saveBookmark: (sentenceIdx: number) => void
-  updatePassages: (id: string, ranges: number[][]) => {}
+  updatePassages: (ranges: number[][]) => {}
 }
 
 class Read extends React.Component<Props, State> {
@@ -102,7 +102,9 @@ class Read extends React.Component<Props, State> {
 
   public componentWillUnmount() {
     const ranges = getRanges(this.state.savedSentences)
-    this.props.updatePassages(this.props.text.id, ranges)
+    if (ranges.length) {
+      this.props.updatePassages(ranges)
+    }
     this.props.saveBookmark(this.state.idx)
   }
 
@@ -110,23 +112,20 @@ class Read extends React.Component<Props, State> {
     const { idx, characterLimit, isPreFiltered } = this.state
     const tokenized = this.state.tokenized.slice(idx)
 
-    let isViewing: Sentence[] = []
+    let isViewing: string[] = []
 
     for (let i = 0; i < tokenized.length; i++) {
-      const textPart = tokenized[i]
+      const sentence = tokenized[i]
 
       const stop = isPreFiltered
-        ? textPart.sentence === "%END%"
-        : isViewing
-            .concat(textPart)
-            .map((t: Sentence) => t.sentence)
-            .join(" ").length > characterLimit
+        ? sentence === "%END%"
+        : isViewing.concat(sentence).join(" ").length > characterLimit
 
       if (stop) {
         this.setState({ viewingSentencesCount: Math.max(i, 1) })
         return
       } else {
-        isViewing = isViewing.concat(textPart)
+        isViewing = isViewing.concat(sentence)
       }
     }
 
@@ -138,15 +137,7 @@ class Read extends React.Component<Props, State> {
     const { isPreFiltered } = this.state
     const { tokenized, viewingSentencesCount } = this.state
 
-    if (value === "previous highlight") {
-      const lastHighlightIdx = _.findLastIndex(
-        tokenized.slice(0, idx),
-        t => t.found.length > 0
-      )
-      if (lastHighlightIdx > -1) {
-        idx = lastHighlightIdx
-      }
-    } else if (value === "previous") {
+    if (value === "previous") {
       const newIdx = idx - (isPreFiltered ? 12 : viewingSentencesCount)
       idx = Math.max(0, newIdx)
     } else if (value === "keep") {
@@ -155,14 +146,6 @@ class Read extends React.Component<Props, State> {
       const newIdx = idx + viewingSentencesCount + (isPreFiltered ? 1 : 0)
       if (newIdx < tokenized.length) {
         idx = newIdx
-      }
-    } else if (value === "next highlight") {
-      const nextHighlightIdx = _.findIndex(
-        tokenized.slice(idx),
-        t => t.found.length > 0
-      )
-      if (nextHighlightIdx > -1) {
-        idx = idx + viewingSentencesCount + nextHighlightIdx
       }
     }
 
@@ -212,7 +195,7 @@ class Read extends React.Component<Props, State> {
       this.props.text.passages.map(p => _.range(p.startIdx, p.endIdx))
     )
 
-    const word = (str: string, found: string[], i: number) => (
+    const word = (str: string, i: number) => (
       <Span key={i} color={highlight(str, keywords)}>
         {" "}
         {str}
@@ -221,7 +204,7 @@ class Read extends React.Component<Props, State> {
 
     const sentences = tokenized
       .slice(idx, idx + viewingSentencesCount)
-      .map((textPart: Sentence, i: number) => {
+      .map((sentence: string, i: number) => {
         const saved = savedSentences.indexOf(idx + i) > -1
         const previouslySaved = previouslySavedSentences.indexOf(idx + i) > -1
         return (
@@ -236,9 +219,7 @@ class Read extends React.Component<Props, State> {
             }}
             key={i}
           >
-            {textPart.sentence
-              .split(" ")
-              .map((w: string, i2: number) => word(w, textPart.found, i2))}
+            {sentence.split(" ").map((w: string, i2: number) => word(w, i2))}
           </Span>
         )
       })
@@ -247,7 +228,7 @@ class Read extends React.Component<Props, State> {
 
     if (isPreFiltered) {
       sentences.shift()
-      prefilteredPassageDetails = tokenized[idx].sentence.split("%%")
+      prefilteredPassageDetails = tokenized[idx].split("%%")
     }
 
     const info = isPreFiltered ? (
@@ -255,7 +236,7 @@ class Read extends React.Component<Props, State> {
         {prefilteredPassageDetails
           .map(
             (str: any): any => (
-              <CommonText.regular style={{ display: "inline-block" }}>
+              <CommonText.regular key={str} style={{ display: "inline-block" }}>
                 {str}
               </CommonText.regular>
             )
