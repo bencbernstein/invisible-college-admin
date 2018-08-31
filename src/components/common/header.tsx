@@ -3,9 +3,10 @@ import styled from "styled-components"
 import { colors } from "../../lib/colors"
 
 const Large = styled.p`
-  font-size: 3em;
+  font-size: 2.3em;
   color: ${colors.gray};
   letter-spacing: 1px;
+  margin: 10px 0px;
 `
 
 const Medium = styled.h3`

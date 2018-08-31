@@ -142,6 +142,7 @@ class Gameplay extends React.Component<any, State> {
     return (
       <div>
         <Subnav
+          minimized={false}
           subtitle={"library"}
           subtitleLink={"/library"}
           title={"gameplay"}

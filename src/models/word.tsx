@@ -19,6 +19,7 @@ export const fetchWord = async (id: string): Promise<any | Error> => {
       value
       isDecomposable
       synonyms
+      otherForms
       components {
         value
         isRoot
@@ -46,10 +47,7 @@ export const fetchWord = async (id: string): Promise<any | Error> => {
 
 export const fetchKeywords = async (): Promise<any | Error> => {
   const gqlQuery = `query {
-    keywords {
-      words
-      choices
-    }
+    keywords
   }`
   return query(gqlQuery, "keywords")
 }

@@ -1,18 +1,46 @@
 /* tslint:disable */
 
-import { Keywords } from "../components/app"
 import { colors } from "./colors"
+import { Tag } from "../models/text"
 
-export const highlight = (value: string, keywords?: Keywords): string => {
-  const [words, choices] = keywords
-    ? [keywords.words, keywords.choices]
-    : [[], []]
+export const cleanObj = (obj: any) =>
+  Object.keys(obj).forEach(k => {
+    if (!obj[k]) {
+      delete obj[k]
+    }
+  })
 
-  const stripped = value.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "")
+export const tagsToSentence = (tags: Tag[]) => {
+  let sentence = ""
+  tags.forEach((tag: Tag) => {
+    const addSpace = !tag.isPunctuation && sentence.length !== 0
+    sentence += addSpace ? ` ${tag.value}` : tag.value
+  })
+  return sentence
+}
 
-  if (words.indexOf(stripped) > -1) {
+export const highlight = (word: any): string => {
+  if (word.wordId) {
     return colors.warmYellow
-  } else if (choices.indexOf(stripped) > -1) {
+  } else if (word.choiceSetId) {
+    return colors.blue
+  } else if (word.isFocusWord) {
+    return colors.darkLimeGreen
+  } else if (word.isConnector) {
+    return colors.red
+  }
+  return "black"
+}
+
+export const highlightValue = (
+  word: string,
+  words: any,
+  choices: any
+): string => {
+  word = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").toLowerCase()
+  if (words[word]) {
+    return colors.warmYellow
+  } else if (choices[word]) {
     return colors.blue
   }
   return "black"

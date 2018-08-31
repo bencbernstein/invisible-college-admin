@@ -3,6 +3,7 @@ import * as _ from "underscore"
 
 import DefinitionComponent from "./definition"
 import Gallery from "./gallery"
+import OtherFormsComponent from "./otherForms"
 import RootsComponent from "./roots"
 import SynonymsComponent from "./synonyms"
 import TagsComponent from "./tags"
@@ -57,6 +58,7 @@ export interface Word {
   isDecomposable: boolean
   components?: Component[]
   definition: DefinitionPart[]
+  otherForms: string[]
   obscurity: number
   images: string[]
   tags: Tag[]
@@ -144,6 +146,7 @@ class WordComponent extends React.Component<Props, State> {
     return (
       <div>
         <Subnav
+          minimized={false}
           title={word!.value}
           subtitle={"words"}
           subtitleLink={"/library"}
@@ -154,6 +157,11 @@ class WordComponent extends React.Component<Props, State> {
         <RootsComponent word={word!} />
 
         <DefinitionComponent
+          update={w => this.setState({ word: w })}
+          word={word!}
+        />
+
+        <OtherFormsComponent
           update={w => this.setState({ word: w })}
           word={word!}
         />

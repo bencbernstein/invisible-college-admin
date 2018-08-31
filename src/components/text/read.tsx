@@ -7,7 +7,7 @@ import { Bookmark } from "../../models/user"
 import { Keywords } from "../app"
 
 import { colors } from "../../lib/colors"
-import { getRanges, highlight } from "../../lib/helpers"
+import { getRanges, highlightValue } from "../../lib/helpers"
 import Input from "../common/input"
 import CommonText from "../common/text"
 import Navigation from "./navigation"
@@ -189,14 +189,18 @@ class Read extends React.Component<Props, State> {
       savedSentences
     } = this.state
 
-    const { keywords } = this.props
+    if (!this.props.keywords) {
+      return null
+    }
+
+    const { words, choices } = this.props.keywords
 
     const previouslySavedSentences = _.flatten(
       this.props.text.passages.map(p => _.range(p.startIdx, p.endIdx))
     )
 
     const word = (str: string, i: number) => (
-      <Span key={i} color={highlight(str, keywords)}>
+      <Span key={i} color={highlightValue(str, words, choices)}>
         {" "}
         {str}
       </Span>

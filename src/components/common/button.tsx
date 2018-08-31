@@ -6,6 +6,7 @@ interface Props {
   disabled?: boolean
   color?: string
   marginRight?: string
+  marginLeft?: string
 }
 
 const Regular = styled.p`
@@ -21,6 +22,7 @@ const Regular = styled.p`
   cursor: pointer;
   font-size: 0.9em;
   margin-right: ${(p: Props) => p.marginRight || "0px"};
+  margin-left: ${(p: Props) => p.marginLeft || ""};
   &:hover {
     color: white;
     background-color: ${(p: Props) =>

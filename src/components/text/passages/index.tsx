@@ -10,7 +10,7 @@ import CommonText from "../../common/text"
 
 import Edit from "./edit"
 
-import { Passage, Text } from "../../../models/text"
+import { Passage, Tag, Text } from "../../../models/text"
 import { Keywords } from "../../app"
 
 import deleteIconRed from "../../../lib/images/icon-delete-red.png"
@@ -21,7 +21,6 @@ import { highlight } from "../../../lib/helpers"
 
 const Container = styled.div`
   text-align: center;
-  width: 95%;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -41,10 +40,17 @@ const Icons = styled.div`
 
 interface SpanProps {
   color: string
+  tag: Tag
 }
 
 const Span = styled.span`
   color: ${(p: SpanProps) => p.color};
+  text-decoration: ${(p: SpanProps) =>
+    p.tag.isUnfocused
+      ? "line-through"
+      : p.tag.isFocusWord
+        ? "underline"
+        : "none"};
 `
 
 interface Props {
@@ -74,6 +80,12 @@ class Passages extends React.Component<Props, State> {
   }
 
   public componentWillReceiveProps(nextProps: Props) {
+    const showPassageList =
+      !window.location.href.includes("/passage/") &&
+      this.state.isEditingPassageId
+    if (showPassageList) {
+      this.setState({ isEditingPassageId: undefined })
+    }
     this.checkIsEnriching(nextProps)
   }
 
@@ -132,9 +144,9 @@ class Passages extends React.Component<Props, State> {
       </Icons>
     )
 
-    const span = (word: string, idx: number) => (
-      <Span color={highlight(word, keywords)} key={idx}>
-        {word + " "}
+    const span = (tag: Tag, idx: number) => (
+      <Span tag={tag} color={highlight(tag)} key={idx}>
+        {tag.isPunctuation ? tag.value : ` ${tag.value}`}
       </Span>
     )
 
@@ -149,9 +161,7 @@ class Passages extends React.Component<Props, State> {
           onClick={() => this.editPassage(p.id)}
           style={{ textAlign: "left", cursor: "pointer" }}
         >
-          {(p.value || "")
-            .split(" ")
-            .map((w: string, idx: number) => span(w, idx))}
+          {_.flatten(p.tagged).map((tag: Tag, idx: number) => span(tag, idx))}
         </CommonText.regular>
       </Box.regular>
     )
@@ -160,6 +170,7 @@ class Passages extends React.Component<Props, State> {
       <Container>
         {isEditingPassageId ? (
           <Edit
+            removePassage={passageId => this.props.removePassage(id, passageId)}
             isEnriching={isEnriching}
             keywords={keywords}
             passage={

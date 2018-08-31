@@ -36,8 +36,8 @@ import {
 import { getWordAtPoint } from "../../lib/helpers"
 
 export interface Keywords {
-  choices: string[]
-  words: string[]
+  choices: any
+  words: any
 }
 
 interface State {
@@ -68,7 +68,7 @@ class App extends React.Component<any, State> {
   }
 
   public async loadKeywords() {
-    const keywords = await fetchKeywords()
+    const keywords = JSON.parse(await fetchKeywords())
     this.setState({ keywords })
   }
 
