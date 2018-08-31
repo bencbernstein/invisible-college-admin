@@ -16,7 +16,7 @@ const Container = styled.div`
 const FlexedDiv = styled.div`
   display: flex;
   align-items: flex-start;
-  margin: 50px 0px;
+  margin: ${(p: MinimizeProps) => (p.hide ? "0px" : "50px 0px")};
   justify-content: space-between;
 `
 
@@ -88,20 +88,19 @@ class Menu extends React.Component<Props, State> {
 
     return (
       <Container>
-        <FlexedDiv>
-          {!minimized && (
-            <Subnav
-              next={this.props.next.bind(this)}
-              title={name}
-              subtitle={"texts"}
-              subtitleLink={"/library"}
-              isEnriching={isEnriching}
-              play={this.props.play.bind(this)}
-              invert={true}
-            />
-          )}
+        <FlexedDiv hide={minimized}>
+          <Subnav
+            next={this.props.next.bind(this)}
+            title={name}
+            minimized={minimized}
+            subtitle={"texts"}
+            subtitleLink={"/library"}
+            isEnriching={isEnriching}
+            play={this.props.play.bind(this)}
+            invert={true}
+          />
           <Minimize
-            hide={isDisplaying !== "Read"}
+            hide={isDisplaying === "Information"}
             onClick={this.minimize.bind(this)}
           />
         </FlexedDiv>

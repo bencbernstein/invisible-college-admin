@@ -162,6 +162,7 @@ class Library extends React.Component<any, State> {
     return (
       <div>
         <Subnav
+          minimized={false}
           subtitle={"gameplay"}
           subtitleLink={"/gameplay"}
           title={"library"}

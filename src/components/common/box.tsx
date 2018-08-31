@@ -8,6 +8,7 @@ const Box = styled.div`
   width: 250px;
   min-height: 250px;
   padding: 10px;
+  margin: 10px 0px;
   box-sizing: border-box;
   display: flex;
   align-items: center;

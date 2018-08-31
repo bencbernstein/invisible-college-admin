@@ -7,10 +7,13 @@ import { colors } from "../../lib/colors"
 import Button from "../common/button"
 import Header from "../common/header"
 
+interface ContainerProps {
+  minimized: boolean
+}
 const Container = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: ${(p: ContainerProps) => (p.minimized ? "flex-end" : "space-between")};
   width: 100%;
 `
 
@@ -33,6 +36,7 @@ interface Props {
   subtitle?: string
   subtitleLink?: string
   play?: () => void
+  minimized: boolean
   next?: () => void
   isEnriching?: boolean
 }
@@ -50,7 +54,7 @@ class Subnav extends React.Component<Props, State> {
 
   public render() {
     const { redirect } = this.state
-    const { title, subtitle, subtitleLink, invert, play, next, isEnriching } = this.props
+    const { title, subtitle, subtitleLink, invert, play, next, isEnriching, minimized } = this.props
 
     if (redirect) { return <Redirect to={redirect} /> }
 
@@ -90,10 +94,10 @@ class Subnav extends React.Component<Props, State> {
     </Button.circ>
 
     return (
-      <Container>
-        <Header.l>
+      <Container minimized={minimized}>
+        {!minimized && <Header.l>
           {headerComponents()}
-        </Header.l>
+        </Header.l>}
         <ButtonsContainer>
           {isEnriching && nextButton}
           {playButton}

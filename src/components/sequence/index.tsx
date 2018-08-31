@@ -163,6 +163,7 @@ class Sequence extends React.Component<Props, State> {
     return (
       <div>
         <Subnav
+          minimized={false}
           title={questionSequence!.name}
           subtitle={"sequences"}
           subtitleLink={"/gameplay"}

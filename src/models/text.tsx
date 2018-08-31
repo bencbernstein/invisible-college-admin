@@ -9,15 +9,19 @@ export interface Passage {
   startIdx: number
   endIdx: number
   value: string
-  tagged: Tag[]
+  tagged: Tag[][]
   isEnriched?: boolean
 }
 
 export interface Tag {
   value: string
-  tag: string
-  isFocusWord: boolean
-  isPunctuation: boolean
+  tag?: string
+  isFocusWord?: boolean
+  isPunctuation?: boolean
+  isConnector?: boolean
+  wordId?: string
+  choiceSetId?: string
+  isUnfocused?: boolean
 }
 
 export interface Text {
@@ -32,7 +36,7 @@ export interface Text {
 }
 
 const taggedData =
-  "id value tag isFocusWord isPunctuation isConnector wordId choiceSetId"
+  "id value tag isFocusWord isPunctuation isConnector wordId choiceSetId isUnfocused"
 const passageData = `id startIdx endIdx value isEnriched metadata { date author name source } tagged { ${taggedData} }`
 
 const parseTextQuery = (formData: FormData, params: string): any | Error =>

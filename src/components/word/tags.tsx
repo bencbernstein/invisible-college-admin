@@ -12,7 +12,7 @@ import { Keywords } from "../app"
 
 import { colors } from "../../lib/colors"
 
-const Form = styled.div`
+const Form = styled.form`
   position: relative;
   width: 150px;
 `
@@ -64,16 +64,15 @@ class TagsComponent extends React.Component<Props, State> {
   }
 
   public changeTag(tag: string) {
-    const { word, keywords } = this.props
-    const words = keywords ? keywords.words.concat(keywords.choices) : []
-
-    const autocomplete = words
-      .filter(w => w.startsWith(tag))
-      .filter(w => word.tags.map(t => t.value).indexOf(w) === -1)
-      .sort()
-      .slice(0, 5)
-
-    this.setState({ autocomplete, tag })
+    // TODO: - fix
+    // const { word, keywords } = this.props
+    // const words = keywords ? keywords.words.concat(keywords.choices) : []
+    // const autocomplete = words
+    //   .filter(w => w.startsWith(tag))
+    //   .filter(w => word.tags.map(t => t.value).indexOf(w) === -1)
+    //   .sort()
+    //   .slice(0, 5)
+    // this.setState({ autocomplete, tag })
   }
 
   public render() {

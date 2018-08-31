@@ -1,39 +1,60 @@
 import pos from "pos"
 import * as React from "react"
 import styled from "styled-components"
+import { get } from "lodash"
 import * as _ from "underscore"
 
+import Button from "../../common/button"
+import Icon from "../../common/icon"
 import Text from "../../common/text"
 
 import { Passage, Tag, updatePassage } from "../../../models/text"
 import { Keywords } from "../../app"
 
 import { colors } from "../../../lib/colors"
-import { highlight } from "../../../lib/helpers"
+import connectors from "./data/connectors"
+import { highlight, tagsToSentence, cleanObj } from "../../../lib/helpers"
+
+import addIcon from "../../../lib/images/icon-add.png"
+import deleteIcon from "../../../lib/images/icon-delete.png"
+
+const connectorValues = _.flatten(connectors.map(c => c.elements))
 
 const Container = styled.div`
   text-align: left;
-  width: 95%;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  margin: 25px 0px;
 `
 
 interface TaggedProps {
+  isUnfocused?: boolean
   isPunctuation?: boolean
   isFocusWord?: boolean
 }
 
 const TagValue = Text.l.extend`
   line-height: 20px;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
+  font-family: GeorgiaRegular;
   cursor: pointer;
   text-decoration: ${(p: TaggedProps) =>
-    p.isFocusWord ? "underline" : "none"};
+    p.isUnfocused ? "line-through" : p.isFocusWord ? "underline" : "none"};
 `
 
-const Tag = Text.s.extend`
+const TextAreasContainer = styled.div`
+  width: 100%;
+  margin-top: 20px;
+`
+
+interface FlexedDivProps {
+  justifyContent: string
+}
+
+const FlexedDiv = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: ${(p: FlexedDivProps) => p.justifyContent};
+`
+
+const PartOfSpeech = Text.s.extend`
   position: absolute;
   cursor: pointer;
   text-align: center;
@@ -42,8 +63,7 @@ const Tag = Text.s.extend`
   margin-right: auto;
   left: 0;
   right: 0;
-  color: ${(p: TaggedProps) =>
-    p.isFocusWord ? colors.gray : colors.lightestGray};
+  color: ${colors.gray};
 `
 
 const Tagged = styled.div`
@@ -54,102 +74,196 @@ const Tagged = styled.div`
 
 const Textarea = styled.textarea`
   width: 100%;
-  min-height: 150px;
-  font-family: BrandonGrotesque;
-  font-size: 1em;
+  font-family: GeorgiaRegular;
+  line-height: 24px;
+  font-size: 0.9em;
   color: ${colors.gray};
-  line-height: 28px;
   padding: 10px;
   box-sizing: border-box;
-  margin-top: 50px;
+  margin: 5px 15px;
+  height: 70px;
 `
 
 interface Props {
   keywords?: Keywords
   passage: Passage
   isEnriching: boolean
+  removePassage: (passageId: string) => {}
+}
+
+interface IsEdting {
+  idx: number
+  value: string
 }
 
 interface State {
   passage: Passage
-  isHoveringDelete?: number
+  removed: boolean
+  isEditing?: IsEdting
   didEdit: boolean
 }
+
+const automaticFocus = (tag: Tag) =>
+  tag.wordId || tag.choiceSetId || tag.isConnector
 
 class EditPassage extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
 
     this.state = {
+      removed: false,
       passage: this.props.passage,
       didEdit: false
     }
   }
 
   public componentWillUnmount() {
-    if (this.state.didEdit) {
-      updatePassage(this.state.passage)
-    }
+    this.updatePassage()
   }
 
   public componentWillReceiveProps(nextProps: Props) {
     const passage = nextProps.passage
-    const currentPassage = this.state.passage
-
-    if (this.state.didEdit) {
-      updatePassage(currentPassage)
+    const switchedPassage = this.props.passage.id !== passage.id
+    if (switchedPassage) {
+      this.updatePassage()
     }
-
     this.setState({ passage, didEdit: false })
   }
 
-  public editValue(value: string) {
-    const passage = this.state.passage
-    const words = new pos.Lexer().lex(value)
+  public updatePassage() {
+    const { didEdit, removed, passage } = this.state
+    if (!removed && (didEdit || this.props.isEnriching)) {
+      console.log("updatePassage")
+      _.flatten(passage.tagged).forEach((tag: Tag) => cleanObj(tag))
+      updatePassage(passage)
+    }
+  }
+
+  public editValue(sentenceIdx: number, value: string) {
+    const { passage } = this.state
+
+    const [words, choices] = this.props.keywords
+      ? [this.props.keywords.words, this.props.keywords.choices]
+      : [{}, {}]
+
+    const lexed = new pos.Lexer().lex(value)
     const tagger = new pos.Tagger()
-    passage.value = value
-    passage.tagged = tagger.tag(words).map((t: any) => ({
+
+    passage.tagged[sentenceIdx] = tagger.tag(lexed).map((t: any) => ({
       value: t[0],
       tag: t[1],
       isPunctuation: t[0] === t[1],
+      isConnector: connectorValues.indexOf(t[0]) > -1,
+      wordId: words[t[0].toLowerCase()],
+      choiceSetId: choices[t[0].toLowerCase()],
       isFocusWord: false
     }))
 
+    this.setState({ passage, didEdit: true, isEditing: undefined })
+  }
+
+  public switchFocus(sentenceIdx: number, wordIdx: number) {
+    const passage = this.state.passage
+    const tag = passage.tagged[sentenceIdx][wordIdx]
+    const attr = automaticFocus(tag) ? "isUnfocused" : "isFocusWord"
+    passage.tagged[sentenceIdx][wordIdx][attr] = !tag[attr]
     this.setState({ passage, didEdit: true })
   }
 
-  public switchFocus(i: number) {
+  public removeSentence(idx: number) {
     const passage = this.state.passage
-    passage.tagged[i].isFocusWord = !passage.tagged[i].isFocusWord
+    passage.tagged.splice(idx, 1)
     this.setState({ passage, didEdit: true })
+  }
+
+  public addSentenceAfter(idx: number) {
+    const passage = this.state.passage
+    passage.tagged.splice(idx + 1, 0, [])
+    this.setState({ passage, didEdit: true })
+  }
+
+  public async remove(id: string) {
+    await this.props.removePassage(id)
+    this.setState({ removed: true })
   }
 
   public render() {
-    const { tagged, value } = this.state.passage
-    const { keywords } = this.props
+    const { isEditing, passage } = this.state
+    const { tagged, id, startIdx, endIdx } = passage
 
-    const span = (t: Tag, i: number) => (
-      <Tagged isPunctuation={t.isPunctuation} key={i}>
-        <TagValue
-          isFocusWord={t.isFocusWord}
-          onClick={() => this.switchFocus(i)}
-          color={highlight(t.value, keywords)}
+    const sentenceComponents = tagged.map((tags: Tag[], i: number) => (
+      <FlexedDiv justifyContent={"space-between"} key={i}>
+        <Text.s>{i + 1}</Text.s>
+        <Textarea
+          spellCheck={false}
+          onChange={e =>
+            this.setState({
+              isEditing: { idx: i, value: e.target.value }
+            })
+          }
+          onBlur={() => {
+            if (isEditing) {
+              this.editValue(i, isEditing.value)
+            }
+          }}
+          value={
+            i === get(isEditing, "idx")
+              ? isEditing!.value
+              : tagsToSentence(tags)
+          }
+        />
+        <Icon
+          small={true}
+          src={addIcon}
+          pointer={true}
+          onClick={() => this.addSentenceAfter(i)}
+        />
+        <Icon
+          small={true}
+          src={deleteIcon}
+          pointer={true}
+          onClick={() => this.removeSentence(i)}
+        />
+      </FlexedDiv>
+    ))
+
+    const wordComponents = tagged.map((sentence: Tag[], sentenceIdx: number) =>
+      sentence.map((tag: Tag, wordIdx: number) => (
+        <Tagged
+          isPunctuation={tag.isPunctuation}
+          key={`${sentenceIdx}-${wordIdx}`}
         >
-          {t.value}
-        </TagValue>
-        {!t.isPunctuation && <Tag isFocusWord={t.isFocusWord}>{t.tag}</Tag>}
-      </Tagged>
+          <TagValue
+            isUnfocused={tag.isUnfocused}
+            isFocusWord={tag.isFocusWord}
+            onClick={() => this.switchFocus(sentenceIdx, wordIdx)}
+            color={highlight(tag)}
+          >
+            {tag.value}
+          </TagValue>
+          {(tag.isFocusWord || (automaticFocus(tag) && !tag.isUnfocused)) && (
+            <PartOfSpeech>{tag.tag}</PartOfSpeech>
+          )}
+        </Tagged>
+      ))
     )
+
+    if (this.state.removed) {
+      return <Text.l>Removed</Text.l>
+    }
 
     return (
       <Container>
-        <div>{_.flatten(tagged).map((t: Tag, i: number) => span(t, i))}</div>
-
-        <Textarea
-          spellCheck={false}
-          onChange={e => this.editValue(e.target.value)}
-          value={value}
-        />
+        <FlexedDiv justifyContent={"start"}>
+          <Text.l>
+            {startIdx} - {endIdx}
+          </Text.l>
+          <Button.circ marginLeft={"10px"} onClick={() => this.remove(id)}>
+            Remove
+          </Button.circ>
+        </FlexedDiv>
+        <div>{wordComponents}</div>
+        <TextAreasContainer>{sentenceComponents}</TextAreasContainer>
       </Container>
     )
   }
