@@ -37,7 +37,7 @@ export interface Text {
 
 const taggedData =
   "id value tag isFocusWord isPunctuation isConnector wordId choiceSetId isUnfocused"
-const passageData = `id startIdx endIdx value isEnriched metadata { date author name source } tagged { ${taggedData} }`
+export const passageData = `id startIdx endIdx value isEnriched metadata { date author name source } tagged { ${taggedData} }`
 
 const parseTextQuery = (formData: FormData, params: string): any | Error =>
   fetch(TEXT_URL + params, {

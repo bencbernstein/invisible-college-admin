@@ -22,6 +22,9 @@ import deleteIconRed from "../../lib/images/icon-delete-red.png"
 import deleteIcon from "../../lib/images/icon-delete.png"
 import textIcon from "../../lib/images/icon-text.png"
 import wordIcon from "../../lib/images/icon-word.png"
+import passageSequencesIcon from "../../lib/images/icon-passage-sequence.png"
+
+import { PassageSequence } from "../../models/passageSequence"
 
 const Removable = styled.span`
   cursor: pointer;
@@ -82,9 +85,10 @@ class List extends React.Component<Props, State> {
 
     const { data, selectedView } = this.props
 
-    const icons = (i: number) => (
+    const icons = (i: number, deletable: boolean = true) => (
       <IconsContainer>
         <Icon
+          style={{ visibility: deletable ? "visible" : "hidden" }}
           pointer={true}
           onMouseEnter={() => this.setState({ isHoveringDelete: i })}
           onMouseLeave={() => this.setState({ isHoveringDelete: undefined })}
@@ -95,9 +99,12 @@ class List extends React.Component<Props, State> {
         />
         <Icon
           src={
-            { Texts: textIcon, Words: wordIcon, "Choice Sets": choiceSetIcon }[
-              selectedView
-            ]
+            {
+              Texts: textIcon,
+              Words: wordIcon,
+              "Choice Sets": choiceSetIcon,
+              "Passage Sequences": passageSequencesIcon
+            }[selectedView]
           }
         />
       </IconsContainer>
@@ -203,10 +210,25 @@ class List extends React.Component<Props, State> {
       </Box.regular>
     )
 
+    const passageSequencesBox = (d: PassageSequence, i: number) => (
+      <Box.regular key={i}>
+        {icons(i, false)}
+        <Link
+          key={d.id}
+          style={{ textDecoration: "none" }}
+          to={`/passage-sequence/${d.id}`}
+        >
+          <Text.l center={true}>{d.name}</Text.l>
+          <Text.s center={true}>{d.count} passages</Text.s>
+        </Link>
+      </Box.regular>
+    )
+
     const constructor = {
       Texts: textBox,
       Words: wordBox,
-      "Choice Sets": choiceSetBox
+      "Choice Sets": choiceSetBox,
+      "Passage Sequences": passageSequencesBox
     }[selectedView]
 
     return (

@@ -8,6 +8,10 @@ import Button from "../../common/button"
 import Icon from "../../common/icon"
 import Text from "../../common/text"
 
+import {
+  addPassageToPassageSequence,
+  PassageSequence
+} from "../../../models/passageSequence"
 import { Passage, Tag, updatePassage } from "../../../models/text"
 import { Keywords } from "../../app"
 
@@ -22,6 +26,7 @@ const connectorValues = _.flatten(connectors.map(c => c.elements))
 
 const Container = styled.div`
   text-align: left;
+  width: 100%;
 `
 
 interface TaggedProps {
@@ -89,6 +94,7 @@ interface Props {
   passage: Passage
   isEnriching: boolean
   removePassage: (passageId: string) => {}
+  passageSequences: PassageSequence[]
 }
 
 interface IsEdting {
@@ -101,6 +107,7 @@ interface State {
   removed: boolean
   isEditing?: IsEdting
   didEdit: boolean
+  addToSequenceChecked: boolean
 }
 
 const automaticFocus = (tag: Tag) =>
@@ -113,6 +120,7 @@ class EditPassage extends React.Component<Props, State> {
     this.state = {
       removed: false,
       passage: this.props.passage,
+      addToSequenceChecked: false,
       didEdit: false
     }
   }
@@ -131,11 +139,14 @@ class EditPassage extends React.Component<Props, State> {
   }
 
   public updatePassage() {
-    const { didEdit, removed, passage } = this.state
+    const { addToSequenceChecked, didEdit, removed, passage } = this.state
     if (!removed && (didEdit || this.props.isEnriching)) {
-      console.log("updatePassage")
       _.flatten(passage.tagged).forEach((tag: Tag) => cleanObj(tag))
       updatePassage(passage)
+      if (addToSequenceChecked) {
+        const id = this.props.passageSequences[0].id
+        addPassageToPassageSequence(id, passage.id)
+      }
     }
   }
 
@@ -182,13 +193,14 @@ class EditPassage extends React.Component<Props, State> {
     this.setState({ passage, didEdit: true })
   }
 
-  public async remove(id: string) {
-    await this.props.removePassage(id)
+  public remove(id: string) {
+    this.props.removePassage(id)
     this.setState({ removed: true })
   }
 
   public render() {
-    const { isEditing, passage } = this.state
+    const { isEnriching } = this.props
+    const { isEditing, passage, removed, addToSequenceChecked } = this.state
     const { tagged, id, startIdx, endIdx } = passage
 
     const sentenceComponents = tagged.map((tags: Tag[], i: number) => (
@@ -248,12 +260,25 @@ class EditPassage extends React.Component<Props, State> {
       ))
     )
 
-    if (this.state.removed) {
+    if (removed) {
       return <Text.l>Removed</Text.l>
     }
 
     return (
       <Container>
+        {isEnriching && (
+          <FlexedDiv justifyContent={"start"}>
+            <Text.s>Add to Zoology Sequence</Text.s>
+            <input
+              checked={addToSequenceChecked}
+              onChange={e =>
+                this.setState({ addToSequenceChecked: !addToSequenceChecked })
+              }
+              type="checkbox"
+            />
+          </FlexedDiv>
+        )}
+
         <FlexedDiv justifyContent={"start"}>
           <Text.l>
             {startIdx} - {endIdx}
@@ -262,7 +287,11 @@ class EditPassage extends React.Component<Props, State> {
             Remove
           </Button.circ>
         </FlexedDiv>
+
+        <br />
+
         <div>{wordComponents}</div>
+
         <TextAreasContainer>{sentenceComponents}</TextAreasContainer>
       </Container>
     )
