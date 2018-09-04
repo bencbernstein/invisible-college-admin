@@ -17,6 +17,10 @@ import {
 } from "../../models/choiceSet"
 import { fetchTexts, removeText } from "../../models/text"
 import { fetchWords, removeWord } from "../../models/word"
+import {
+  PassageSequence,
+  fetchPassageSequences
+} from "../../models/passageSequence"
 
 const FlexedDiv = styled.div`
   display: flex;
@@ -26,6 +30,7 @@ export enum SelectedView {
   All = "All",
   ChoiceSets = "Choice Sets",
   Texts = "Texts",
+  PassageSequences = "Passage Sequences",
   Words = "Words"
 }
 
@@ -39,6 +44,7 @@ interface State {
   selectedView: SelectedView
   selectedSortBy: SelectedSortBy
   redirect?: string
+  passageSequences: PassageSequence[]
   words: any[]
   texts: any[]
   choiceSets: any[]
@@ -50,6 +56,7 @@ class Library extends React.Component<any, State> {
     this.state = {
       selectedView: SelectedView.Words,
       selectedSortBy: SelectedSortBy.Passages,
+      passageSequences: [],
       words: [],
       texts: [],
       choiceSets: []
@@ -60,11 +67,19 @@ class Library extends React.Component<any, State> {
     this.loadWords()
     this.loadTexts()
     this.loadChoiceSets()
+    this.loadPassageSequence()
   }
 
   public async loadChoiceSets() {
     const choiceSets = await fetchChoiceSets(["id", "name", "choices"])
     this.setState({ choiceSets })
+  }
+
+  public async loadPassageSequence() {
+    const passageSequences = await fetchPassageSequences()
+    if (!(passageSequences instanceof Error)) {
+      this.setState({ passageSequences })
+    }
   }
 
   public async loadTexts() {
@@ -146,6 +161,7 @@ class Library extends React.Component<any, State> {
       selectedSortBy,
       redirect,
       texts,
+      passageSequences,
       words
     } = this.state
 
@@ -156,7 +172,8 @@ class Library extends React.Component<any, State> {
     const data = {
       Words: words,
       Texts: texts,
-      "Choice Sets": choiceSets
+      "Choice Sets": choiceSets,
+      "Passage Sequences": passageSequences
     }[selectedView]
 
     return (
@@ -175,6 +192,7 @@ class Library extends React.Component<any, State> {
             chosen={selectedView}
             options={[
               SelectedView.ChoiceSets,
+              SelectedView.PassageSequences,
               SelectedView.Texts,
               SelectedView.Words
             ]}

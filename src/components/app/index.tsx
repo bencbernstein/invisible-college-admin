@@ -13,6 +13,7 @@ import Login from "../login"
 import Nav from "../nav"
 import QuestionComponent from "../question"
 import Sequence from "../sequence"
+import PassageSequence from "../passageSequence"
 import Text from "../text"
 import Word from "../word"
 import WordModal from "../word/modal"
@@ -97,6 +98,10 @@ class App extends React.Component<any, State> {
           <Route path="/text" component={contained("text", user, keywords)} />
           <Route path="/word" component={contained("word", user, keywords)} />
           <Route path="/sequence" component={contained("sequence", user)} />
+          <Route
+            path="/passage-sequence"
+            component={contained("passageSequence", user)}
+          />
           <Route
             exact={true}
             path="/library"
@@ -266,7 +271,8 @@ class Container extends React.Component<ContainerProps, ContainerState> {
                   this.setState({ questions: sequenceQuestions })
                 }
               />
-            )
+            ),
+            passageSequence: <PassageSequence />
           }[component]
         }
 
