@@ -17,7 +17,12 @@ import { Keywords } from "../../app"
 
 import { colors } from "../../../lib/colors"
 import connectors from "./data/connectors"
-import { highlight, tagsToSentence, cleanObj } from "../../../lib/helpers"
+import {
+  highlight,
+  tagsToSentence,
+  cleanObj,
+  toSentences
+} from "../../../lib/helpers"
 
 import addIcon from "../../../lib/images/icon-add.png"
 import deleteIcon from "../../../lib/images/icon-delete.png"
@@ -97,15 +102,16 @@ interface Props {
   passageSequences: PassageSequence[]
 }
 
-interface IsEdting {
+interface IsEditing {
   idx: number
   value: string
 }
 
 interface State {
   passage: Passage
+  sentences: Tag[][]
   removed: boolean
-  isEditing?: IsEdting
+  isEditing?: IsEditing
   didEdit: boolean
   addToSequenceChecked: boolean
 }
@@ -120,6 +126,7 @@ class EditPassage extends React.Component<Props, State> {
     this.state = {
       removed: false,
       passage: this.props.passage,
+      sentences: toSentences(this.props.passage.tagged),
       addToSequenceChecked: false,
       didEdit: false
     }
@@ -140,10 +147,15 @@ class EditPassage extends React.Component<Props, State> {
 
   public updatePassage() {
     const { addToSequenceChecked, didEdit, removed, passage } = this.state
+
     if (!removed && (didEdit || this.props.isEnriching)) {
       _.flatten(passage.tagged).forEach((tag: Tag) => cleanObj(tag))
-      updatePassage(passage)
-      if (addToSequenceChecked) {
+
+      // TODO: - fix
+
+      if (addToSequenceChecked && passage.tagged.length > 100000) {
+        updatePassage(passage)
+
         const id = this.props.passageSequences[0].id
         addPassageToPassageSequence(id, passage.id)
       }
@@ -189,7 +201,7 @@ class EditPassage extends React.Component<Props, State> {
 
   public addSentenceAfter(idx: number) {
     const passage = this.state.passage
-    passage.tagged.splice(idx + 1, 0, [])
+    passage.tagged.splice(idx + 1, 0, { value: "" })
     this.setState({ passage, didEdit: true })
   }
 
@@ -200,10 +212,18 @@ class EditPassage extends React.Component<Props, State> {
 
   public render() {
     const { isEnriching } = this.props
-    const { isEditing, passage, removed, addToSequenceChecked } = this.state
-    const { tagged, id, startIdx, endIdx } = passage
 
-    const sentenceComponents = tagged.map((tags: Tag[], i: number) => (
+    const {
+      isEditing,
+      passage,
+      removed,
+      addToSequenceChecked,
+      sentences
+    } = this.state
+
+    const { id, startIdx, endIdx } = passage
+
+    const sentenceComponents = sentences.map((tags: Tag[], i: number) => (
       <FlexedDiv justifyContent={"space-between"} key={i}>
         <Text.s>{i + 1}</Text.s>
         <Textarea
@@ -239,16 +259,13 @@ class EditPassage extends React.Component<Props, State> {
       </FlexedDiv>
     ))
 
-    const wordComponents = tagged.map((sentence: Tag[], sentenceIdx: number) =>
+    const wordComponents = sentences.map((sentence: Tag[], senIdx: number) =>
       sentence.map((tag: Tag, wordIdx: number) => (
-        <Tagged
-          isPunctuation={tag.isPunctuation}
-          key={`${sentenceIdx}-${wordIdx}`}
-        >
+        <Tagged isPunctuation={tag.isPunctuation} key={`${senIdx}-${wordIdx}`}>
           <TagValue
             isUnfocused={tag.isUnfocused}
             isFocusWord={tag.isFocusWord}
-            onClick={() => this.switchFocus(sentenceIdx, wordIdx)}
+            onClick={() => this.switchFocus(senIdx, wordIdx)}
             color={highlight(tag)}
           >
             {tag.value}

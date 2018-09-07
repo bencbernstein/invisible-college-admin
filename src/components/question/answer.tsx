@@ -27,7 +27,7 @@ const AnswerSpace = styled.span`
   display: ${(p: AnswerSpaceProps) => p.hide && "inline-block"};
 `
 
-const Underline = styled.div`
+const Underline = styled.span`
   height: 4px;
   background-color: black;
   border-radius: 5px;
@@ -54,7 +54,8 @@ export default class Answer extends React.Component<Props, any> {
 
     const displayImage =
       type === "WORD_TO_IMG" &&
-      answer[0].value.startsWith("data:image") &&
+      _.isString(answer[0].value) &&
+      answer[0].value!.startsWith("data:image") &&
       guessedCorrectly.length
 
     const withUnderline = (value: string) => (
@@ -68,7 +69,13 @@ export default class Answer extends React.Component<Props, any> {
 
     const answerSpace = (part: AnswerPart, i: number) => {
       const hide = !part.prefill && !_.includes(guessedCorrectly, part.value)
+
+      if (!part.value) {
+        return null
+      }
+
       const formattedValue = isPunc(part.value) ? part.value : ` ${part.value}`
+
       return (
         <AnswerSpace hide={hide} key={i}>
           {hide ? withUnderline(formattedValue) : formattedValue}

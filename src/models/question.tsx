@@ -11,13 +11,15 @@ export interface Sources {
 }
 
 export interface PromptPart {
-  value: string
-  highlight: boolean
+  value?: string
+  highlight?: boolean
+  isSentenceConnector?: boolean
 }
 
 export interface AnswerPart {
-  value: string
-  prefill: boolean
+  value?: string
+  prefill?: boolean
+  isSentenceConnector?: boolean
 }
 
 export interface Question {
@@ -63,10 +65,27 @@ const slim = `
   ${sources}
 `
 
-export const fetchQuestions = async (questionType?: string, after?: string): Promise<Question[] | Error> => {
-  const params = (questionType && after)
-    ? `(questionType: "${questionType}", after: "${after}")`
-    : after ? `(after: "${after}")` : questionType ? `(questionType: "${questionType}")` : ""
+export const fetchQuestion = async (id: string): Promise<Question | Error> => {
+  const gqlQuery = `query {
+    question(id: "${id}") {
+      ${questionFragment}
+    }
+  }`
+  return query(gqlQuery, "question")
+}
+
+export const fetchQuestions = async (
+  questionType?: string,
+  after?: string
+): Promise<Question[] | Error> => {
+  const params =
+    questionType && after
+      ? `(questionType: "${questionType}", after: "${after}")`
+      : after
+        ? `(after: "${after}")`
+        : questionType
+          ? `(questionType: "${questionType}")`
+          : ""
   const gqlQuery = `query {
     questions${params} {
       ${slim}
