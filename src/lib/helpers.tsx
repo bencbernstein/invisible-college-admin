@@ -124,4 +124,21 @@ export const move = (arr: any[], old_index: number, new_index: number) => {
   return arr
 }
 
-export const isPunc = (char: string) => [".", ",", ")", "'"].indexOf(char) > -1
+export const isPunc = (char?: string) =>
+  char && [".", ",", ")", "'"].indexOf(char) > -1
+
+export const toSentences = (tags: Tag[]) => {
+  const sentences: Tag[][] = [[]]
+  let idx = 0
+
+  tags.forEach(word => {
+    if (word.isSentenceConnector) {
+      idx++
+      sentences[idx] = []
+    } else {
+      sentences[idx].push(word)
+    }
+  })
+
+  return sentences
+}

@@ -28,11 +28,11 @@ import {
 import { fetchKeywords } from "../../models/word"
 import { fetchUser } from "../../models/user"
 
-import {
-  fetchQuestionsForWord,
-  fetchQuestionsForText,
-  Question
-} from "../../models/question"
+// import {
+//   fetchQuestionsForWord,
+//   fetchQuestionsForText,
+//   Question
+// } from "../../models/question"
 
 import { getWordAtPoint } from "../../lib/helpers"
 
@@ -147,8 +147,9 @@ interface ContainerProps {
 interface ContainerState {
   wordBelowCursor: string | null
   holdingShift: boolean
-  questions: Question[]
+  questions: string[]
   displayNav: boolean
+  playNowIdx?: number
 }
 
 class Container extends React.Component<ContainerProps, ContainerState> {
@@ -197,17 +198,16 @@ class Container extends React.Component<ContainerProps, ContainerState> {
   }
 
   public async play(model: string, id: string) {
-    let questions
-
-    if (model === "word") {
-      questions = await fetchQuestionsForWord(id)
-    } else {
-      questions = await fetchQuestionsForText(id)
-    }
-
-    if (!(questions instanceof Error)) {
-      this.setState({ questions })
-    }
+    // TODO: - fix
+    // const questions
+    // if (model === "word") {
+    //   questions = await fetchQuestionsForWord(id)
+    // } else {
+    //   questions = await fetchQuestionsForText(id)
+    // }
+    // if (!(questions instanceof Error)) {
+    //   this.setState({ questions })
+    // }
   }
 
   public render() {
@@ -217,6 +217,10 @@ class Container extends React.Component<ContainerProps, ContainerState> {
 
     if (!loggedIn && component !== "login") {
       return <Redirect to={"/login"} />
+    }
+
+    if (!user) {
+      return null
     }
 
     const definedWords = keywords ? keywords.words : []
@@ -233,12 +237,13 @@ class Container extends React.Component<ContainerProps, ContainerState> {
 
     const questionsModal = questions.length > 0 && (
       <QuestionComponent
-        done={() => this.setState({ questions: [] })}
+        playNowIdx={this.state.playNowIdx}
+        done={() => this.setState({ questions: [], playNowIdx: undefined })}
         questions={questions}
       />
     )
 
-    return user ? (
+    return (
       <OuterContainer
         isPlaying={questions.length > 0}
         onMouseMove={this.handleMouseMove.bind(this)}
@@ -250,7 +255,13 @@ class Container extends React.Component<ContainerProps, ContainerState> {
         {
           {
             library: <Library />,
-            gameplay: <Gameplay />,
+            gameplay: (
+              <Gameplay
+                play={(sequenceQuestions: string[], playNowIdx?: number) =>
+                  this.setState({ questions: sequenceQuestions, playNowIdx })
+                }
+              />
+            ),
             text: (
               <Text
                 displayNav={(displayNav: true) => this.setState({ displayNav })}
@@ -267,8 +278,8 @@ class Container extends React.Component<ContainerProps, ContainerState> {
             ),
             sequence: (
               <Sequence
-                play={(sequenceQuestions: Question[]) =>
-                  this.setState({ questions: sequenceQuestions })
+                play={(sequenceQuestions: string[], playNowIdx?: number) =>
+                  this.setState({ questions: sequenceQuestions, playNowIdx })
                 }
               />
             ),
@@ -279,7 +290,7 @@ class Container extends React.Component<ContainerProps, ContainerState> {
         {questionsModal}
         {wordModal}
       </OuterContainer>
-    ) : null
+    )
   }
 }
 

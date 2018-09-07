@@ -1,3 +1,4 @@
+import * as _ from "underscore"
 import * as React from "react"
 import styled from "styled-components"
 
@@ -82,7 +83,9 @@ export default class Choices extends React.Component<Props, any> {
     const isImage =
       type === "WORD_TO_IMG" && redHerrings[0].startsWith("data:image")
 
-    const answerValues = answer.filter(a => !a.prefill).map(a => a.value)
+    const answerValues = _.compact(
+      answer.filter(a => !a.prefill).map(a => a.value)
+    )
 
     const choices = redHerrings.concat(answerValues).map(
       (c: string, i: number) =>

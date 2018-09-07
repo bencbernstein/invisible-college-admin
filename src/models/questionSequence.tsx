@@ -1,15 +1,15 @@
 import { query } from "./query"
 
-import { Question, questionFragment } from "./question"
-
 export interface QuestionSequence {
   id: string
   name: string
   questions: string[]
-  fullQuestions?: Question[]
+  fullQuestions?: any[]
 }
 
-export const fetchQuestionSequences = async (): Promise<QuestionSequence[] | Error> => {
+export const fetchQuestionSequences = async (): Promise<
+  QuestionSequence[] | Error
+> => {
   const gqlQuery = `query {
     questionSequences {
       id
@@ -20,21 +20,34 @@ export const fetchQuestionSequences = async (): Promise<QuestionSequence[] | Err
   return query(gqlQuery, "questionSequences")
 }
 
-export const fetchQuestionSequence = async (id: string): Promise<QuestionSequence | Error> => {
+export const fetchQuestionSequence = async (
+  id: string
+): Promise<QuestionSequence | Error> => {
   const gqlQuery = `query {
     questionSequence(id: "${id}") {
       id
       name
       questions
       fullQuestions {
-        ${questionFragment}
-      }
+        id
+        TYPE
+        sources {
+          word {
+            value
+          }
+          text {
+            value
+          }
+        }
+      }      
     }
   }`
   return query(gqlQuery, "questionSequence")
 }
 
-export const removeQuestionSequence = async (id: string): Promise<QuestionSequence | Error> => {
+export const removeQuestionSequence = async (
+  id: string
+): Promise<QuestionSequence | Error> => {
   const gqlQuery = `mutation {
     removeQuestionSequence(id: "${id}") {
       id
@@ -43,7 +56,10 @@ export const removeQuestionSequence = async (id: string): Promise<QuestionSequen
   return query(gqlQuery, "removeQuestionSequence")
 }
 
-export const createQuestionSequence = async (name: string, question: string): Promise<QuestionSequence | Error> => {
+export const createQuestionSequence = async (
+  name: string,
+  question: string
+): Promise<QuestionSequence | Error> => {
   const gqlQuery = `mutation {
     createQuestionSequence(name: "${name}", question: "${question}") {
       id
@@ -54,9 +70,14 @@ export const createQuestionSequence = async (name: string, question: string): Pr
   return query(gqlQuery, "createQuestionSequence")
 }
 
-export const updateQuestionSequence = async (id: string, questions: string[]): Promise<QuestionSequence | Error> => {
+export const updateQuestionSequence = async (
+  id: string,
+  questions: string[]
+): Promise<QuestionSequence | Error> => {
   const gqlQuery = `mutation {
-    updateQuestionSequence(id: "${id}", questions: "${encodeURIComponent(JSON.stringify(questions))}") {
+    updateQuestionSequence(id: "${id}", questions: "${encodeURIComponent(
+    JSON.stringify(questions)
+  )}") {
       id
       name
       questions

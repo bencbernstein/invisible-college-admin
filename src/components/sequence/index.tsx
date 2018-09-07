@@ -39,20 +39,26 @@ const indexInputIsValid = (
 }
 
 interface Props {
-  play: (questions: Question[]) => void
+  play: (questions: string[], playNowIdx?: number) => void
 }
 
 interface State {
   isHovering?: number
   questionSequence?: QuestionSequence
   indexInput: string
+  playNowIdx: number
 }
 
 class Sequence extends React.Component<Props, State> {
   constructor(props: any) {
     super(props)
+
+    const { search } = window.location
+    const playNowIdx = parseInt(search.replace("?play=", ""), 10)
+
     this.state = {
-      indexInput: ""
+      indexInput: "",
+      playNowIdx
     }
   }
 
@@ -68,10 +74,17 @@ class Sequence extends React.Component<Props, State> {
   }
 
   public async loadSequence() {
+    const { playNowIdx } = this.state
     const id = _.last(window.location.pathname.split("/"))
+
     const questionSequence = await fetchQuestionSequence(id!)
+
     if (!(questionSequence instanceof Error)) {
       this.setState({ questionSequence })
+
+      if (playNowIdx) {
+        this.props.play(questionSequence.questions, playNowIdx)
+      }
     }
   }
 

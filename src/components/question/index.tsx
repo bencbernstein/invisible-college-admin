@@ -2,7 +2,7 @@ import * as React from "react"
 import * as _ from "underscore"
 import styled from "styled-components"
 
-import { Question } from "../../models/question"
+import { Question, fetchQuestion } from "../../models/question"
 
 import Icon from "../common/icon"
 
@@ -45,12 +45,14 @@ export interface Guess {
 }
 
 interface Props {
-  questions: Question[]
+  questions: string[]
   done: () => void
+  playNowIdx?: number
 }
 
 interface State {
   idx: number
+  question?: Question
   guess?: Guess
   guessedCorrectly: string[]
 }
@@ -58,8 +60,9 @@ interface State {
 class QuestionComponent extends React.Component<Props, State> {
   constructor(props: any) {
     super(props)
+
     this.state = {
-      idx: 0,
+      idx: this.props.playNowIdx || 0,
       guessedCorrectly: []
     }
 
@@ -68,20 +71,30 @@ class QuestionComponent extends React.Component<Props, State> {
 
   public componentWillMount() {
     document.addEventListener("keydown", this.handleKeyDown, false)
+    this.loadQuestion(this.state.idx)
   }
 
   public componentWillUnmount() {
     document.removeEventListener("keydown", this.handleKeyDown, false)
   }
 
-  public handleKeyDown(e: any) {
-    let idx = this.state.idx
-    if (e.key === "ArrowRight") {
-      idx = Math.min(this.props.questions.length - 1, idx + 1)
-    } else if (e.key === "ArrowLeft") {
-      idx = Math.max(0, idx - 1)
+  public async loadQuestion(idx: number) {
+    const id = this.props.questions[idx]
+    if (id) {
+      const question = await fetchQuestion(id)
+      if (!(question instanceof Error)) {
+        this.setState({ question, guess: undefined, idx, guessedCorrectly: [] })
+      }
     }
-    this.setState({ idx })
+  }
+
+  public handleKeyDown(e: any) {
+    const { idx } = this.state
+    if (e.key === "ArrowRight") {
+      this.loadQuestion(Math.min(this.props.questions.length - 1, idx + 1))
+    } else if (e.key === "ArrowLeft") {
+      this.loadQuestion(Math.max(0, idx - 1))
+    }
   }
 
   public guessed(choice: string, buttonIdx: number, answerValues: string[]) {
@@ -98,6 +111,7 @@ class QuestionComponent extends React.Component<Props, State> {
 
     setTimeout(() => {
       let { idx } = this.state
+
       if (correctValue) {
         guessedCorrectly.push(correctValue)
         const done = this.props.questions.length === idx + 1
@@ -107,15 +121,20 @@ class QuestionComponent extends React.Component<Props, State> {
           idx += 1
         }
       }
-      this.setState({ guess: undefined, idx, guessedCorrectly: [] })
+
+      this.loadQuestion(idx)
     }, 1500)
   }
 
   public render() {
     const { questions } = this.props
-    const { idx, guess, guessedCorrectly } = this.state
+    const { idx, guess, guessedCorrectly, question } = this.state
 
-    const { prompt, answer, redHerrings, TYPE } = questions[idx]
+    if (!question) {
+      return null
+    }
+
+    const { prompt, answer, redHerrings, TYPE } = question
     const noPrompt = prompt.length === 0
 
     return (

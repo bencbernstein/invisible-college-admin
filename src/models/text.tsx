@@ -9,15 +9,16 @@ export interface Passage {
   startIdx: number
   endIdx: number
   value: string
-  tagged: Tag[][]
+  tagged: Tag[]
   isEnriched?: boolean
 }
 
 export interface Tag {
-  value: string
+  value?: string
   tag?: string
   isFocusWord?: boolean
   isPunctuation?: boolean
+  isSentenceConnector?: boolean
   isConnector?: boolean
   wordId?: string
   choiceSetId?: string
@@ -36,7 +37,7 @@ export interface Text {
 }
 
 const taggedData =
-  "id value tag isFocusWord isPunctuation isConnector wordId choiceSetId isUnfocused"
+  "id value tag isFocusWord isPunctuation isConnector isSentenceConnector wordId choiceSetId isUnfocused"
 export const passageData = `id startIdx endIdx value isEnriched metadata { date author name source } tagged { ${taggedData} }`
 
 const parseTextQuery = (formData: FormData, params: string): any | Error =>
@@ -73,8 +74,6 @@ export const addPassages = async (
   const gqlQuery = `mutation { addPassages(id: "${id}", ranges: ${JSON.stringify(
     ranges
   )}) { passages { ${passageData} } } }`
-  console.log(ranges)
-  console.log(gqlQuery)
   return query(gqlQuery, "addPassages")
 }
 

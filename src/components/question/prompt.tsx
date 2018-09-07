@@ -1,3 +1,4 @@
+import * as _ from "underscore"
 import * as React from "react"
 import styled from "styled-components"
 
@@ -17,7 +18,7 @@ const Container = styled.div`
 `
 
 interface SpanProps {
-  highlight: boolean
+  highlight?: boolean
 }
 
 const Span = styled.span`
@@ -53,12 +54,14 @@ export default class Prompt extends React.Component<Props, any> {
         <Underline />
       ) : (
         <Span key={i} highlight={p.highlight}>
-          {isPunc(p.value) ? p.value : ` ${p.value}`}
+          {isPunc(p.value) ? p.value : ` ${p.value || ""}`}
         </Span>
       )
 
     const isImage =
-      type === "WORD_TO_IMG" && prompt[0].value.startsWith("data:image")
+      type === "WORD_TO_IMG" &&
+      _.isString(prompt[0].value) &&
+      prompt[0].value!.startsWith("data:image")
 
     const length = prompt.map(p => p.value).join("").length
     const TextForSize = length < 50 ? Text.xl : Text.l

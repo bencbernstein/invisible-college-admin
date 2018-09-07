@@ -8,6 +8,7 @@ import AddBox from "../common/addBox"
 import Box from "../common/box"
 import Icon from "../common/icon"
 import IconsContainer from "../common/iconsContainer"
+import Button from "../common/button"
 import Input from "../common/input"
 import ListContainer from "../common/listContainer"
 import Header from "../common/header"
@@ -18,8 +19,15 @@ import deleteIcon from "../../lib/images/icon-delete.png"
 import questionIcon from "../../lib/images/icon-question.png"
 import sequenceIcon from "../../lib/images/icon-sequence.png"
 
-import { QuestionSequence } from "../../models/questionSequence";
+import { QuestionSequence } from "../../models/questionSequence"
 import { SelectedView } from "./"
+
+const LinkButton = Button.regular.extend`
+  border: 0;
+  margin: 0;
+  padding: 10px 0px;
+  width: 100%;
+`
 
 const SuggestionContainer = styled.div`
   position: absolute;
@@ -31,7 +39,7 @@ const SuggestionContainer = styled.div`
   border: 1px solid ${colors.lightGray};
   margin: 0px -1px;
   z-index: 100;
-  background-color: white;  
+  background-color: white;
 `
 
 interface Props {
@@ -39,7 +47,12 @@ interface Props {
   selectedView: SelectedView
   removeSequence: (id: number) => {}
   questionSequences: QuestionSequence[]
-  addQuestionToSequence: (questionId: string, sequence?: QuestionSequence, sequenceName?: string) => {}
+  addQuestionToSequence: (
+    questionId: string,
+    sequence?: QuestionSequence,
+    sequenceName?: string
+  ) => {}
+  play: (questions: string[], playNowIdx?: number) => void
 }
 
 interface State {
@@ -60,13 +73,20 @@ class List extends React.Component<Props, State> {
 
   public handleQuestionSequenceInput(questionSequenceInput: string) {
     const matchingQuestionSequences = this.props.questionSequences
-      .filter(s => s.name.toLowerCase().startsWith(questionSequenceInput.toLowerCase()))
+      .filter(s =>
+        s.name.toLowerCase().startsWith(questionSequenceInput.toLowerCase())
+      )
       .slice(0, 5)
     this.setState({ questionSequenceInput, matchingQuestionSequences })
   }
 
   public render() {
-    const { isHovering, redirect, questionSequenceInput, matchingQuestionSequences } = this.state
+    const {
+      isHovering,
+      redirect,
+      questionSequenceInput,
+      matchingQuestionSequences
+    } = this.state
 
     if (redirect) {
       return <Redirect to={redirect} />
@@ -86,31 +106,37 @@ class List extends React.Component<Props, State> {
         />
         <Icon
           src={
-            { Questions: questionIcon, Sequences: sequenceIcon }[
-            selectedView
-            ]
+            { Questions: questionIcon, Sequences: sequenceIcon }[selectedView]
           }
         />
       </IconsContainer>
     )
 
-    const suggestion = (q?: QuestionSequence) => <Text.s
-      pointer={true}
-      onClick={() => {
-        q
-          ? this.props.addQuestionToSequence(data[isHovering!].id, q)
-          : this.props.addQuestionToSequence(data[isHovering!].id, undefined, questionSequenceInput)
-        this.setState({ questionSequenceInput: "", matchingQuestionSequences: [] })
-      }}
-      key={q ? q.id : "new"} >
-      {q ? q.name : `${questionSequenceInput} (NEW)`}
-    </Text.s >
+    const suggestion = (q?: QuestionSequence) => (
+      <Text.s
+        pointer={true}
+        onClick={() => {
+          q
+            ? this.props.addQuestionToSequence(data[isHovering!].id, q)
+            : this.props.addQuestionToSequence(
+                data[isHovering!].id,
+                undefined,
+                questionSequenceInput
+              )
+          this.setState({
+            questionSequenceInput: "",
+            matchingQuestionSequences: []
+          })
+        }}
+        key={q ? q.id : "new"}
+      >
+        {q ? q.name : `${questionSequenceInput} (NEW)`}
+      </Text.s>
+    )
 
     const inputBox = (i: number) => (
       <AddBox>
-        <Header.forInput>
-          Add to Sequence
-        </Header.forInput>
+        <Header.forInput>Add to Sequence</Header.forInput>
 
         <form
           onSubmit={e => {
@@ -118,9 +144,7 @@ class List extends React.Component<Props, State> {
           }}
         >
           <Input.circ
-            onChange={e =>
-              this.handleQuestionSequenceInput(e.target.value)
-            }
+            onChange={e => this.handleQuestionSequenceInput(e.target.value)}
             value={questionSequenceInput}
             autoCapitalize={"none"}
             autoFocus={true}
@@ -128,46 +152,51 @@ class List extends React.Component<Props, State> {
           />
         </form>
 
-        {questionSequenceInput.length > 0 && <SuggestionContainer>
-          {matchingQuestionSequences.map(suggestion)}
-          {suggestion()}
-        </SuggestionContainer>}
+        {questionSequenceInput.length > 0 && (
+          <SuggestionContainer>
+            {matchingQuestionSequences.map(suggestion)}
+            {suggestion()}
+          </SuggestionContainer>
+        )}
       </AddBox>
     )
 
     const questionBox = (d: any, i: number) => (
       <Box.regular
         onMouseOver={() => this.setState({ isHovering: i })}
-        onMouseLeave={() =>
-          this.setState({ isHovering: undefined })
-        }
-        key={i}>
+        onMouseLeave={() => this.setState({ isHovering: undefined })}
+        key={i}
+      >
         {icons(i, true)}
-        <Text.l>
-          {get(d.sources.word || d.sources.text, "value")}
-        </Text.l>
-        <Text.regular>
-          {d.TYPE}
-        </Text.regular>
+        <Text.l>{get(d.sources.word || d.sources.text, "value")}</Text.l>
+        <Text.regular>{d.TYPE}</Text.regular>
         {isHovering === i && inputBox(i)}
       </Box.regular>
     )
 
-    const sequenceBox = (d: any, i: number) => (
+    const sequenceLinksBox = (sequence: QuestionSequence) => (
+      <AddBox style={{ display: "flex", padding: "0" }} key={sequence.id}>
+        <Link
+          style={{ textDecoration: "none", color: "black", width: "50%" }}
+          to={`/sequence/${sequence.id}`}
+        >
+          <LinkButton>View</LinkButton>
+        </Link>
+        <LinkButton
+          onClick={() => this.props.play(sequence.questions)}
+          style={{ width: "50%" }}
+        >
+          Play
+        </LinkButton>
+      </AddBox>
+    )
+
+    const sequenceBox = (sequence: QuestionSequence, i: number) => (
       <Box.regular key={i}>
         {icons(i)}
-        <Link
-          key={d.id}
-          style={{ textDecoration: "none" }}
-          to={`/sequence/${d.id}`}
-        >
-          <Text.l>
-            {d.name}
-          </Text.l>
-          <Text.regular>
-            {d.questions.length}
-          </Text.regular>
-        </Link>
+        <Text.l>{sequence.name}</Text.l>
+        <Text.regular>{sequence.questions.length}</Text.regular>
+        {sequenceLinksBox(sequence)}
       </Box.regular>
     )
 
@@ -176,9 +205,7 @@ class List extends React.Component<Props, State> {
       Sequences: sequenceBox
     }[selectedView]
 
-    return <ListContainer>
-      {data.map(box)}
-    </ListContainer>
+    return <ListContainer>{data.map(box)}</ListContainer>
   }
 }
 
