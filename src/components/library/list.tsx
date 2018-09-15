@@ -24,8 +24,6 @@ import textIcon from "../../lib/images/icon-text.png"
 import wordIcon from "../../lib/images/icon-word.png"
 import passageSequencesIcon from "../../lib/images/icon-passage-sequence.png"
 
-import { PassageSequence } from "../../models/passageSequence"
-
 const Removable = styled.span`
   cursor: pointer;
   margin: 0px 3px;
@@ -210,7 +208,7 @@ class List extends React.Component<Props, State> {
       </Box.regular>
     )
 
-    const passageSequencesBox = (d: PassageSequence, i: number) => (
+    const passageSequencesBox = (d: any, i: number) => (
       <Box.regular key={i}>
         {icons(i, false)}
         <Link
@@ -231,11 +229,7 @@ class List extends React.Component<Props, State> {
       "Passage Sequences": passageSequencesBox
     }[selectedView]
 
-    return (
-      <ListContainer>
-        {data.map((d: any, i: number) => constructor(d, i))}
-      </ListContainer>
-    )
+    return <ListContainer>{data.map(constructor)}</ListContainer>
   }
 }
 

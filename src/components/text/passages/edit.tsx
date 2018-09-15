@@ -13,7 +13,7 @@ import {
   PassageSequence
 } from "../../../models/passageSequence"
 import { Passage, Tag, updatePassage } from "../../../models/text"
-import { Keywords } from "../../app"
+import { Keywords } from "../../../models/word"
 
 import { colors } from "../../../lib/colors"
 import connectors from "./data/connectors"
@@ -21,7 +21,8 @@ import {
   highlight,
   tagsToSentence,
   cleanObj,
-  toSentences
+  toSentences,
+  flattenSentences
 } from "../../../lib/helpers"
 
 import addIcon from "../../../lib/images/icon-add.png"
@@ -139,10 +140,13 @@ class EditPassage extends React.Component<Props, State> {
   public componentWillReceiveProps(nextProps: Props) {
     const passage = nextProps.passage
     const switchedPassage = this.props.passage.id !== passage.id
+
     if (switchedPassage) {
       this.updatePassage()
     }
-    this.setState({ passage, didEdit: false })
+
+    const sentences = toSentences(passage.tagged)
+    this.setState({ passage, sentences, didEdit: false })
   }
 
   public updatePassage() {
@@ -150,20 +154,16 @@ class EditPassage extends React.Component<Props, State> {
 
     if (!removed && (didEdit || this.props.isEnriching)) {
       _.flatten(passage.tagged).forEach((tag: Tag) => cleanObj(tag))
-
-      // TODO: - fix
-
-      if (addToSequenceChecked && passage.tagged.length > 100000) {
-        updatePassage(passage)
-
+      updatePassage(passage)
+      if (addToSequenceChecked) {
         const id = this.props.passageSequences[0].id
         addPassageToPassageSequence(id, passage.id)
       }
     }
   }
 
-  public editValue(sentenceIdx: number, value: string) {
-    const { passage } = this.state
+  public editValue(senIdx: number, value: string) {
+    const { passage, sentences } = this.state
 
     const [words, choices] = this.props.keywords
       ? [this.props.keywords.words, this.props.keywords.choices]
@@ -172,7 +172,7 @@ class EditPassage extends React.Component<Props, State> {
     const lexed = new pos.Lexer().lex(value)
     const tagger = new pos.Tagger()
 
-    passage.tagged[sentenceIdx] = tagger.tag(lexed).map((t: any) => ({
+    sentences[senIdx] = tagger.tag(lexed).map((t: any) => ({
       value: t[0],
       tag: t[1],
       isPunctuation: t[0] === t[1],
@@ -182,27 +182,34 @@ class EditPassage extends React.Component<Props, State> {
       isFocusWord: false
     }))
 
-    this.setState({ passage, didEdit: true, isEditing: undefined })
+    passage.tagged = flattenSentences(sentences)
+
+    this.setState({ passage, sentences, didEdit: true, isEditing: undefined })
   }
 
-  public switchFocus(sentenceIdx: number, wordIdx: number) {
-    const passage = this.state.passage
-    const tag = passage.tagged[sentenceIdx][wordIdx]
+  public switchFocus(senIdx: number, wordIdx: number) {
+    const { passage, sentences } = this.state
+
+    const tag = sentences[senIdx][wordIdx]
     const attr = automaticFocus(tag) ? "isUnfocused" : "isFocusWord"
-    passage.tagged[sentenceIdx][wordIdx][attr] = !tag[attr]
-    this.setState({ passage, didEdit: true })
+    sentences[senIdx][wordIdx][attr] = !tag[attr]
+    passage.tagged = flattenSentences(sentences)
+
+    this.setState({ passage, sentences, didEdit: true })
   }
 
   public removeSentence(idx: number) {
-    const passage = this.state.passage
-    passage.tagged.splice(idx, 1)
-    this.setState({ passage, didEdit: true })
+    const { passage, sentences } = this.state
+    sentences.splice(idx, 1)
+    passage.tagged = flattenSentences(sentences)
+    this.setState({ passage, sentences, didEdit: true })
   }
 
   public addSentenceAfter(idx: number) {
-    const passage = this.state.passage
-    passage.tagged.splice(idx + 1, 0, { value: "" })
-    this.setState({ passage, didEdit: true })
+    const { passage } = this.state
+    passage.tagged.push({ isSentenceConnector: true })
+    const sentences = toSentences(passage.tagged)
+    this.setState({ passage, sentences, didEdit: true })
   }
 
   public remove(id: string) {

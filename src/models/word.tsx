@@ -1,18 +1,57 @@
 import { query } from "./query"
 
-import { Word } from "../components/word"
+export interface Keywords {
+  choices: any
+  words: any
+}
+
+export interface Component {
+  value: string
+  isRoot: boolean
+}
+
+export interface DefinitionPart {
+  value: string
+  highlight: boolean
+}
+
+export interface Unverified {
+  definition?: string
+  tags?: string[]
+  synonyms?: string[]
+}
+
+export interface Tag {
+  id?: string
+  value: string
+  choiceSetIds?: string[]
+}
+
+export interface Word {
+  id: string
+  value: string
+  synonyms: string[]
+  isDecomposable: boolean
+  components?: Component[]
+  definition: DefinitionPart[]
+  otherForms: string[]
+  obscurity: number
+  images: string[]
+  tags: Tag[]
+  unverified: Unverified
+}
 
 export const fetchWords = async (
   first: number,
   after?: string
-): Promise<any | Error> => {
+): Promise<Word[] | Error> => {
   const gqlQuery = after
     ? `query { words(first: ${first}, after: "${after}") { id value } }`
     : `query { words(first: ${first}) { id value } }`
   return query(gqlQuery, "words")
 }
 
-export const fetchWord = async (id: string): Promise<any | Error> => {
+export const fetchWord = async (id: string): Promise<Word | Error> => {
   const gqlQuery = `query {
     word(id: "${id}") {
       id
@@ -90,4 +129,13 @@ export const updateWord = async (word: Word): Promise<any | Error> => {
     }
   }`
   return query(gqlQuery, "updateWord")
+}
+
+export const wordsToEnrich = async (attr: string): Promise<Word[] | Error> => {
+  const gqlQuery = `query {
+    wordsToEnrich(attr: "${attr}") {
+      id
+    }
+  }`
+  return query(gqlQuery, "wordsToEnrich")
 }

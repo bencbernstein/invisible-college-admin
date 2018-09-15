@@ -7,6 +7,7 @@ import * as _ from "underscore"
 import Button from "../common/button"
 import Subnav from "../nav/subnav"
 import List from "./list"
+import EnrichWordsMenu from "./enrichWordsMenu"
 import Menus from "../common/menu"
 
 import {
@@ -16,7 +17,7 @@ import {
   removeChoiceSet
 } from "../../models/choiceSet"
 import { fetchTexts, removeText } from "../../models/text"
-import { fetchWords, removeWord } from "../../models/word"
+import { Word, fetchWords, removeWord } from "../../models/word"
 import {
   PassageSequence,
   fetchPassageSequences
@@ -27,7 +28,6 @@ const FlexedDiv = styled.div`
 `
 
 export enum SelectedView {
-  All = "All",
   ChoiceSets = "Choice Sets",
   Texts = "Texts",
   PassageSequences = "Passage Sequences",
@@ -45,16 +45,28 @@ interface State {
   selectedSortBy: SelectedSortBy
   redirect?: string
   passageSequences: PassageSequence[]
-  words: any[]
+  words: Word[]
   texts: any[]
   choiceSets: any[]
+}
+
+const viewForSearch = (search: string): SelectedView => {
+  if (search.includes("choice-sets")) {
+    return SelectedView.ChoiceSets
+  } else if (search.includes("texts")) {
+    return SelectedView.Texts
+  } else if (search.includes("passage-sequences")) {
+    return SelectedView.PassageSequences
+  }
+  return SelectedView.Words
 }
 
 class Library extends React.Component<any, State> {
   constructor(props: any) {
     super(props)
+
     this.state = {
-      selectedView: SelectedView.Words,
+      selectedView: viewForSearch(window.location.search),
       selectedSortBy: SelectedSortBy.Passages,
       passageSequences: [],
       words: [],
@@ -91,8 +103,11 @@ class Library extends React.Component<any, State> {
 
   public async loadWords() {
     const after = get(_.last(this.state.words), "value")
-    const words = this.state.words.concat(await fetchWords(30, after))
-    this.setState({ words })
+    let words = await fetchWords(30, after)
+    if (!(words instanceof Error)) {
+      words = this.state.words.concat(words)
+      this.setState({ words })
+    }
   }
 
   public async updateChoiceSet(i: number, choice: string, add: boolean) {
@@ -112,26 +127,21 @@ class Library extends React.Component<any, State> {
 
   public async remove(i: number) {
     const { choiceSets, selectedView, words, texts } = this.state
-    if (selectedView === "Words") {
-      const id = words[i].id
-      const result = await removeWord(id)
+
+    const [data, fn] = {
+      Words: [words, removeWord],
+      Texts: [texts, removeText],
+      "Choice Sets": [choiceSets, removeChoiceSet]
+    }[selectedView]
+
+    const confirm = `Are you sure you want to delete ${data[i].name ||
+      data[i].value}?`
+    if (window.confirm(confirm)) {
+      const result = await fn(data[i].id)
+
       if (!(result instanceof Error)) {
-        words.splice(i, 1)
-        this.setState({ words })
-      }
-    } else if (selectedView === "Texts") {
-      const id = texts[i].id
-      const result = await removeText(id)
-      if (!(result instanceof Error)) {
-        texts.splice(i, 1)
-        this.setState({ texts })
-      }
-    } else {
-      const id = choiceSets[i].id
-      const result = await removeChoiceSet(id)
-      if (!(result instanceof Error)) {
-        choiceSets.splice(i, 1)
-        this.setState({ choiceSets })
+        data.splice(i, 1)
+        this.setState({ choiceSets, selectedView, words, texts })
       }
     }
   }
@@ -211,6 +221,8 @@ class Library extends React.Component<any, State> {
             />
           )}
         </FlexedDiv>
+
+        {selectedView === "Words" && <EnrichWordsMenu words={words} />}
 
         <List
           remove={this.remove.bind(this)}

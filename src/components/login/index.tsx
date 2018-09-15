@@ -1,40 +1,14 @@
 import * as React from "react"
 import { Redirect } from "react-router"
-import styled from "styled-components"
 
-import { colors } from "../../lib/colors"
 import Header from "../common/header"
 import Input from "../common/input"
+import { Container, Form, ErrorMessage } from "./components"
 
 import { loginUser } from "../../models/user"
 
-const Container = styled.div`
-  height: 100vh;
-  position: absolute;
-  top: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  width: 100vw;
-`
-
-const Form = styled.form`
-  width: 300px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  height 150px;
-  justify-content: space-between;
-`
-
-const ErrorMessage = styled.p`
-  color: ${colors.red};
-  font-size: 0.85em;
-`
-
 export interface Props {
-  login: (token: string) => void
+  login: (token: string, cb: () => void) => void
 }
 
 interface State {
@@ -63,14 +37,18 @@ class Login extends React.Component<Props, State> {
       if (response instanceof Error) {
         this.setState({ error: response.message })
       } else {
-        this.props.login(response)
+        this.props.login(response, () =>
+          this.setState({ redirect: "/library" })
+        )
       }
     }
   }
 
   public render() {
-    if (this.state.redirect) {
-      return <Redirect to={this.state.redirect} />
+    const { redirect, email, password, error } = this.state
+
+    if (redirect) {
+      return <Redirect to={redirect} />
     }
 
     return (
@@ -80,14 +58,14 @@ class Login extends React.Component<Props, State> {
         <Form onSubmit={this.handleSubmit.bind(this)}>
           <Input.m
             onChange={e => this.setState({ email: e.target.value })}
-            value={this.state.email}
+            value={email}
             autoCapitalize={"none"}
             placeholder="Email"
             type="text"
           />
           <Input.m
             onChange={e => this.setState({ password: e.target.value })}
-            value={this.state.password}
+            value={password}
             autoCapitalize={"none"}
             placeholder="Password"
             type="text"
@@ -95,7 +73,7 @@ class Login extends React.Component<Props, State> {
           <Input.submit type="submit" />
         </Form>
 
-        <ErrorMessage>{this.state.error}</ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
       </Container>
     )
   }

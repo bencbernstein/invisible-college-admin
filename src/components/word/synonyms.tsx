@@ -1,14 +1,13 @@
 import * as React from "react"
 import styled from "styled-components"
+import * as _ from "underscore"
 
 import Button from "../common/button"
 import Header from "../common/header"
 import Input from "../common/input"
 import Text from "../common/text"
 
-import { Word } from "./"
-
-import { Keywords } from "../app"
+import { Word } from "../../models/word"
 
 import { colors } from "../../lib/colors"
 
@@ -29,7 +28,7 @@ const Autocomplete = styled.div`
 
 interface Props {
   word: Word
-  keywords?: Keywords
+  keywordValues: string[]
   update: (word: Word) => void
 }
 
@@ -64,15 +63,14 @@ class SynonymsComponent extends React.Component<Props, State> {
   }
 
   public changeSynonym(synonym: string) {
-    // TODO: - fix
-    // const { word, keywords } = this.props
-    // const words = keywords ? keywords.words.concat(keywords.choices) : []
-    // const autocomplete = words
-    //   .filter(w => w.startsWith(synonym))
-    //   .filter(w => word.tags.map(t => t.value).indexOf(w) === -1)
-    //   .sort()
-    //   .slice(0, 5)
-    // this.setState({ autocomplete, synonym })
+    const autocomplete = synonym.length
+      ? this.props.keywordValues
+          .filter(k => k.startsWith(synonym))
+          .filter(k => !_.includes(this.props.word.synonyms, k))
+          .sort()
+          .slice(0, 5)
+      : []
+    this.setState({ autocomplete, synonym })
   }
 
   public render() {

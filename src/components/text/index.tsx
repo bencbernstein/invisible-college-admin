@@ -8,13 +8,12 @@ import Information from "./information"
 import Menu from "./menu"
 
 import { addPassages, fetchText, removePassage } from "../../models/text"
+import { Keywords } from "../../models/word"
 import { Text } from "../../models/text"
 import { Bookmark, fetchUser, saveBookmark, User } from "../../models/user"
 
 import Passages from "./passages"
 import Read from "./read"
-
-import { Keywords } from "../app"
 
 interface State {
   text?: Text
@@ -71,7 +70,7 @@ class TextComponent extends React.Component<Props, State> {
   public async updatePassages(ranges: number[][]) {
     const text = await addPassages(this.state.text!.id, ranges)
     if (!(text instanceof Error)) {
-      this.setState({ text })
+      this.setState({ text: _.extend({}, this.state.text!, text) })
     }
   }
 

@@ -5,7 +5,7 @@ import Button from "../common/button"
 import Header from "../common/header"
 import Input from "../common/input"
 
-import { Word } from "./"
+import { Word } from "../../models/word"
 
 const Form = styled.form`
   position: relative;

@@ -4,7 +4,7 @@ import * as _ from "underscore"
 
 import { Text } from "../../models/text"
 import { Bookmark } from "../../models/user"
-import { Keywords } from "../app"
+import { Keywords } from "../../models/word"
 
 import { colors } from "../../lib/colors"
 import { getRanges, highlightValue } from "../../lib/helpers"

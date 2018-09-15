@@ -164,7 +164,7 @@ class Sequence extends React.Component<any, State> {
           minimized={false}
           title={"Zoology"}
           subtitle={"Passage Sequences"}
-          subtitleLink={"/library"}
+          subtitleLink={"/library?view=passage-sequences"}
           invert={true}
         />
         <ListContainer>{passages.map(box)}</ListContainer>
