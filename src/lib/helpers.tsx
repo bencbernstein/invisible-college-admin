@@ -1,5 +1,6 @@
 /* tslint:disable */
 
+import * as _ from "underscore"
 import { colors } from "./colors"
 import { Tag } from "../models/text"
 
@@ -71,7 +72,7 @@ export const getWordAtPoint = (
   elem: any,
   x: number,
   y: number
-): string | null => {
+): string | undefined => {
   if (elem.nodeType === elem.TEXT_NODE) {
     const range = elem.ownerDocument.createRange()
     range.selectNodeContents(elem)
@@ -110,7 +111,7 @@ export const getWordAtPoint = (
       }
     }
   }
-  return null
+  return undefined
 }
 
 export const move = (arr: any[], old_index: number, new_index: number) => {
@@ -141,4 +142,37 @@ export const toSentences = (tags: Tag[]) => {
   })
 
   return sentences
+}
+
+export const flattenSentences = (sentences: Tag[][]): any =>
+  _.flatten(
+    sentences
+      .reduce((a, v) => [...a, v, { isSentenceConnector: true }], [])
+      .slice(0, -1)
+  )
+
+export const camelize = (str: string) =>
+  str
+    .replace(/(?:^\w|[A-Z]|\b\w)/g, function(letter, index) {
+      return index == 0 ? letter.toLowerCase() : letter.toUpperCase()
+    })
+    .replace(/\s+/g, "")
+
+export const parseQueryString = (queryString: string): any => {
+  queryString = queryString.substring(1)
+
+  var params = {},
+    queries,
+    temp,
+    i,
+    l
+
+  queries = queryString.split("&")
+
+  for (i = 0, l = queries.length; i < l; i++) {
+    temp = queries[i].split("=")
+    params[temp[0]] = temp[1]
+  }
+
+  return params
 }

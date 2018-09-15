@@ -6,9 +6,7 @@ import Header from "../common/header"
 import Input from "../common/input"
 import Text from "../common/text"
 
-import { Tag, Word } from "./"
-
-import { Keywords } from "../app"
+import { Tag, Word } from "../../models/word"
 
 import { colors } from "../../lib/colors"
 
@@ -29,7 +27,7 @@ const Autocomplete = styled.div`
 
 interface Props {
   word: Word
-  keywords?: Keywords
+  keywordValues: string[]
   update: (word: Word) => void
 }
 

@@ -1,6 +1,8 @@
 import * as React from "react"
 import * as _ from "underscore"
 
+import history from "../../history"
+
 import DefinitionComponent from "./definition"
 import Gallery from "./gallery"
 import OtherFormsComponent from "./otherForms"
@@ -15,59 +17,35 @@ import Header from "../common/header"
 import Input from "../common/input"
 
 import { addImage, fetchImages, removeImage } from "../../models/image"
-import { fetchWord, updateWord } from "../../models/word"
+import { Word, fetchWord, updateWord } from "../../models/word"
 
-import { Keywords } from "../app"
+import { parseQueryString } from "../../lib/helpers"
 
-interface State {
-  word?: Word
-  imagesBase64: string[]
-}
+import { Redirect } from "react-router"
 
 interface Props {
-  keywords?: Keywords
+  keywordValues: string[]
   play: (id: string) => {}
 }
 
-export interface Component {
-  value: string
-  isRoot: boolean
+interface Enriching {
+  isEnriching: string
+  next: string
 }
+const objIsEnriching = (obj: any): obj is Enriching =>
+  "isEnriching" in obj && "next" in obj
 
-export interface DefinitionPart {
-  value: string
-  highlight: boolean
-}
-
-export interface Unverified {
-  definition?: string
-  tags?: string[]
-  synonyms?: string[]
-}
-
-export interface Tag {
-  id?: string
-  value: string
-  choiceSetIds?: string[]
-}
-
-export interface Word {
-  id: string
-  value: string
-  synonyms: string[]
-  isDecomposable: boolean
-  components?: Component[]
-  definition: DefinitionPart[]
-  otherForms: string[]
-  obscurity: number
-  images: string[]
-  tags: Tag[]
-  unverified: Unverified
+interface State {
+  word?: Word
+  redirect?: string
+  imagesBase64: string[]
+  enriching?: Enriching
 }
 
 class WordComponent extends React.Component<Props, State> {
   constructor(props: any) {
     super(props)
+
     this.state = {
       imagesBase64: []
     }
@@ -78,13 +56,27 @@ class WordComponent extends React.Component<Props, State> {
   }
 
   public componentWillUnmount() {
-    updateWord(this.state.word!)
+    this.updateWord()
   }
 
   public async loadData() {
+    const query = parseQueryString(window.location.search)
+    const enriching: Enriching | undefined = objIsEnriching(query)
+      ? query
+      : undefined
+
     const id = _.last(window.location.pathname.split("/"))
     const word = await fetchWord(id!)
-    this.setState({ word }, this.loadImages)
+
+    if (!(word instanceof Error)) {
+      this.setState({ word, enriching }, this.loadImages)
+    }
+  }
+
+  public updateWord() {
+    if (this.state.word) {
+      updateWord(this.state.word)
+    }
   }
 
   public async loadImages() {
@@ -136,11 +128,93 @@ class WordComponent extends React.Component<Props, State> {
     this.setState({ word })
   }
 
+  public next() {
+    this.updateWord()
+
+    const { isEnriching, next } = this.state.enriching!
+    const split = next.split(",")
+    const [id, ids] = [split.shift(), split.join(",")]
+
+    if (id) {
+      const path = `/word/${id}?isEnriching=${isEnriching}&next=${ids}`
+      history.push(path)
+      this.loadData()
+    } else {
+      const redirect = "/library?view=words"
+      this.setState({ redirect })
+    }
+  }
+
   public render() {
-    const { word, imagesBase64 } = this.state
+    const { word, imagesBase64, enriching, redirect } = this.state
 
     if (!word) {
       return null
+    } else if (redirect) {
+      return <Redirect to={redirect} />
+    }
+
+    const roots = <RootsComponent word={word} />
+    const definition = (
+      <DefinitionComponent
+        update={updated => this.setState({ word: updated })}
+        word={word}
+      />
+    )
+    const otherForms = (
+      <OtherFormsComponent
+        update={updated => this.setState({ word: updated })}
+        word={word}
+      />
+    )
+    const synonyms = (
+      <SynonymsComponent
+        keywordValues={this.props.keywordValues}
+        update={updated => this.setState({ word: updated })}
+        word={word}
+      />
+    )
+    const tags = (
+      <TagsComponent
+        keywordValues={this.props.keywordValues}
+        update={updated => this.setState({ word: updated })}
+        word={word}
+      />
+    )
+    const unverifiedComponent = (attr: string) => (
+      <UnverifiedComponent
+        attr={attr}
+        word={word}
+        addUnverified={this.addUnverified.bind(this)}
+      />
+    )
+    const obscurity = (
+      <div>
+        <Header.s style={{ marginTop: "30px" }}>obscurity</Header.s>
+        <Input.m
+          type="text"
+          value={word.obscurity}
+          onChange={e => this.editObscurity(e.target.value, word.obscurity)}
+        />
+      </div>
+    )
+
+    const images = (
+      <Gallery
+        removeImage={this.removeImage.bind(this)}
+        addImage={this.addImage.bind(this)}
+        imagesBase64={imagesBase64}
+      />
+    )
+
+    const attrComponents = {
+      roots,
+      definition,
+      otherForms,
+      synonyms,
+      tags,
+      obscurity,
+      images
     }
 
     return (
@@ -149,53 +223,19 @@ class WordComponent extends React.Component<Props, State> {
           minimized={false}
           title={word!.value}
           subtitle={"words"}
-          subtitleLink={"/library"}
+          subtitleLink={"/library?view=words"}
           play={() => this.props.play(word!.id)}
+          isEnriching={enriching !== undefined}
+          next={enriching && this.next.bind(this)}
           invert={true}
         />
 
-        <RootsComponent word={word!} />
-
-        <DefinitionComponent
-          update={w => this.setState({ word: w })}
-          word={word!}
-        />
-
-        <OtherFormsComponent
-          update={w => this.setState({ word: w })}
-          word={word!}
-        />
-
-        <SynonymsComponent
-          keywords={this.props.keywords}
-          update={w => this.setState({ word: w })}
-          word={word!}
-        />
-
-        <TagsComponent
-          keywords={this.props.keywords}
-          update={w => this.setState({ word: w })}
-          word={word!}
-        />
-
-        <UnverifiedComponent
-          addUnverified={this.addUnverified.bind(this)}
-          unverified={word!.unverified}
-        />
-
-        <Header.s style={{ marginTop: "30px" }}>obscurity</Header.s>
-
-        <Input.m
-          type="text"
-          value={word!.obscurity}
-          onChange={e => this.editObscurity(e.target.value, word!.obscurity)}
-        />
-
-        <Gallery
-          removeImage={this.removeImage.bind(this)}
-          addImage={this.addImage.bind(this)}
-          imagesBase64={imagesBase64}
-        />
+        {enriching && enriching.isEnriching !== "all"
+          ? [
+              attrComponents[enriching.isEnriching],
+              unverifiedComponent(enriching.isEnriching)
+            ]
+          : _.values(attrComponents)}
       </div>
     )
   }

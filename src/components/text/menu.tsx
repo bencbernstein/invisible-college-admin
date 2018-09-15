@@ -94,7 +94,7 @@ class Menu extends React.Component<Props, State> {
             title={name}
             minimized={minimized}
             subtitle={"texts"}
-            subtitleLink={"/library"}
+            subtitleLink={"/library?view=texts"}
             isEnriching={isEnriching}
             play={this.props.play.bind(this)}
             invert={true}

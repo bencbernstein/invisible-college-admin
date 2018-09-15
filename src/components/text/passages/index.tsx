@@ -20,7 +20,7 @@ import {
   fetchPassageSequences,
   addPassageToPassageSequence
 } from "../../../models/passageSequence"
-import { Keywords } from "../../app"
+import { Keywords } from "../../../models/word"
 
 import deleteIcon from "../../../lib/images/icon-delete.png"
 import passageIcon from "../../../lib/images/icon-passage.png"
@@ -47,12 +47,15 @@ const Icons = styled.div`
   box-sizing: border-box;
 `
 
+interface BottomTextProps {
+  color?: string
+}
 const BottomText = CommonText.s.extend`
   position: absolute;
   bottom: 10px;
   cursor: pointer;
+  color: ${(p: BottomTextProps) => p.color};
   &:hover {
-    text-decoration: underline;
     color: ${colors.red};
   }
 `
@@ -249,7 +252,9 @@ class Passages extends React.Component<Props, State> {
             {_.flatten(p.tagged).map(span)}
           </CommonText.regular>
 
-          {seqIdx ? (
+          {!p.isEnriched ? (
+            <BottomText color={colors.red}>Needs Enrichment</BottomText>
+          ) : seqIdx ? (
             <BottomText
               onClick={() => this.removePassage(p.id)}
             >{`Zoology passage no. ${seqIdx}`}</BottomText>

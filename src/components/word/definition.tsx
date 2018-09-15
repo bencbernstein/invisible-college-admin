@@ -4,7 +4,7 @@ import styled from "styled-components"
 import Header from "../common/header"
 import Text from "../common/text"
 
-import { DefinitionPart, Word } from "./"
+import { DefinitionPart, Word } from "../../models/word"
 
 import { colors } from "../../lib/colors"
 

@@ -6,12 +6,23 @@ import Header from "../common/header"
 import Text from "../common/text"
 
 import { colors } from "../../lib/colors"
-import { Unverified } from "./"
+import { Word, enrichWord } from "../../models/word"
 
 const Container = styled.div`
   margin-top: 30px;
   position: relative;
   padding: 10px 0px;
+`
+
+const Suggestions = styled.div`
+  position: relative;
+  z-index: 3;
+`
+
+const Heading = styled.div`
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 3;
 `
 
 const Background = styled.div`
@@ -21,70 +32,78 @@ const Background = styled.div`
   width: 100vw;
   height: 100%;
   left: 0;
-  z-index: -5;
+  z-index: 1;
 `
 
 interface Props {
-  unverified: Unverified
+  word: Word
+  attr: string
   addUnverified: (attr: string, value: string) => {}
 }
 
-class UnverifiedComponent extends React.Component<Props, any> {
+interface State {
+  unverified: string[]
+}
+
+class UnverifiedComponent extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
-    this.state = {}
+    this.state = {
+      unverified: []
+    }
+  }
+
+  public async componentDidMount() {
+    this.enrich(this.props.word.value)
+  }
+
+  public componentWillReceiveProps(nextProps: Props) {
+    const { value } = nextProps.word
+    if (this.props.word.value && this.props.word.value !== value) {
+      this.setState({ unverified: [] }, () => this.enrich(value))
+    }
+  }
+
+  public async enrich(value: string) {
+    const enriched = await enrichWord(value)
+
+    if (enriched[this.props.attr]) {
+      const unverified = enriched[this.props.attr]
+      this.setState({ unverified })
+    }
   }
 
   public render() {
-    const { definition, tags, synonyms } = this.props.unverified
+    const { unverified } = this.state
 
-    const hasTags = tags && tags.length > 0
-    const hasSynonyms = synonyms && synonyms.length > 0
-    const hasContent = definition || hasTags || hasSynonyms
+    const { attr } = this.props
 
-    if (!hasContent) {
+    const suggestions = unverified.map(value => (
+      <Button.circ
+        key={value}
+        onClick={() => this.props.addUnverified(attr, value)}
+        marginRight={"5px"}
+      >
+        {value}
+      </Button.circ>
+    ))
+
+    if (suggestions.length === 0) {
       return null
     }
-
-    const definitionComponent = (value: string) => (
-      <div>
-        <Header.s>definition</Header.s>
-        <Text.l
-          onClick={() => this.props.addUnverified("definition", value)}
-          pointer={true}
-        >
-          {value}
-        </Text.l>
-      </div>
-    )
-
-    const listComponent = (elems: string[], type: string) => (
-      <div>
-        <Header.s>{type}</Header.s>
-        {elems.map(value => (
-          <Button.circ
-            onClick={() => this.props.addUnverified(type, value)}
-            marginRight={"5px"}
-            key={value}
-          >
-            {value}
-          </Button.circ>
-        ))}
-      </div>
-    )
 
     return (
       <Container>
         <Background />
-        <div style={{ marginBottom: "10px" }}>
+
+        <Heading>
           <Header.m style={{ display: "inline-block" }}>unverified</Header.m>
           <Text.regular style={{ display: "inline-block", marginLeft: "10px" }}>
-            *click to use
+            *click to add
           </Text.regular>
-        </div>
-        {definition && definitionComponent(definition)}
-        {hasSynonyms && listComponent(synonyms!, "synonyms")}
-        {hasTags && listComponent(tags!, "tags")}
+        </Heading>
+
+        <Suggestions>{suggestions}</Suggestions>
       </Container>
     )
   }
