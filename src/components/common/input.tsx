@@ -52,6 +52,18 @@ const Small = Basic.extend`
   padding: 0px;
 `
 
+interface BoxProps {
+  border: string
+  padding: boolean
+}
+
+const Box = Basic.extend`
+  border: ${(p: BoxProps) => p.border};
+  color: ${colors.gray};
+  font-size: 1em;
+  padding: ${(p: BoxProps) => (p.padding ? "10px" : "0px")};
+`
+
 const Submit = Basic.extend`
   border: 1px solid black;
   font-size: 1.1em;
@@ -69,5 +81,6 @@ export default {
   m: Medium,
   s: Small,
   circ: Circular,
+  box: Box,
   submit: Submit
 }

@@ -6,6 +6,7 @@ interface TextProps {
   bold?: boolean
   pointer?: boolean
   center?: boolean
+  margin?: string
 }
 
 const Large = styled.p`
@@ -13,7 +14,7 @@ const Large = styled.p`
   color: ${(p: TextProps) => p.color || colors.gray};
   font-family: ${(p: TextProps) =>
     p.bold ? "BrandonGrotesqueBold" : "BrandonGrotesque"};
-  margin: 2.5px 0px;
+  margin: ${(p: TextProps) => p.margin || "2.5px 0px"};
   cursor: ${(p: TextProps) => (p.pointer ? "pointer" : "")};
 `
 
@@ -35,7 +36,8 @@ const ExtraLarge = Large.extend`
 
 const Garamond = Large.extend`
   font-family: EBGaramond;
-  font-size: 0.85em;
+  line-height: 24px;
+  color: black;
 `
 
 export default {

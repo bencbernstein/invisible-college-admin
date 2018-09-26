@@ -1,8 +1,7 @@
 import * as React from "react"
 import styled from "styled-components"
 
-import { colors } from "../../lib/colors"
-
+import Minimize from "../common/minimize"
 import Text from "../common/text"
 
 import Subnav from "../nav/subnav"
@@ -13,32 +12,20 @@ const Container = styled.div`
   text-align: left;
 `
 
+interface FlexedDivProps {
+  hide?: boolean
+}
+
 const FlexedDiv = styled.div`
   display: flex;
   align-items: flex-start;
-  margin: ${(p: MinimizeProps) => (p.hide ? "0px" : "50px 0px")};
+  margin: ${(p: FlexedDivProps) => (p.hide ? "0px" : "50px 0px")};
   justify-content: space-between;
 `
 
 const MenuItems = styled.div`
   margin-top: -30px;
   width: 100px;
-`
-
-interface MinimizeProps {
-  hide?: boolean
-}
-
-const Minimize = styled.div`
-  visibility: ${(p: MinimizeProps) => (p.hide ? "hidden" : "visible")};
-  width: 12px;
-  height: 2px;
-  border: 5px solid ${colors.gray};
-  background-color: ${colors.gray};
-  cursor: pointer;
-  &:hover {
-    background-color: ${colors.lightestGray};
-  }
 `
 
 interface Props {

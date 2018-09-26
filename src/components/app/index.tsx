@@ -126,6 +126,12 @@ class App extends React.Component<any, State> {
           <ProtectedRoute
             {...defaultProtectedRouteProps}
             exact={true}
+            path="/discover"
+            component={contained("discover", user, keywords)}
+          />
+          <ProtectedRoute
+            {...defaultProtectedRouteProps}
+            exact={true}
             path="/gameplay"
             component={contained("gameplay", user)}
           />
