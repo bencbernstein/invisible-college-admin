@@ -4,6 +4,7 @@ import * as _ from "underscore"
 import Gameplay from "../gameplay"
 import Library from "../library"
 import Nav from "../nav"
+import Discover from "../discover"
 import QuestionComponent from "../question"
 import Sequence from "../sequence"
 import PassageSequence from "../passageSequence"
@@ -107,6 +108,7 @@ class Container extends React.Component<ContainerProps, ContainerState> {
         {
           {
             library: <Library />,
+            discover: <Discover keywords={keywords} />,
             gameplay: (
               <Gameplay
                 play={(sequenceQuestions: string[], playNowIdx?: number) =>

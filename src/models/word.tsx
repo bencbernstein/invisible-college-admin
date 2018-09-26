@@ -37,6 +37,7 @@ export interface Word {
   otherForms: string[]
   obscurity: number
   images: string[]
+  lcd: string
   tags: Tag[]
   unverified: Unverified
 }
@@ -50,6 +51,14 @@ export const fetchWords = async (
     : `query { words(first: ${first}) { id value } }`
   return query(gqlQuery, "words")
 }
+
+export const fetchWordsByValues = async (
+  values: string[]
+): Promise<Word[] | Error> =>
+  query(
+    `query { wordsByValues (values: "${values.join(",")}") { id value lcd } }`,
+    "wordsByValues"
+  )
 
 export const fetchWord = async (id: string): Promise<Word | Error> => {
   const gqlQuery = `query {

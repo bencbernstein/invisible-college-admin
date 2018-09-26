@@ -21,13 +21,13 @@ const Container = styled.div`
   align-items: center;
 `
 
-interface HoverButtonProps {
+interface ButtonProps {
   bold?: boolean
 }
 
-const HoverButton = styled.p`
+const Button = styled.p`
   cursor: pointer;
-  font-family: ${(p: HoverButtonProps) =>
+  font-family: ${(p: ButtonProps) =>
     p.bold ? "BrandonGrotesqueBold" : "BrandonGrotesque"};
   margin-left: 20px;
   color: ${colors.gray};
@@ -153,15 +153,21 @@ class Nav extends React.Component<Props, State> {
         </Link>
 
         <FlexDiv onMouseLeave={this.displayModal.bind(this)}>
-          <HoverButton
+          <Link
+            style={{ textDecoration: "none", color: colors.gray }}
+            to="/discover"
+          >
+            <Button bold={true}>DISCOVER</Button>
+          </Link>
+          <Button
             bold={true}
             onMouseOver={() => this.displayModal(ModalType.Create)}
           >
             + CREATE
-          </HoverButton>
-          <HoverButton onMouseOver={() => this.displayModal(ModalType.Profile)}>
+          </Button>
+          <Button onMouseOver={() => this.displayModal(ModalType.Profile)}>
             {formatName(firstName, lastName)}
-          </HoverButton>
+          </Button>
           {modal}
         </FlexDiv>
       </Container>

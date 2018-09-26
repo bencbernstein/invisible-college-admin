@@ -10,23 +10,22 @@ interface Props {
 }
 
 const Regular = styled.p`
-  border: 1px solid ${(p: Props) => p.color || "black"};
+  border: 4px solid ${(p: Props) => p.color || colors.lightGray};
   pointer-events: ${(p: Props) => (p.disabled ? "none" : "auto")};
   background-color: ${(p: Props) =>
     p.disabled ? colors.lightestGray : "white"};
-  padding: 5px 10px;
+  padding: 10px 5px;
   min-width: 100px;
+  box-sizing: border-box;
   text-align: center
-  text-transform: uppercase;
   display: inline-block;
   cursor: pointer;
-  font-size: 0.9em;
+  color: ${colors.gray};
   margin-right: ${(p: Props) => p.marginRight || "0px"};
   margin-left: ${(p: Props) => p.marginLeft || ""};
   &:hover {
-    color: white;
-    background-color: ${(p: Props) =>
-      p.disabled ? colors.lightGray : p.color || "black"};
+    border: 4px solid ${(p: Props) =>
+      p.disabled ? colors.lightGray : p.color || colors.blue};
   }
 `
 

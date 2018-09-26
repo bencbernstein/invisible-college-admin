@@ -26,6 +26,7 @@ const colors = {
   mediumLGray: "#BCBEC0",
   lightestGray: "#F2F2F2",
   lightGray: "#d9d9d9",
+  lighterGray: "#a19f9f",
   gold: "#C98910",
   silver: "#A8A8A8",
   bronze: "#965A38",
