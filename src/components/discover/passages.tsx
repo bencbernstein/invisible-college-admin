@@ -150,8 +150,6 @@ class PassagesList extends React.Component<Props, State> {
     const chunked = chunk(sorted, maxResults)
     const toDisplay = chunked[currentPage]
 
-    console.log(toDisplay)
-
     const disabledLeft = currentPage === 0
     const disabledRight = currentPage + 1 === chunked.length
 

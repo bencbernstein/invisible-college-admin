@@ -218,6 +218,7 @@ class Discover extends React.Component<Props, State> {
               hasResults={links.length > 0}
               query={this.query.bind(this)}
               mainDisplay={mainDisplay}
+              isLoading={isLoading}
               removeLink={result =>
                 this.setState({ links: _.without(links, result) })
               }
@@ -230,6 +231,7 @@ class Discover extends React.Component<Props, State> {
               type={"word"}
               placeholder={"Search words"}
               results={searchWords}
+              isLoading={isLoading}
               hasResults={searchWords.length > 0}
               query={() => console.log("query")}
             />

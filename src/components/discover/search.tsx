@@ -17,6 +17,7 @@ interface State {
 }
 
 interface Props {
+  isLoading: boolean
   query: (search: string) => void
   results?: string[]
   type: string
@@ -41,6 +42,12 @@ class Search extends React.Component<Props, State> {
     e.preventDefault()
     if (this.state.search) {
       this.props.query(this.state.search)
+    }
+  }
+
+  public componentWillReceiveProps(nextProps: Props) {
+    if (nextProps.isLoading && !this.props.isLoading) {
+      this.setState({ expanded: false })
     }
   }
 
