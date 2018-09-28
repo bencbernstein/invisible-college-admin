@@ -76,7 +76,7 @@ class Settings extends React.Component<Props, any> {
           color={hasPredictiveCorpusLinks ? colors.blue : colors.lightGray}
         >
           <span style={{ marginRight: "10px" }}>1</span>
-          Select articles (max 10)
+          Select articles (max 3)
         </Text.regular>
 
         <Button.regular

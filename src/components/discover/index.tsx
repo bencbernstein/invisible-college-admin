@@ -189,7 +189,7 @@ class Discover extends React.Component<Props, State> {
     if (_.includes(predictiveCorpusLinks, result)) {
       predictiveCorpusLinks = _.without(predictiveCorpusLinks, result)
     } else {
-      if (predictiveCorpusLinks.length === 10) {
+      if (predictiveCorpusLinks.length === 3) {
         predictiveCorpusLinks.shift()
       }
       predictiveCorpusLinks = predictiveCorpusLinks.concat(result)
