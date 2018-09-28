@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Redirect } from "react-router"
 import * as _ from "underscore"
+import { get } from "lodash"
 
 import Spinner from "../common/spinner"
 import Text from "../common/text"
@@ -142,7 +143,7 @@ class Discover extends React.Component<Props, State> {
       if (result instanceof Error) {
         return false
       }
-      const finished = result.data.task_status === "finished"
+      const finished = get(result.data, "task_status") === "finished"
       if (!finished) {
         const error = "Articles still downloading. Try again in a minute."
         this.setState({ error })
