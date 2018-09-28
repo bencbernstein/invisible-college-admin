@@ -22,7 +22,8 @@ import {
   PREDICTIVE_CORPUS,
   fetchArticleLinks,
   fetchPassages,
-  fetchPredictiveCorpus
+  fetchPredictiveCorpus,
+  fetchTask
 } from "../../models/discover"
 
 import { fetchWordsByValues, Word, Keywords } from "../../models/word"
@@ -59,6 +60,7 @@ interface State {
   context: number
   isLoading: boolean
   predictiveCorpusLinks: string[]
+  cachingId?: string
 }
 
 interface Props {
@@ -98,20 +100,28 @@ class Discover extends React.Component<Props, State> {
   }
 
   public async query(search: string) {
-    this.setState({ isLoading: true })
-    const result = await fetchArticleLinks(search)
+    if (this.state.cachingId && !(await this.wikipediaArticlesDownloaded())) {
+      return
+    }
+    this.setState({ isLoading: true, passageResults: [] })
+    const result = await fetchArticleLinks(search, this.state.cachingId)
     this.setState({ isLoading: false })
     if (result.success) {
-      const links = Object.keys(result.data).sort()
+      const links = result.data.sort()
       links.length
-        ? this.setState({ links, error: undefined, passageResults: [] })
-        : this.setState({ error: "No links found.", passageResults: [] })
+        ? this.setState({ links, error: undefined, cachingId: result.job })
+        : this.setState({ error: "No links found." })
     } else {
-      this.setState({ error: result.error, passageResults: [] })
+      this.setState({ error: result.error })
     }
   }
 
   public async runPredictiveCorpus() {
+    this.setState({ isLoading: true, error: undefined })
+    if (!(await this.wikipediaArticlesDownloaded())) {
+      this.setState({ isLoading: false })
+      return
+    }
     const { predictiveCorpus, predictiveCorpusLinks } = this.state
     this.setState({ isLoading: true })
     const result = await fetchPredictiveCorpus(predictiveCorpusLinks)
@@ -119,20 +129,42 @@ class Discover extends React.Component<Props, State> {
     if (result.success) {
       const keys = Object.keys(predictiveCorpus)
       keys.forEach(k => (predictiveCorpus[k].results = result.data[k]))
-      this.setState({ predictiveCorpus, error: undefined })
+      this.setState({ predictiveCorpus })
     } else {
       this.setState({ error: result.error })
     }
   }
 
+  public async wikipediaArticlesDownloaded(): Promise<boolean> {
+    const { cachingId } = this.state
+    if (cachingId) {
+      const result = await fetchTask(cachingId)
+      if (result instanceof Error) {
+        return false
+      }
+      const finished = result.data.task_status === "finished"
+      if (!finished) {
+        const error = "Articles still downloading. Try again in a minute."
+        this.setState({ error })
+      } else {
+        return true
+      }
+    }
+    return false
+  }
+
   public async runPassageSearch() {
-    this.setState({ isLoading: true })
+    this.setState({ isLoading: true, error: undefined })
+    if (!(await this.wikipediaArticlesDownloaded())) {
+      this.setState({ isLoading: false })
+      return
+    }
     const words = await fetchWordsByValues(this.state.searchWords)
     const searchWords = combineLcds(words, this.state.searchWords)
     const result = await fetchPassages(this.state.links, searchWords)
     this.setState({ isLoading: false })
     result.success
-      ? this.setState({ passageResults: result.data, error: undefined })
+      ? this.setState({ passageResults: result.data })
       : this.setState({ error: result.error })
   }
 

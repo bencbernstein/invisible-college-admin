@@ -32,11 +32,19 @@ export interface PassageResult {
   matches: string[]
 }
 
-export const fetchArticleLinks = (search: string): any | Error =>
-  fetch(`${API_URL}/wikipedia-links?search=${search}`, {
-    headers,
-    method: "GET"
-  }).then(res => res.json())
+export const fetchArticleLinks = (
+  search: string,
+  cachingId?: string
+): any | Error =>
+  fetch(
+    `${API_URL}/wikipedia-links?search=${search}${
+      cachingId ? `&last_job=${cachingId}` : ""
+    }`,
+    {
+      headers,
+      method: "GET"
+    }
+  ).then(res => res.json())
 
 export const fetchPassages = (
   wikipediaTitles: string[],
@@ -58,4 +66,10 @@ export const fetchPredictiveCorpus = (titles: string[]): any | Error =>
     body: JSON.stringify({
       wikipedia_titles: titles
     })
+  }).then(res => res.json())
+
+export const fetchTask = (id: string): any | Error =>
+  fetch(`${API_URL}/tasks/${id}`, {
+    headers,
+    method: "GET"
   }).then(res => res.json())
