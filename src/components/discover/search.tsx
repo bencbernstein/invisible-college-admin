@@ -46,8 +46,13 @@ class Search extends React.Component<Props, State> {
   }
 
   public componentWillReceiveProps(nextProps: Props) {
-    if (nextProps.isLoading && !this.props.isLoading) {
+    const minimize = nextProps.isLoading && !this.props.isLoading
+    const expand =
+      nextProps.results && !_.isEqual(nextProps.results, this.props.results)
+    if (minimize) {
       this.setState({ expanded: false })
+    } else if (expand) {
+      this.setState({ expanded: true })
     }
   }
 
