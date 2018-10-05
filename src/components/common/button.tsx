@@ -7,6 +7,7 @@ interface Props {
   color?: string
   marginRight?: string
   marginLeft?: string
+  margin?: string
 }
 
 const Regular = styled.p`
@@ -23,6 +24,7 @@ const Regular = styled.p`
   color: ${colors.gray};
   margin-right: ${(p: Props) => p.marginRight || "0px"};
   margin-left: ${(p: Props) => p.marginLeft || ""};
+  margin: ${(p: Props) => p.margin || ""};
   &:hover {
     border: 4px solid ${(p: Props) =>
       p.disabled ? colors.lightGray : p.color || colors.blue};

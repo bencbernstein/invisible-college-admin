@@ -7,9 +7,8 @@ interface Props {
 export const OuterContainer = styled.div`
   text-align: left;
   max-width: 900px;
+  padding: 20px;
   margin: 0 auto;
-  margin-top: 25px;
-  margin-bottom: 25px;
   position: ${(p: Props) => (p.isPlaying ? "fixed" : "relative")};
   overflow: ${(p: Props) => p.isPlaying && "hidden"};
 `

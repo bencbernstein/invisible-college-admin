@@ -34,18 +34,6 @@ export const Divider = styled.div`
   background-color: ${colors.lightGray};
 `
 
-interface FlexedDivProps {
-  justifyContent?: string
-  alignItems?: string
-}
-
-export const FlexedDiv = styled.div`
-  display: flex;
-  align-items: ${(p: FlexedDivProps) => p.alignItems || "center"};
-  justify-content: ${(p: FlexedDivProps) =>
-    p.justifyContent || "space-between"};
-`
-
 export const SettingsHeader = Header.s.extend`
   margin: 0;
 `

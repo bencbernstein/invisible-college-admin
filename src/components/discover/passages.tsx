@@ -5,7 +5,8 @@ import { chunk } from "lodash"
 import Text from "../common/text"
 
 import { PassageResult } from "../../models/discover"
-import { PassageContainer, FlexedDiv, Image, Sentence } from "./components"
+import { PassageContainer, Image, Sentence } from "./components"
+import FlexedDiv from "../common/flexedDiv"
 import { colors } from "../../lib/colors"
 
 import arrowLeft from "../../lib/images/arrow-left.png"

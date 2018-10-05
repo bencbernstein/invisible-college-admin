@@ -10,8 +10,6 @@ export const query = (gqlQuery: string, name: string): any | Error =>
   })
     .then(res => res.json())
     .then(json => {
-      console.log(json.data)
-
       if (json.errors && json.errors.length) {
         console.error("ERR: " + json.errors[0].message)
         return Error(json.errors[0].message)

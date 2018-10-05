@@ -1,5 +1,7 @@
 import { query } from "./query"
 
+import { Passage } from "./passage"
+
 export interface Keywords {
   choices: any
   words: any
@@ -40,15 +42,29 @@ export interface Word {
   lcd: string
   tags: Tag[]
   unverified: Unverified
+  unfilteredPassagesCount: number
+  rejectedPassagesCount: number
+  acceptedPassagesCount: number
+  enrichedPassagesCount: number
 }
+
+const slim = [
+  "id",
+  "value",
+  "unfilteredPassagesCount",
+  "rejectedPassagesCount",
+  "acceptedPassagesCount",
+  "enrichedPassagesCount"
+].join(" ")
 
 export const fetchWords = async (
   first: number,
+  sortBy: string,
   after?: string
 ): Promise<Word[] | Error> => {
   const gqlQuery = after
-    ? `query { words(first: ${first}, after: "${after}") { id value } }`
-    : `query { words(first: ${first}) { id value } }`
+    ? `query { words(first: ${first}, sortBy: "${sortBy}", after: "${after}") { ${slim} } }`
+    : `query { words(first: ${first}, sortBy: "${sortBy}") { ${slim} } }`
   return query(gqlQuery, "words")
 }
 
@@ -147,4 +163,32 @@ export const wordsToEnrich = async (attr: string): Promise<Word[] | Error> => {
     }
   }`
   return query(gqlQuery, "wordsToEnrich")
+}
+
+export const passagesForWord = async (
+  value: string
+): Promise<Passage[] | Error> => {
+  const gqlQuery = `query {
+    passagesForWord(value: "${value}") {
+      id
+      matchIdx
+      title
+      source
+      status
+      filteredSentences
+      tagged {
+        id value tag isFocusWord isPunctuation isConnector isSentenceConnector wordId choiceSetId isUnfocused
+      }
+    }
+  }`
+  return query(gqlQuery, "passagesForWord")
+}
+
+export const recommendPassageQueues = async (
+  type: string
+): Promise<string[] | Error> => {
+  const gqlQuery = `query {
+    recommendPassageQueues(type: "${type}")
+  }`
+  return query(gqlQuery, "recommendPassageQueues")
 }

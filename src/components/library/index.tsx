@@ -97,16 +97,22 @@ class Library extends React.Component<any, State> {
   public async loadTexts() {
     const texts = await fetchTexts()
     if (!(texts instanceof Error)) {
-      this.setState({ texts }, () => this.didSelectSortBy(SelectedSortBy.Name))
+      this.setState({ texts })
     }
   }
 
-  public async loadWords() {
-    const after = get(_.last(this.state.words), "value")
-    let words = await fetchWords(30, after)
-    if (!(words instanceof Error)) {
-      words = this.state.words.concat(words)
-      this.setState({ words })
+  public async loadWords(didChangeSort: boolean = false) {
+    const { words, selectedSortBy } = this.state
+    const sortBy = {
+      Name: "value",
+      "# Passages": "enrichedPassagesCount",
+      "# Unenriched Passages": "acceptedPassagesCount"
+    }[selectedSortBy]
+    const last = didChangeSort ? undefined : get(_.last(words), sortBy)
+    const add = await fetchWords(30, sortBy, last)
+    if (!(add instanceof Error)) {
+      words.push(...add)
+      this.setState({ words: didChangeSort ? add : words })
     }
   }
 
@@ -151,17 +157,22 @@ class Library extends React.Component<any, State> {
   }
 
   public didSelectSortBy(selectedSortBy: any): void {
-    let texts = this.state.texts
-    if (selectedSortBy === SelectedSortBy.Name) {
-      texts = _.sortBy(texts, "name")
-    } else {
-      const sortBy =
-        selectedSortBy === SelectedSortBy.Passages
-          ? "passagesCount"
-          : "unenrichedPassagesCount"
-      texts = _.sortBy(texts, sortBy).reverse()
+    const { texts, selectedView } = this.state
+    if (selectedView === "Texts") {
+      const sorted =
+        selectedSortBy === SelectedSortBy.Name
+          ? _.sortBy(texts, "name")
+          : _.sortBy(
+              texts,
+              selectedSortBy === SelectedSortBy.Passages
+                ? "passagesCount"
+                : "unenrichedPassagesCount"
+            ).reverse()
+      this.setState({ texts: sorted, selectedSortBy })
+    } else if (selectedView === "Words") {
+      console.log(selectedSortBy)
+      this.setState({ selectedSortBy }, () => this.loadWords(true))
     }
-    this.setState({ selectedSortBy, texts })
   }
 
   public render() {
@@ -208,7 +219,7 @@ class Library extends React.Component<any, State> {
             ]}
           />
 
-          {selectedView === "Texts" && (
+          {selectedView !== "Choice Sets" && (
             <Menus
               title={"Sort By"}
               didSelect={this.didSelectSortBy.bind(this)}

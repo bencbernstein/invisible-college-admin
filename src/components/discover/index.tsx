@@ -12,8 +12,11 @@ import Search from "./search"
 import PredictiveCorpusComponent from "./predictiveCorpus"
 import PassagesList from "./passages"
 
-import { Container, LeftPane, RightPane, FlexedDiv } from "./components"
+import FlexedDiv from "../common/flexedDiv"
+import { Container, LeftPane, RightPane } from "./components"
 import { colors } from "../../lib/colors"
+
+import { savePassages } from "../../models/passage"
 
 // import { DUMMY_PASSAGES } from "./seed"
 
@@ -203,6 +206,23 @@ class Discover extends React.Component<Props, State> {
     this.setState({ searchWords })
   }
 
+  public async exportPassages() {
+    const passageResults = this.state.passageResults.map(data =>
+      _.extend({}, _.omit(data, "matches"), { source: "Wikipedia" })
+    )
+    const count = passageResults.length
+    if (!window.confirm(`Are you sure you want to upload ${count} passages?`)) {
+      return
+    }
+    const encoded = encodeURIComponent(JSON.stringify(passageResults))
+    this.setState({ isLoading: true })
+    const result = await savePassages(encoded)
+    this.setState({ isLoading: false })
+    result instanceof Error
+      ? this.setState({ error: "Error uploading passages." })
+      : window.alert(`Succesfully uploaded ${count} passages.`)
+  }
+
   public render() {
     const {
       links,
@@ -226,6 +246,8 @@ class Discover extends React.Component<Props, State> {
       <Container>
         <LeftPane>
           <Settings
+            canExport={passageResults.length > 0}
+            exportPassages={this.exportPassages.bind(this)}
             changeMainDisplay={(m: MainDisplay) =>
               this.setState({ mainDisplay: m })
             }

@@ -2,11 +2,13 @@ import * as React from "react"
 
 import Button from "../common/button"
 import Header from "../common/header"
+import FlexedDiv from "../common/flexedDiv"
 import Text from "../common/text"
 import Slider from "rc-slider"
 import "rc-slider/assets/index.css"
 
-import { Textarea, Divider, FlexedDiv, SettingsHeader } from "./components"
+import { Textarea, Divider, SettingsHeader } from "./components"
+
 import { MainDisplay } from "./"
 import { colors } from "../../lib/colors"
 
@@ -23,6 +25,8 @@ interface Props {
   isLoading: boolean
   runPassageSearch: () => void
   runPredictiveCorpus: () => void
+  exportPassages: () => void
+  canExport: boolean
 }
 
 class Settings extends React.Component<Props, any> {
@@ -39,7 +43,8 @@ class Settings extends React.Component<Props, any> {
       hasSearchWords,
       searchWords,
       isLoading,
-      hasPredictiveCorpusLinks
+      hasPredictiveCorpusLinks,
+      canExport
     } = this.props
 
     const passageSearchDirections = (
@@ -65,6 +70,15 @@ class Settings extends React.Component<Props, any> {
           style={{ width: "100%" }}
         >
           Search
+        </Button.regular>
+
+        <Button.regular
+          margin={"0px"}
+          onClick={this.props.exportPassages.bind(this)}
+          disabled={!canExport}
+          style={{ width: "100%" }}
+        >
+          Export
         </Button.regular>
       </div>
     )
