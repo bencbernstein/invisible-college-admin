@@ -5,7 +5,6 @@ import { get } from "lodash"
 
 import Spinner from "../common/spinner"
 import Text from "../common/text"
-import Socket from "../../socket/"
 
 import Settings from "./settings"
 import Search from "./search"
@@ -40,7 +39,7 @@ const combineLcds = (
     words.forEach((word: Word) => {
       const idx = _.findIndex(searchWords, w => w === word.value)
       if (idx > -1) {
-        searchWords[idx] = word.lcd
+        searchWords[idx] = word.lcd || word.value
       }
     })
   }
@@ -72,8 +71,6 @@ interface Props {
 }
 
 class Discover extends React.Component<Props, State> {
-  private socket: Socket
-
   constructor(props: Props) {
     super(props)
 
@@ -88,19 +85,6 @@ class Discover extends React.Component<Props, State> {
       isLoading: false,
       predictiveCorpusLinks: []
     }
-  }
-
-  public componentDidMount() {
-    // this.setupSocket()
-  }
-
-  public setupSocket() {
-    this.socket = new Socket()
-    this.socket.registerHandler(this.onMessageReceived.bind(this))
-  }
-
-  public onMessageReceived(message: any) {
-    console.log("message received!")
   }
 
   public async query(search: string) {
@@ -251,6 +235,7 @@ class Discover extends React.Component<Props, State> {
             changeMainDisplay={(m: MainDisplay) =>
               this.setState({ mainDisplay: m })
             }
+            passageResults={passageResults}
             mainDisplay={mainDisplay}
             context={context}
             hasLinks={links.length > 0}
@@ -288,7 +273,6 @@ class Discover extends React.Component<Props, State> {
               results={searchWords}
               isLoading={isLoading}
               hasResults={searchWords.length > 0}
-              query={() => console.log("query")}
             />
           </FlexedDiv>
 

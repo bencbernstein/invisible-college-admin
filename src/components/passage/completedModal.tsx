@@ -1,6 +1,8 @@
 import * as React from "react"
 import { Link } from "react-router-dom"
 
+import history from "../../history"
+
 import Header from "../common/header"
 import Modal from "../common/modal"
 import Button from "../common/button"
@@ -16,6 +18,7 @@ interface Props {
   passagesCount: number
   queueType: QueueType
   word: string
+  reset: () => void
 }
 
 interface State {
@@ -32,11 +35,18 @@ class CompletedModal extends React.Component<Props, State> {
   }
 
   public async componentDidMount() {
-    const type = `un${this.props.queueType}ed`
-    const otherQueues = await recommendPassageQueues(type)
+    const type =
+      this.props.queueType === QueueType.filter ? "unfiltered" : "accepted"
+    let otherQueues = await recommendPassageQueues(type)
     if (!(otherQueues instanceof Error)) {
+      otherQueues = otherQueues.filter(w => w === this.props.word)
       this.setState({ otherQueues })
     }
+  }
+
+  public redirect(path: string) {
+    history.push(path)
+    this.props.reset()
   }
 
   public render() {
@@ -52,25 +62,30 @@ class CompletedModal extends React.Component<Props, State> {
         </Text.garamond>
         <br />
         <Header.s>options</Header.s>
-        <Button.regular>
-          <Link
-            style={blankLinkStyle}
-            to={window.location.search.replace("filter", "enrich")}
+        {queueType !== QueueType.enrich && (
+          <Button.regular
+            onClick={() =>
+              this.redirect(window.location.search.replace("filter", "enrich"))
+            }
+            margin="5px"
           >
             Enrich {word}
-          </Link>
-        </Button.regular>
+          </Button.regular>
+        )}
         {otherQueues.map(w => (
-          <Button.regular key={w}>
-            <Link
-              style={blankLinkStyle}
-              to={`/passage?${queueType}=true&word=${w}`}
-            >
-              {queueType} {w}
-            </Link>
+          <Button.regular
+            onClick={() =>
+              this.redirect(
+                `/passage?${queueType.toLowerCase()}=true&word=${w}`
+              )
+            }
+            margin="5px"
+            key={w}
+          >
+            {queueType} {w}
           </Button.regular>
         ))}
-        <Button.regular>
+        <Button.regular margin="5px">
           <Link style={blankLinkStyle} to="/library">
             Go to Library
           </Link>

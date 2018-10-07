@@ -18,7 +18,7 @@ interface State {
 
 interface Props {
   isLoading: boolean
-  query: (search: string) => void
+  query?: (search: string) => void
   results?: string[]
   type: string
   hasResults: boolean
@@ -40,8 +40,10 @@ class Search extends React.Component<Props, State> {
 
   public submit(e: any) {
     e.preventDefault()
-    if (this.state.search) {
-      this.props.query(this.state.search)
+    const { search } = this.state
+    const { query } = this.props
+    if (search && query) {
+      this.setState({ search: "" }, () => query(search))
     }
   }
 

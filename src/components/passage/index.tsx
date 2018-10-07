@@ -43,7 +43,11 @@ class PassageContainer extends React.Component<any, State> {
     }
   }
 
-  public async componentDidMount() {
+  public componentDidMount() {
+    this.reset()
+  }
+
+  public async reset() {
     const s = window.location.search
     const queueType = s.includes("filter")
       ? QueueType.filter
@@ -59,7 +63,7 @@ class PassageContainer extends React.Component<any, State> {
       } else if (queueType === QueueType.enrich) {
         passages = passages.filter(p => p.status === "accepted")
       }
-      this.setState({ passages, queueType, word }, () =>
+      this.setState({ passages, queueType, word, displayModal: false }, () =>
         this.nextPassage(0, passages as Passage[])
       )
     }
@@ -86,6 +90,7 @@ class PassageContainer extends React.Component<any, State> {
       const status = remove ? "rejected" : "enriched"
       remove ? passages.splice(idx, 1) : (passages[idx] = passage)
       await updatePassage(passage, status)
+      passage.status = status
     }
     this.nextPassage(remove ? idx : next, passages)
   }
@@ -122,6 +127,7 @@ class PassageContainer extends React.Component<any, State> {
     if (displayModal && queueType) {
       return (
         <CompletedModal
+          reset={this.reset.bind(this)}
           passagesCount={passages.length}
           queueType={queueType}
           word={word}

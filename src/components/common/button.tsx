@@ -21,7 +21,7 @@ const Regular = styled.p`
   text-align: center
   display: inline-block;
   cursor: pointer;
-  color: ${colors.gray};
+  color: black;
   margin-right: ${(p: Props) => p.marginRight || "0px"};
   margin-left: ${(p: Props) => p.marginLeft || ""};
   margin: ${(p: Props) => p.margin || ""};

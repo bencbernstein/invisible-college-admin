@@ -5,6 +5,7 @@ import { colors } from "../../lib/colors"
 interface Props {
   textAlign?: string
   margin?: string
+  textDecoration?: string
 }
 
 const Large = styled.p`
@@ -13,6 +14,7 @@ const Large = styled.p`
   letter-spacing: 1px;
   margin: ${(p: Props) => p.margin};
   text-align: ${(p: Props) => p.textAlign};
+  text-decoration: ${(p: Props) => p.textDecoration};
 `
 
 const Medium = styled.h3`
@@ -21,6 +23,7 @@ const Medium = styled.h3`
   letter-spacing: 1px;
   margin: ${(p: Props) => p.margin};
   text-align: ${(p: Props) => p.textAlign};
+  text-decoration: ${(p: Props) => p.textDecoration};
 `
 
 const Small = styled.h5`
@@ -30,6 +33,7 @@ const Small = styled.h5`
   letter-spacing: 1px;
   margin: ${(p: Props) => p.margin};
   text-align: ${(p: Props) => p.textAlign};
+  text-decoration: ${(p: Props) => p.textDecoration};
 `
 
 const ForInput = Small.extend`

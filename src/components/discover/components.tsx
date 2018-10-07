@@ -106,3 +106,8 @@ export const Sentence = styled.span`
   display: ${(p: SentenceProps) => (p.isHeader ? "block" : "")};
   color: ${(p: SentenceProps) => (p.isMatch ? "black" : colors.lighterGray)};
 `
+
+export const PassageHeader = styled.div`
+  text-align: center;
+  margin: 10px 0;
+`

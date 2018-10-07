@@ -3,9 +3,10 @@ import * as _ from "underscore"
 import { chunk } from "lodash"
 
 import Text from "../common/text"
+import Header from "../common/header"
 
 import { PassageResult } from "../../models/discover"
-import { PassageContainer, Image, Sentence } from "./components"
+import { PassageContainer, Image, Sentence, PassageHeader } from "./components"
 import FlexedDiv from "../common/flexedDiv"
 import { colors } from "../../lib/colors"
 
@@ -138,12 +139,21 @@ class PassagesList extends React.Component<Props, State> {
 
     const passageComponent = (passage: PassageResult, i: number) => (
       <PassageContainer key={i}>
+        <PassageHeader>
+          <Header.s margin={"0"}>
+            <a
+              style={{ color: colors.blue, textDecoration: "none" }}
+              href={`https://en.wikipedia.org/wiki/${passage.title}`}
+              target={"_blank"}
+            >
+              {passage.title}
+            </a>
+          </Header.s>
+          <Text.regular>found {passage.matches.join(", ")}</Text.regular>
+        </PassageHeader>
         <Text.garamond>
           {sliced(passage.context, passage.matchIdx)}
         </Text.garamond>
-        <Text.regular>
-          {passage.title}, found {passage.matches.join(", ")}
-        </Text.regular>
       </PassageContainer>
     )
 

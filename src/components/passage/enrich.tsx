@@ -65,6 +65,29 @@ class EnrichComponent extends React.Component<Props, State> {
       passage,
       sentences
     }
+
+    this.handleKeyDown = this.handleKeyDown.bind(this)
+  }
+
+  public componentWillMount() {
+    document.addEventListener("keydown", this.handleKeyDown, false)
+  }
+
+  public componentWillUnmount() {
+    document.removeEventListener("keydown", this.handleKeyDown, false)
+  }
+
+  public handleKeyDown(e: any) {
+    const { passage } = this.state
+    const { idx, nextPassage } = this.props
+
+    if (e.key === "right arrow" || e.key === "ArrowRight") {
+      nextPassage(idx + 1, passage)
+    } else if (e.key === "left arrow" || e.key === "ArrowLeft") {
+      nextPassage(idx - 1, passage)
+    } else if (e.key === "x" || e.key === "x") {
+      nextPassage(idx + 1, passage, true)
+    }
   }
 
   public componentWillReceiveProps(nextProps: Props) {

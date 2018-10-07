@@ -29,11 +29,43 @@ class FilterComponent extends React.Component<Props, State> {
     this.state = {
       filteredSentences: []
     }
+
+    this.handleKeyDown = this.handleKeyDown.bind(this)
   }
 
   public componentDidMount() {
-    const filteredSentences = this.props.passage.filteredSentences || []
-    this.setState({ filteredSentences })
+    this.setFilteredSentences(this.props)
+  }
+
+  public componentWillReceiveProps(nextProps: Props) {
+    if (this.props.passage.id !== nextProps.passage.id) {
+      this.setFilteredSentences(nextProps)
+    }
+  }
+
+  public setFilteredSentences(props: Props) {
+    this.setState({ filteredSentences: props.passage.filteredSentences || [] })
+  }
+
+  public componentWillMount() {
+    document.addEventListener("keydown", this.handleKeyDown, false)
+  }
+
+  public componentWillUnmount() {
+    document.removeEventListener("keydown", this.handleKeyDown, false)
+  }
+
+  public handleKeyDown(e: any) {
+    const { filteredSentences } = this.state
+    const { idx, nextPassage } = this.props
+
+    if (e.key === "right arrow" || e.key === "ArrowRight") {
+      nextPassage(idx + 1, filteredSentences)
+    } else if (e.key === "left arrow" || e.key === "ArrowLeft") {
+      nextPassage(idx - 1, filteredSentences)
+    } else if (e.key === "k" || e.key === "K") {
+      this.keepAllSentences()
+    }
   }
 
   public keepAllSentences() {

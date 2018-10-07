@@ -12,6 +12,8 @@ import { Textarea, Divider, SettingsHeader } from "./components"
 import { MainDisplay } from "./"
 import { colors } from "../../lib/colors"
 
+import { PassageResult } from "../../models/discover"
+
 interface Props {
   editedSearchWords: (str: string) => void
   editedContext: (e: number) => void
@@ -27,6 +29,7 @@ interface Props {
   runPredictiveCorpus: () => void
   exportPassages: () => void
   canExport: boolean
+  passageResults: PassageResult[]
 }
 
 class Settings extends React.Component<Props, any> {
@@ -65,6 +68,7 @@ class Settings extends React.Component<Props, any> {
         </Text.regular>
 
         <Button.regular
+          margin={"10px 0px 3px 0px"}
           onClick={this.props.runPassageSearch.bind(this)}
           disabled={!hasLinks || !hasSearchWords || isLoading}
           style={{ width: "100%" }}
@@ -73,12 +77,28 @@ class Settings extends React.Component<Props, any> {
         </Button.regular>
 
         <Button.regular
-          margin={"0px"}
+          margin={"3px 0"}
           onClick={this.props.exportPassages.bind(this)}
-          disabled={!canExport}
+          disabled={!canExport || isLoading}
           style={{ width: "100%" }}
         >
           Export
+        </Button.regular>
+
+        <Button.regular
+          margin={"3px 0"}
+          disabled={!canExport || isLoading}
+          style={{ width: "100%" }}
+        >
+          <a
+            style={{ color: colors.gray, textDecoration: "none" }}
+            download="data.json"
+            href={`data: text/json;charset=utf-8,${encodeURIComponent(
+              JSON.stringify(this.props.passageResults)
+            )}`}
+          >
+            Download
+          </a>
         </Button.regular>
       </div>
     )
