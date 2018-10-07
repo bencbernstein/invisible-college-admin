@@ -40,6 +40,7 @@ interface State {
   redirect?: string
   imagesBase64: string[]
   enriching?: Enriching
+  imageSearchSource: string
 }
 
 class WordComponent extends React.Component<Props, State> {
@@ -47,7 +48,8 @@ class WordComponent extends React.Component<Props, State> {
     super(props)
 
     this.state = {
-      imagesBase64: []
+      imagesBase64: [],
+      imageSearchSource: "All"
     }
   }
 
@@ -80,16 +82,22 @@ class WordComponent extends React.Component<Props, State> {
   }
 
   public async loadImages() {
-    const images = this.state.word!.images
-    if (images.length) {
-      const imagesBase64 = await fetchImages(images)
+    const { word } = this.state
+    if (word && word.images.length) {
+      const imagesBase64 = await fetchImages(word.images)
       this.setState({ imagesBase64 })
     }
   }
 
-  public async addImage(filelist: FileList) {
-    const response = await addImage(filelist[0], this.state.word!.id)
-    this.setState({ word: response.word }, this.loadImages)
+  public async addImage(file: File) {
+    const response = await addImage(file, this.state.word!.id)
+    if (response.error) {
+      console.log(response.error)
+    } else {
+      // Need to change ID because it's coming from a regular express (not graphql) route
+      response.word.id = response.word._id
+      this.setState({ word: response.word }, this.loadImages)
+    }
   }
 
   public removeImage(imageId: string) {
@@ -201,6 +209,9 @@ class WordComponent extends React.Component<Props, State> {
 
     const images = (
       <Gallery
+        word={word.value}
+        source={this.state.imageSearchSource}
+        changeSource={imageSearchSource => this.setState({ imageSearchSource })}
         removeImage={this.removeImage.bind(this)}
         addImage={this.addImage.bind(this)}
         imagesBase64={imagesBase64}

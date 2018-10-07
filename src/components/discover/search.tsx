@@ -17,7 +17,8 @@ interface State {
 }
 
 interface Props {
-  query: (search: string) => void
+  isLoading: boolean
+  query?: (search: string) => void
   results?: string[]
   type: string
   hasResults: boolean
@@ -39,8 +40,21 @@ class Search extends React.Component<Props, State> {
 
   public submit(e: any) {
     e.preventDefault()
-    if (this.state.search) {
-      this.props.query(this.state.search)
+    const { search } = this.state
+    const { query } = this.props
+    if (search && query) {
+      this.setState({ search: "" }, () => query(search))
+    }
+  }
+
+  public componentWillReceiveProps(nextProps: Props) {
+    const minimize = nextProps.isLoading && !this.props.isLoading
+    const expand =
+      nextProps.results && !_.isEqual(nextProps.results, this.props.results)
+    if (minimize) {
+      this.setState({ expanded: false })
+    } else if (expand) {
+      this.setState({ expanded: true })
     }
   }
 

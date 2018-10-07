@@ -34,18 +34,6 @@ export const Divider = styled.div`
   background-color: ${colors.lightGray};
 `
 
-interface FlexedDivProps {
-  justifyContent?: string
-  alignItems?: string
-}
-
-export const FlexedDiv = styled.div`
-  display: flex;
-  align-items: ${(p: FlexedDivProps) => p.alignItems || "center"};
-  justify-content: ${(p: FlexedDivProps) =>
-    p.justifyContent || "space-between"};
-`
-
 export const SettingsHeader = Header.s.extend`
   margin: 0;
 `
@@ -116,6 +104,10 @@ export const Sentence = styled.span`
   font-size: ${(p: SentenceProps) => (p.isHeader ? "0.8em" : "1em")};
   letter-spacing: ${(p: SentenceProps) => (p.isHeader ? "1px" : "0px")};
   display: ${(p: SentenceProps) => (p.isHeader ? "block" : "")};
-  color: ${(p: SentenceProps) =>
-    p.isMatch || p.isHeader ? "black" : colors.lighterGray};
+  color: ${(p: SentenceProps) => (p.isMatch ? "black" : colors.lighterGray)};
+`
+
+export const PassageHeader = styled.div`
+  text-align: center;
+  margin: 10px 0;
 `

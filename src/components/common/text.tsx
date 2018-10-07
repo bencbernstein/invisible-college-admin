@@ -37,7 +37,6 @@ const ExtraLarge = Large.extend`
 const Garamond = Large.extend`
   font-family: EBGaramond;
   line-height: 24px;
-  color: black;
 `
 
 export default {

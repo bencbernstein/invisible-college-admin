@@ -1,18 +1,21 @@
 import * as React from "react"
 import { Redirect } from "react-router"
 import * as _ from "underscore"
+import { get } from "lodash"
 
 import Spinner from "../common/spinner"
 import Text from "../common/text"
-import Socket from "../../socket/"
 
 import Settings from "./settings"
 import Search from "./search"
 import PredictiveCorpusComponent from "./predictiveCorpus"
 import PassagesList from "./passages"
 
-import { Container, LeftPane, RightPane, FlexedDiv } from "./components"
+import FlexedDiv from "../common/flexedDiv"
+import { Container, LeftPane, RightPane } from "./components"
 import { colors } from "../../lib/colors"
+
+import { savePassages } from "../../models/passage"
 
 // import { DUMMY_PASSAGES } from "./seed"
 
@@ -22,7 +25,8 @@ import {
   PREDICTIVE_CORPUS,
   fetchArticleLinks,
   fetchPassages,
-  fetchPredictiveCorpus
+  fetchPredictiveCorpus,
+  fetchTask
 } from "../../models/discover"
 
 import { fetchWordsByValues, Word, Keywords } from "../../models/word"
@@ -35,7 +39,7 @@ const combineLcds = (
     words.forEach((word: Word) => {
       const idx = _.findIndex(searchWords, w => w === word.value)
       if (idx > -1) {
-        searchWords[idx] = word.lcd
+        searchWords[idx] = word.lcd || word.value
       }
     })
   }
@@ -59,6 +63,7 @@ interface State {
   context: number
   isLoading: boolean
   predictiveCorpusLinks: string[]
+  cachingId?: string
 }
 
 interface Props {
@@ -66,8 +71,6 @@ interface Props {
 }
 
 class Discover extends React.Component<Props, State> {
-  private socket: Socket
-
   constructor(props: Props) {
     super(props)
 
@@ -84,34 +87,29 @@ class Discover extends React.Component<Props, State> {
     }
   }
 
-  public componentDidMount() {
-    // this.setupSocket()
-  }
-
-  public setupSocket() {
-    this.socket = new Socket()
-    this.socket.registerHandler(this.onMessageReceived.bind(this))
-  }
-
-  public onMessageReceived(message: any) {
-    console.log("message received!")
-  }
-
   public async query(search: string) {
-    this.setState({ isLoading: true })
-    const result = await fetchArticleLinks(search)
+    if (this.state.cachingId && !(await this.wikipediaArticlesDownloaded())) {
+      return
+    }
+    this.setState({ isLoading: true, passageResults: [] })
+    const result = await fetchArticleLinks(search, this.state.cachingId)
     this.setState({ isLoading: false })
     if (result.success) {
-      const links = Object.keys(result.data).sort()
+      const links = result.data.sort()
       links.length
-        ? this.setState({ links, error: undefined, passageResults: [] })
-        : this.setState({ error: "No links found.", passageResults: [] })
+        ? this.setState({ links, error: undefined, cachingId: result.job })
+        : this.setState({ error: "No links found." })
     } else {
-      this.setState({ error: result.error, passageResults: [] })
+      this.setState({ error: result.error })
     }
   }
 
   public async runPredictiveCorpus() {
+    this.setState({ isLoading: true, error: undefined })
+    if (!(await this.wikipediaArticlesDownloaded())) {
+      this.setState({ isLoading: false })
+      return
+    }
     const { predictiveCorpus, predictiveCorpusLinks } = this.state
     this.setState({ isLoading: true })
     const result = await fetchPredictiveCorpus(predictiveCorpusLinks)
@@ -119,20 +117,42 @@ class Discover extends React.Component<Props, State> {
     if (result.success) {
       const keys = Object.keys(predictiveCorpus)
       keys.forEach(k => (predictiveCorpus[k].results = result.data[k]))
-      this.setState({ predictiveCorpus, error: undefined })
+      this.setState({ predictiveCorpus })
     } else {
       this.setState({ error: result.error })
     }
   }
 
+  public async wikipediaArticlesDownloaded(): Promise<boolean> {
+    const { cachingId } = this.state
+    if (cachingId) {
+      const result = await fetchTask(cachingId)
+      if (result instanceof Error) {
+        return false
+      }
+      const finished = get(result.data, "task_status") === "finished"
+      if (!finished) {
+        const error = "Articles still downloading. Try again in a minute."
+        this.setState({ error })
+      } else {
+        return true
+      }
+    }
+    return false
+  }
+
   public async runPassageSearch() {
-    this.setState({ isLoading: true })
+    this.setState({ isLoading: true, error: undefined })
+    if (!(await this.wikipediaArticlesDownloaded())) {
+      this.setState({ isLoading: false })
+      return
+    }
     const words = await fetchWordsByValues(this.state.searchWords)
     const searchWords = combineLcds(words, this.state.searchWords)
     const result = await fetchPassages(this.state.links, searchWords)
     this.setState({ isLoading: false })
     result.success
-      ? this.setState({ passageResults: result.data, error: undefined })
+      ? this.setState({ passageResults: result.data })
       : this.setState({ error: result.error })
   }
 
@@ -157,7 +177,7 @@ class Discover extends React.Component<Props, State> {
     if (_.includes(predictiveCorpusLinks, result)) {
       predictiveCorpusLinks = _.without(predictiveCorpusLinks, result)
     } else {
-      if (predictiveCorpusLinks.length === 10) {
+      if (predictiveCorpusLinks.length === 3) {
         predictiveCorpusLinks.shift()
       }
       predictiveCorpusLinks = predictiveCorpusLinks.concat(result)
@@ -168,6 +188,23 @@ class Discover extends React.Component<Props, State> {
   public editedSearchWords(str: string) {
     const searchWords = str.split(",").map(s => s.trim())
     this.setState({ searchWords })
+  }
+
+  public async exportPassages() {
+    const passageResults = this.state.passageResults.map(data =>
+      _.extend({}, _.omit(data, "matches"), { source: "Wikipedia" })
+    )
+    const count = passageResults.length
+    if (!window.confirm(`Are you sure you want to upload ${count} passages?`)) {
+      return
+    }
+    const encoded = encodeURIComponent(JSON.stringify(passageResults))
+    this.setState({ isLoading: true })
+    const result = await savePassages(encoded)
+    this.setState({ isLoading: false })
+    result instanceof Error
+      ? this.setState({ error: "Error uploading passages." })
+      : window.alert(`Succesfully uploaded ${count} passages.`)
   }
 
   public render() {
@@ -193,9 +230,12 @@ class Discover extends React.Component<Props, State> {
       <Container>
         <LeftPane>
           <Settings
+            canExport={passageResults.length > 0}
+            exportPassages={this.exportPassages.bind(this)}
             changeMainDisplay={(m: MainDisplay) =>
               this.setState({ mainDisplay: m })
             }
+            passageResults={passageResults}
             mainDisplay={mainDisplay}
             context={context}
             hasLinks={links.length > 0}
@@ -218,6 +258,7 @@ class Discover extends React.Component<Props, State> {
               hasResults={links.length > 0}
               query={this.query.bind(this)}
               mainDisplay={mainDisplay}
+              isLoading={isLoading}
               removeLink={result =>
                 this.setState({ links: _.without(links, result) })
               }
@@ -230,8 +271,8 @@ class Discover extends React.Component<Props, State> {
               type={"word"}
               placeholder={"Search words"}
               results={searchWords}
+              isLoading={isLoading}
               hasResults={searchWords.length > 0}
-              query={() => console.log("query")}
             />
           </FlexedDiv>
 

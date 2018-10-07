@@ -3,9 +3,11 @@ import * as _ from "underscore"
 import { chunk } from "lodash"
 
 import Text from "../common/text"
+import Header from "../common/header"
 
 import { PassageResult } from "../../models/discover"
-import { PassageContainer, FlexedDiv, Image, Sentence } from "./components"
+import { PassageContainer, Image, Sentence, PassageHeader } from "./components"
+import FlexedDiv from "../common/flexedDiv"
 import { colors } from "../../lib/colors"
 
 import arrowLeft from "../../lib/images/arrow-left.png"
@@ -137,20 +139,27 @@ class PassagesList extends React.Component<Props, State> {
 
     const passageComponent = (passage: PassageResult, i: number) => (
       <PassageContainer key={i}>
+        <PassageHeader>
+          <Header.s margin={"0"}>
+            <a
+              style={{ color: colors.blue, textDecoration: "none" }}
+              href={`https://en.wikipedia.org/wiki/${passage.title}`}
+              target={"_blank"}
+            >
+              {passage.title}
+            </a>
+          </Header.s>
+          <Text.regular>found {passage.matches.join(", ")}</Text.regular>
+        </PassageHeader>
         <Text.garamond>
           {sliced(passage.context, passage.matchIdx)}
         </Text.garamond>
-        <Text.regular>
-          {passage.title}, found {passage.matches.join(", ")}
-        </Text.regular>
       </PassageContainer>
     )
 
     const sorted = sort(passages, selectedSortBy)
     const chunked = chunk(sorted, maxResults)
     const toDisplay = chunked[currentPage]
-
-    console.log(toDisplay)
 
     const disabledLeft = currentPage === 0
     const disabledRight = currentPage + 1 === chunked.length

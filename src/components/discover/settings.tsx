@@ -2,13 +2,17 @@ import * as React from "react"
 
 import Button from "../common/button"
 import Header from "../common/header"
+import FlexedDiv from "../common/flexedDiv"
 import Text from "../common/text"
 import Slider from "rc-slider"
 import "rc-slider/assets/index.css"
 
-import { Textarea, Divider, FlexedDiv, SettingsHeader } from "./components"
+import { Textarea, Divider, SettingsHeader } from "./components"
+
 import { MainDisplay } from "./"
 import { colors } from "../../lib/colors"
+
+import { PassageResult } from "../../models/discover"
 
 interface Props {
   editedSearchWords: (str: string) => void
@@ -23,6 +27,9 @@ interface Props {
   isLoading: boolean
   runPassageSearch: () => void
   runPredictiveCorpus: () => void
+  exportPassages: () => void
+  canExport: boolean
+  passageResults: PassageResult[]
 }
 
 class Settings extends React.Component<Props, any> {
@@ -39,7 +46,8 @@ class Settings extends React.Component<Props, any> {
       hasSearchWords,
       searchWords,
       isLoading,
-      hasPredictiveCorpusLinks
+      hasPredictiveCorpusLinks,
+      canExport
     } = this.props
 
     const passageSearchDirections = (
@@ -60,11 +68,37 @@ class Settings extends React.Component<Props, any> {
         </Text.regular>
 
         <Button.regular
+          margin={"10px 0px 3px 0px"}
           onClick={this.props.runPassageSearch.bind(this)}
           disabled={!hasLinks || !hasSearchWords || isLoading}
           style={{ width: "100%" }}
         >
           Search
+        </Button.regular>
+
+        <Button.regular
+          margin={"3px 0"}
+          onClick={this.props.exportPassages.bind(this)}
+          disabled={!canExport || isLoading}
+          style={{ width: "100%" }}
+        >
+          Export
+        </Button.regular>
+
+        <Button.regular
+          margin={"3px 0"}
+          disabled={!canExport || isLoading}
+          style={{ width: "100%" }}
+        >
+          <a
+            style={{ color: colors.gray, textDecoration: "none" }}
+            download="data.json"
+            href={`data: text/json;charset=utf-8,${encodeURIComponent(
+              JSON.stringify(this.props.passageResults)
+            )}`}
+          >
+            Download
+          </a>
         </Button.regular>
       </div>
     )
@@ -76,7 +110,7 @@ class Settings extends React.Component<Props, any> {
           color={hasPredictiveCorpusLinks ? colors.blue : colors.lightGray}
         >
           <span style={{ marginRight: "10px" }}>1</span>
-          Select articles (max 10)
+          Select articles (max 3)
         </Text.regular>
 
         <Button.regular

@@ -33,7 +33,6 @@ const Removable = styled.span`
 `
 
 const LinkButton = Button.regular.extend`
-  border: 0;
   margin: 0;
   padding: 10px 0px;
   width: 100%;
@@ -145,17 +144,51 @@ class List extends React.Component<Props, State> {
       </Box.regular>
     )
 
+    const wordLinksBox = (d: any) => (
+      <AddBox style={{ display: "flex", padding: "0" }} key={d._id}>
+        <Link
+          style={{ textDecoration: "none", color: "black", width: "50%" }}
+          to={`/passage?filter=true&word=${d.value}`}
+        >
+          <LinkButton disabled={d.unfilteredPassagesCount === 0}>
+            Filter
+          </LinkButton>
+        </Link>
+        <Link
+          style={{ textDecoration: "none", color: "black", width: "50%" }}
+          to={`/passage?enrich=true&word=${d.value}`}
+        >
+          <LinkButton disabled={d.acceptedPassagesCount === 0}>
+            Enrich
+          </LinkButton>
+        </Link>
+      </AddBox>
+    )
+
     const wordBox = (d: any, i: number) => (
-      <Box.regular key={i}>
+      <Box.regular
+        onMouseOver={() => this.setState({ isHovering: i })}
+        onMouseLeave={() => this.setState({ isHovering: undefined })}
+        key={i}
+      >
         {icons(i)}
         <Link
           key={d.id}
           style={{ textDecoration: "none" }}
           to={`/word/${d.id}`}
         >
-          {" "}
           <Text.l>{d.value}</Text.l>
         </Link>
+        <DescriptionText>
+          <Text.s center={true}>
+            {d.enrichedPassagesCount} enriched passages
+          </Text.s>
+          <Text.xs center={true}>
+            {d.unfilteredPassagesCount} unfiltered / {d.acceptedPassagesCount}{" "}
+            unenriched
+          </Text.xs>
+        </DescriptionText>
+        {isHovering === i && wordLinksBox(d)}
       </Box.regular>
     )
 

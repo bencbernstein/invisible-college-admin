@@ -109,6 +109,11 @@ class App extends React.Component<any, State> {
           />
           <ProtectedRoute
             {...defaultProtectedRouteProps}
+            path="/passage"
+            component={contained("passage", user, keywords)}
+          />
+          <ProtectedRoute
+            {...defaultProtectedRouteProps}
             path="/sequence"
             component={contained("sequence", user)}
           />

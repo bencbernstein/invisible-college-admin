@@ -5,6 +5,7 @@ import Gameplay from "../gameplay"
 import Library from "../library"
 import Nav from "../nav"
 import Discover from "../discover"
+import Passage from "../passage"
 import QuestionComponent from "../question"
 import Sequence from "../sequence"
 import PassageSequence from "../passageSequence"
@@ -124,6 +125,7 @@ class Container extends React.Component<ContainerProps, ContainerState> {
                 keywords={keywords}
               />
             ),
+            passage: <Passage user={user!} keywords={keywords} />,
             word: (
               <Word
                 play={(id: string) => this.play("word", id)}

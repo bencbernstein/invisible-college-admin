@@ -15,7 +15,6 @@ const InvisibleCollege = styled.p`
 
 const Container = styled.div`
   text-align: center;
-  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -154,7 +153,12 @@ class Nav extends React.Component<Props, State> {
 
         <FlexDiv onMouseLeave={this.displayModal.bind(this)}>
           <Link
-            style={{ textDecoration: "none", color: colors.gray }}
+            style={{
+              textDecoration: "none",
+              color: colors.gray,
+              visibility:
+                window.location.pathname === "/discover" ? "hidden" : "visible"
+            }}
             to="/discover"
           >
             <Button bold={true}>DISCOVER</Button>

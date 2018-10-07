@@ -1,21 +1,17 @@
 import * as React from "react"
 import styled from "styled-components"
+import Dropzone from "react-dropzone"
 
 import { colors } from "../../lib/colors"
-import Box from "../common/box"
 import ListContainer from "../common/listContainer"
 import Header from "../common/header"
+import Button from "../common/button"
+import Text from "../common/text"
 import Icon from "../common/icon"
 
 import deleteIconRed from "../../lib/images/icon-delete-red.png"
 import deleteIcon from "../../lib/images/icon-delete.png"
-
-const FileLabel = styled.label`
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  cursor: pointer;
-`
+import FlexedDiv from "../common/flexedDiv"
 
 const ImageContainer = styled.div`
   height: 250px;
@@ -24,6 +20,7 @@ const ImageContainer = styled.div`
   align-items: center;
   justify-content: center;
   position: relative;
+  margin: 10px;
   border: 1px solid ${colors.gray};
 `
 
@@ -41,8 +38,11 @@ const PositionedIcon = Icon.extend`
 
 interface Props {
   imagesBase64: string[]
-  addImage: (filelist: FileList) => void
+  addImage: (file: File) => void
   removeImage: (imageId: string) => void
+  source: string
+  changeSource: (imageSearchSource: string) => void
+  word: string
 }
 
 interface State {
@@ -53,6 +53,31 @@ class Gallery extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
     this.state = {}
+  }
+
+  public onDrop(acceptedFiles: File[]) {
+    if (acceptedFiles.length) {
+      this.props.addImage(acceptedFiles[0])
+    }
+  }
+
+  public search() {
+    const { word, source } = this.props
+
+    if (source === "Google" || source === "All") {
+      console.log("open")
+      window.open(
+        `https://www.google.com/search?q=${word}&source=lnms&tbm=isch&tbs=sur:fc,ic:gray`,
+        "_blank"
+      )
+    }
+    if (source === "DuckDuckGo" || source === "All") {
+      console.log("open2")
+      window.open(
+        `https://duckduckgo.com/?q=${word}&t=h_&iax=images&ia=images&iaf=color%3Acolor2-bw`,
+        "_blank"
+      )
+    }
   }
 
   public render() {
@@ -72,30 +97,53 @@ class Gallery extends React.Component<Props, State> {
       </ImageContainer>
     )
 
-    const addImg = (
-      <Box.regular>
-        <img
-          style={{ height: "50px", width: "50px" }}
-          src={require("../../lib/images/icon-add.png")}
-        />
+    const sources = ["DuckDuckGo", "Google", "All"]
 
-        <FileLabel>
-          <input
-            style={{ display: "none", width: "100%", height: "100%" }}
-            type="file"
-            onChange={e => this.props.addImage(e.target.files!)}
-          />
-        </FileLabel>
-      </Box.regular>
+    const searchBox = (
+      <div>
+        <Button.regular onClick={this.search.bind(this)}>
+          Search Images
+        </Button.regular>
+        {sources.map((source: string, i: number) => (
+          <FlexedDiv justifyContent="flex-start" alignItems="center">
+            <input
+              checked={source === this.props.source}
+              onChange={() => this.props.changeSource(source)}
+              type="checkbox"
+            />
+            <Text.garamond>{source}</Text.garamond>
+          </FlexedDiv>
+        ))}
+      </div>
     )
 
     return (
       <div style={{ marginTop: "30px" }}>
         <Header.s>images</Header.s>
         <ListContainer>
-          {imagesBase64.map((image: any, i: number) => img(image, i))}
-          {addImg}
+          {imagesBase64.map(img)}
+          <Dropzone
+            style={{
+              width: "250px",
+              height: "250px",
+              color: "transparent",
+              cursor: "pointer",
+              display: "flex",
+              margin: "10px",
+              border: `1px solid ${colors.gray}`,
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            accept={"image/jpeg, image/png"}
+            onDrop={this.onDrop.bind(this)}
+          >
+            <img
+              style={{ height: "50px", width: "50px" }}
+              src={require("../../lib/images/icon-add.png")}
+            />
+          </Dropzone>
         </ListContainer>
+        {searchBox}
       </div>
     )
   }

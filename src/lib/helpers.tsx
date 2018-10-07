@@ -128,19 +128,17 @@ export const move = (arr: any[], old_index: number, new_index: number) => {
 export const isPunc = (char?: string) =>
   char && [".", ",", ")", "'"].indexOf(char) > -1
 
-export const toSentences = (tags: Tag[]) => {
+export const toSentences = (tags: Tag[]): Tag[][] => {
   const sentences: Tag[][] = [[]]
-  let idx = 0
-
-  tags.forEach(word => {
-    if (word.isSentenceConnector) {
-      idx++
-      sentences[idx] = []
+  let senIdx = 0
+  tags.forEach((tag: Tag) => {
+    if (tag.isSentenceConnector) {
+      senIdx += 1
+      sentences.push([])
     } else {
-      sentences[idx].push(word)
+      sentences[senIdx].push(tag)
     }
   })
-
   return sentences
 }
 
@@ -176,3 +174,5 @@ export const parseQueryString = (queryString: string): any => {
 
   return params
 }
+
+export const capitalize = (s: string) => s[0].toUpperCase() + s.slice(1)
