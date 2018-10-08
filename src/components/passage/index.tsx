@@ -9,7 +9,12 @@ import FilterComponent from "./filter"
 
 import { Tag } from "../../models/text"
 import { passagesForWord } from "../../models/word"
-import { Passage, filterPassage, updatePassage } from "../../models/passage"
+import {
+  Passage,
+  filterPassage,
+  updatePassage,
+  fetchPassage
+} from "../../models/passage"
 import { colors } from "../../lib/colors"
 import { cleanObj, toSentences } from "../../lib/helpers"
 
@@ -56,25 +61,27 @@ class PassageContainer extends React.Component<any, State> {
         : undefined
     const word = s.split("word=")[1]
     let passages = await passagesForWord(word)
-
-    if (!(passages instanceof Error)) {
-      if (queueType === QueueType.filter) {
-        passages = passages.filter(p => p.status === "unfiltered")
-      } else if (queueType === QueueType.enrich) {
-        passages = passages.filter(p => p.status === "accepted")
-      }
-      this.setState({ passages, queueType, word, displayModal: false }, () =>
-        this.nextPassage(0, passages as Passage[])
-      )
+    if (passages instanceof Error) {
+      return
     }
+    if (queueType === QueueType.filter) {
+      passages = passages.filter(p => p.status === "unfiltered")
+    } else if (queueType === QueueType.enrich) {
+      passages = passages.filter(p => p.status === "accepted")
+    }
+    this.setState({ passages, queueType, word, displayModal: false }, () =>
+      this.nextPassage(0, passages as Passage[])
+    )
   }
 
   public async nextFilterPassage(next: number, filteredSentences?: number[]) {
     const { idx, passages } = this.state
     if (next > idx && filteredSentences) {
-      passages[idx].filteredSentences = filteredSentences
-      const status = filteredSentences.length ? "accepted" : "rejected"
-      await filterPassage(passages[idx].id, status, filteredSentences)
+      await filterPassage(
+        passages[idx].id,
+        filteredSentences.length ? "accepted" : "rejected",
+        filteredSentences
+      )
     }
     this.nextPassage(next, passages)
   }
@@ -87,18 +94,22 @@ class PassageContainer extends React.Component<any, State> {
     const { idx, passages } = this.state
     if (next > idx) {
       flatten(passage.tagged).forEach((tag: Tag) => cleanObj(tag))
-      const status = remove ? "rejected" : "enriched"
-      remove ? passages.splice(idx, 1) : (passages[idx] = passage)
-      await updatePassage(passage, status)
-      passage.status = status
+      await updatePassage(passage, remove ? "rejected" : "enriched")
+      if (remove) {
+        passages.splice(idx, 1)
+      }
     }
     this.nextPassage(remove ? idx : next, passages)
   }
 
   public async nextPassage(idx: number, passages: Passage[]) {
-    const passage = passages[idx]
+    let passage: any = passages[idx]
     if (!passage) {
       this.setState({ displayModal: true })
+      return
+    }
+    passage = await fetchPassage(passage.id)
+    if (passage instanceof Error) {
       return
     }
     const sentences = toSentences(passage.tagged)

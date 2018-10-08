@@ -202,9 +202,12 @@ class Discover extends React.Component<Props, State> {
     this.setState({ isLoading: true })
     const result = await savePassages(encoded)
     this.setState({ isLoading: false })
-    result instanceof Error
-      ? this.setState({ error: "Error uploading passages." })
-      : window.alert(`Succesfully uploaded ${count} passages.`)
+    if (result instanceof Error) {
+      this.setState({ error: "Error uploading passages." })
+    } else {
+      this.setState({ error: undefined })
+      window.alert(`Succesfully uploaded ${count} passages.`)
+    }
   }
 
   public render() {

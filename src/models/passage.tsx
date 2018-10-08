@@ -13,8 +13,22 @@ export interface Passage {
   status: string
 }
 
+export const fetchPassage = async (id: string): Promise<Passage | Error> => {
+  const gqlQuery = `query { passage(id: "${id}") { id
+    matchIdx
+    title
+    source
+    status
+    filteredSentences
+    tagged {
+      id value tag isFocusWord isPunctuation isConnector isSentenceConnector wordId choiceSetId isUnfocused
+    } 
+  } }`
+  return query(gqlQuery, "passage")
+}
+
 export const savePassages = async (passages: string): Promise<any | Error> => {
-  const gqlQuery = `mutation { savePassages(passages: "${passages}") { id } }`
+  const gqlQuery = `mutation { savePassages(passages: "${passages}") }`
   return query(gqlQuery, "savePassages")
 }
 
