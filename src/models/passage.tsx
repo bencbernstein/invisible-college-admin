@@ -14,7 +14,7 @@ export interface Passage {
 }
 
 export const savePassages = async (passages: string): Promise<any | Error> => {
-  const gqlQuery = `mutation { savePassages(passages: "${passages}") { id } }`
+  const gqlQuery = `mutation { savePassages(passages: "${passages}") }`
   return query(gqlQuery, "savePassages")
 }
 
