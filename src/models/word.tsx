@@ -171,14 +171,7 @@ export const passagesForWord = async (
   const gqlQuery = `query {
     passagesForWord(value: "${value}") {
       id
-      matchIdx
-      title
-      source
       status
-      filteredSentences
-      tagged {
-        id value tag isFocusWord isPunctuation isConnector isSentenceConnector wordId choiceSetId isUnfocused
-      }
     }
   }`
   return query(gqlQuery, "passagesForWord")

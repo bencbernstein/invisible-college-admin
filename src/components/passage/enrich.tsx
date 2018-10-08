@@ -80,13 +80,10 @@ class EnrichComponent extends React.Component<Props, State> {
   public handleKeyDown(e: any) {
     const { passage } = this.state
     const { idx, nextPassage } = this.props
-
     if (e.key === "right arrow" || e.key === "ArrowRight") {
       nextPassage(idx + 1, passage)
     } else if (e.key === "left arrow" || e.key === "ArrowLeft") {
       nextPassage(idx - 1, passage)
-    } else if (e.key === "x" || e.key === "x") {
-      nextPassage(idx + 1, passage, true)
     }
   }
 
@@ -140,6 +137,10 @@ class EnrichComponent extends React.Component<Props, State> {
     const { passage, sentences } = this.state
 
     sentences.splice(idx, 1)
+    passage.filteredSentences = _.without(
+      passage.filteredSentences.map(i => (i > idx ? i - 1 : i)).concat(idx + 1),
+      idx
+    )
     passage.tagged = flattenSentences(sentences)
 
     this.setState({ passage, sentences })
@@ -149,7 +150,9 @@ class EnrichComponent extends React.Component<Props, State> {
     const { passage, sentences } = this.state
 
     sentences.splice(idx + 1, 0, [])
-    passage.filteredSentences.push(idx + 1)
+    passage.filteredSentences = passage.filteredSentences
+      .map(i => (i > idx ? i + 1 : i))
+      .concat(idx + 1)
     passage.tagged = flattenSentences(sentences)
 
     this.setState({ passage, sentences })
