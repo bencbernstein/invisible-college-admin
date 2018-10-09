@@ -52,7 +52,7 @@ class RootsComponent extends React.Component<Props, any> {
         <ComponentText>
           {word
             .components!.map(
-              (c: any): any => (
+              (c: any, i: number): any => (
                 <Span key={c.value} highlight={c.isRoot}>
                   {c.value}
                 </Span>

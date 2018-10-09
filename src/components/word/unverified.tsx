@@ -65,10 +65,12 @@ class UnverifiedComponent extends React.Component<Props, State> {
   }
 
   public async enrich(value: string) {
+    const { attr } = this.props
     const enriched = await enrichWord(value)
-
-    if (enriched[this.props.attr]) {
-      const unverified = enriched[this.props.attr]
+    if (enriched[attr]) {
+      const unverified = Array.isArray(enriched[attr])
+        ? enriched[attr]
+        : [enriched[attr]]
       this.setState({ unverified })
     }
   }
