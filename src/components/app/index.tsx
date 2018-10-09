@@ -59,10 +59,6 @@ class App extends React.Component<any, State> {
     const user = fetchUserFromStorage()
     const isAuthenticated = user !== undefined
     this.setState({ user, checkedAuth, isAuthenticated })
-    // const result = await fetchUser(user.id)
-    // if (result instanceof Error) {
-    //   localStorage.removeItem("user")
-    // }
   }
 
   public async loadKeywords() {
@@ -80,7 +76,7 @@ class App extends React.Component<any, State> {
   public render() {
     const { keywords, user, checkedAuth } = this.state
 
-    if (!checkedAuth) {
+    if (!checkedAuth || !keywords) {
       return null
     }
 

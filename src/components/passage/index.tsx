@@ -7,6 +7,8 @@ import CompletedModal from "./completedModal"
 import EnrichComponent from "./enrich"
 import FilterComponent from "./filter"
 
+import CONFIG from "../../lib/config"
+
 import { Tag } from "../../models/text"
 import { passagesForWord } from "../../models/word"
 import {
@@ -15,6 +17,10 @@ import {
   updatePassage,
   fetchPassage
 } from "../../models/passage"
+import {
+  addPassageToPassageSequence,
+  removePassageFromPassageSequence
+} from "../../models/passageSequence"
 import { colors } from "../../lib/colors"
 import { cleanObj, toSentences } from "../../lib/helpers"
 
@@ -100,6 +106,11 @@ class PassageContainer extends React.Component<any, State> {
       }
     }
     this.nextPassage(remove ? idx : next, passages)
+    if (remove) {
+      removePassageFromPassageSequence(CONFIG.ZOOLOGY_SEQUENCE_ID, passage.id)
+    } else {
+      addPassageToPassageSequence(CONFIG.ZOOLOGY_SEQUENCE_ID, passage.id)
+    }
   }
 
   public async nextPassage(idx: number, passages: Passage[]) {

@@ -1,5 +1,4 @@
 import { get } from "lodash"
-import styled from "styled-components"
 import * as React from "react"
 import { Redirect } from "react-router"
 import * as _ from "underscore"
@@ -9,6 +8,13 @@ import Subnav from "../nav/subnav"
 import List from "./list"
 import EnrichWordsMenu from "./enrichWordsMenu"
 import Menus from "../common/menu"
+
+import {
+  SelectedSortBy,
+  SelectedView,
+  viewForSearch,
+  attrForWordSortBy
+} from "./data"
 
 import {
   addChoice,
@@ -23,23 +29,6 @@ import {
   fetchPassageSequences
 } from "../../models/passageSequence"
 
-const FlexedDiv = styled.div`
-  display: flex;
-`
-
-export enum SelectedView {
-  ChoiceSets = "Choice Sets",
-  Texts = "Texts",
-  PassageSequences = "Passage Sequences",
-  Words = "Words"
-}
-
-enum SelectedSortBy {
-  Name = "Name",
-  Passages = "# Passages",
-  UnenrichedPassages = "# Unenriched Passages"
-}
-
 interface State {
   selectedView: SelectedView
   selectedSortBy: SelectedSortBy
@@ -50,24 +39,13 @@ interface State {
   choiceSets: any[]
 }
 
-const viewForSearch = (search: string): SelectedView => {
-  if (search.includes("choice-sets")) {
-    return SelectedView.ChoiceSets
-  } else if (search.includes("texts")) {
-    return SelectedView.Texts
-  } else if (search.includes("passage-sequences")) {
-    return SelectedView.PassageSequences
-  }
-  return SelectedView.Words
-}
-
 class Library extends React.Component<any, State> {
   constructor(props: any) {
     super(props)
 
     this.state = {
       selectedView: viewForSearch(window.location.search),
-      selectedSortBy: SelectedSortBy.Passages,
+      selectedSortBy: SelectedSortBy.Name,
       passageSequences: [],
       words: [],
       texts: [],
@@ -103,11 +81,7 @@ class Library extends React.Component<any, State> {
 
   public async loadWords(didChangeSort: boolean = false) {
     const { words, selectedSortBy } = this.state
-    const sortBy = {
-      Name: "value",
-      "# Passages": "enrichedPassagesCount",
-      "# Unenriched Passages": "acceptedPassagesCount"
-    }[selectedSortBy]
+    const sortBy = attrForWordSortBy(selectedSortBy)
     const last = didChangeSort ? undefined : get(_.last(words), sortBy)
     const add = await fetchWords(30, sortBy, last)
     if (!(add instanceof Error)) {
@@ -206,7 +180,7 @@ class Library extends React.Component<any, State> {
           title={"library"}
         />
 
-        <FlexedDiv>
+        <div style={{ display: "flex" }}>
           <Menus
             title={"View"}
             didSelect={this.didSelectView.bind(this)}
@@ -219,19 +193,28 @@ class Library extends React.Component<any, State> {
             ]}
           />
 
-          {selectedView !== "Choice Sets" && (
+          {_.include(["Words", "Texts"], selectedView) && (
             <Menus
               title={"Sort By"}
               didSelect={this.didSelectSortBy.bind(this)}
               chosen={selectedSortBy}
-              options={[
-                SelectedSortBy.Name,
-                SelectedSortBy.Passages,
-                SelectedSortBy.UnenrichedPassages
-              ]}
+              options={
+                selectedView === "Texts"
+                  ? [
+                      SelectedSortBy.Name,
+                      SelectedSortBy.Passages,
+                      SelectedSortBy.UnenrichedPassages
+                    ]
+                  : [
+                      SelectedSortBy.Name,
+                      SelectedSortBy.EnrichedPassages,
+                      SelectedSortBy.UnenrichedPassages,
+                      SelectedSortBy.UnfilteredPassages
+                    ]
+              }
             />
           )}
-        </FlexedDiv>
+        </div>
 
         {selectedView === "Words" && <EnrichWordsMenu words={words} />}
 

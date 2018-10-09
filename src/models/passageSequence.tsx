@@ -45,3 +45,15 @@ export const addPassageToPassageSequence = async (
 }`
   return query(gqlQuery, "addPassageToPassageSequence")
 }
+
+export const removePassageFromPassageSequence = async (
+  id: string,
+  passageId: string
+): Promise<PassageSequence | Error> => {
+  const gqlQuery = `mutation {
+    removePassageFromPassageSequence(id: "${id}", passageId: "${passageId}") {
+    ${allFields}
+  }
+}`
+  return query(gqlQuery, "removePassageFromPassageSequence")
+}
