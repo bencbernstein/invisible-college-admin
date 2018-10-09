@@ -33,7 +33,7 @@ export const DescriptionText = styled.div`
 
 export const Container = styled.div`
   border: 0.5px solid black;
-  width: 100%;
+  width: 90%;
   padding: 20px;
   margin: 20px 0px;
 `

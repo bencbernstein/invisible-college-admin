@@ -83,8 +83,10 @@ class WordComponent extends React.Component<Props, State> {
 
   public async loadImages() {
     const { word } = this.state
-    if (word && word.images.length) {
-      const imagesBase64 = await fetchImages(word.images)
+    if (word) {
+      const imagesBase64 = word.images.length
+        ? await fetchImages(word.images)
+        : []
       this.setState({ imagesBase64 })
     }
   }
@@ -162,21 +164,24 @@ class WordComponent extends React.Component<Props, State> {
       return <Redirect to={redirect} />
     }
 
-    const roots = <RootsComponent word={word} />
+    const roots = <RootsComponent key={1} word={word} />
     const definition = (
       <DefinitionComponent
+        key={2}
         update={updated => this.setState({ word: updated })}
         word={word}
       />
     )
     const otherForms = (
       <OtherFormsComponent
+        key={3}
         update={updated => this.setState({ word: updated })}
         word={word}
       />
     )
     const synonyms = (
       <SynonymsComponent
+        key={4}
         keywordValues={this.props.keywordValues}
         update={updated => this.setState({ word: updated })}
         word={word}
@@ -184,6 +189,7 @@ class WordComponent extends React.Component<Props, State> {
     )
     const tags = (
       <TagsComponent
+        key={5}
         keywordValues={this.props.keywordValues}
         update={updated => this.setState({ word: updated })}
         word={word}
@@ -191,13 +197,14 @@ class WordComponent extends React.Component<Props, State> {
     )
     const unverifiedComponent = (attr: string) => (
       <UnverifiedComponent
+        key={6}
         attr={attr}
         word={word}
         addUnverified={this.addUnverified.bind(this)}
       />
     )
     const obscurity = (
-      <div>
+      <div key={7}>
         <Header.s style={{ marginTop: "30px" }}>obscurity</Header.s>
         <Input.m
           type="text"
@@ -209,6 +216,7 @@ class WordComponent extends React.Component<Props, State> {
 
     const images = (
       <Gallery
+        key={8}
         word={word.value}
         source={this.state.imageSearchSource}
         changeSource={imageSearchSource => this.setState({ imageSearchSource })}

@@ -65,14 +65,12 @@ class Gallery extends React.Component<Props, State> {
     const { word, source } = this.props
 
     if (source === "Google" || source === "All") {
-      console.log("open")
       window.open(
         `https://www.google.com/search?q=${word}&source=lnms&tbm=isch&tbs=sur:fc,ic:gray`,
         "_blank"
       )
     }
     if (source === "DuckDuckGo" || source === "All") {
-      console.log("open2")
       window.open(
         `https://duckduckgo.com/?q=${word}&t=h_&iax=images&ia=images&iaf=color%3Acolor2-bw`,
         "_blank"
@@ -105,7 +103,7 @@ class Gallery extends React.Component<Props, State> {
           Search Images
         </Button.regular>
         {sources.map((source: string, i: number) => (
-          <FlexedDiv justifyContent="flex-start" alignItems="center">
+          <FlexedDiv key={i} justifyContent="flex-start" alignItems="center">
             <input
               checked={source === this.props.source}
               onChange={() => this.props.changeSource(source)}

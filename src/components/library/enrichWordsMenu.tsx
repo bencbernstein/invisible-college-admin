@@ -112,7 +112,9 @@ class EnrichWordsMenu extends React.Component<Props, State> {
         />
 
         <Text.regular>Choose desired attributes to enrich</Text.regular>
-        <FlexedDiv>{WORD_ATTRIBUTES.map(radioButton)}</FlexedDiv>
+        <FlexedDiv justifyContent="flex-start">
+          {WORD_ATTRIBUTES.map(radioButton)}
+        </FlexedDiv>
 
         <br />
 

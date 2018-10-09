@@ -72,7 +72,6 @@ class Sequence extends React.Component<any, State> {
     const passages = await fetchPassageSequence(id)
     if (!(passages instanceof Error)) {
       passages.forEach(p => (p.sentences = toSentences(p.tagged)))
-      console.log(passages[0])
       this.setState({ passages, id })
     }
   }

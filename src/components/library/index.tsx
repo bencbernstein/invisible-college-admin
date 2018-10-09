@@ -144,7 +144,6 @@ class Library extends React.Component<any, State> {
             ).reverse()
       this.setState({ texts: sorted, selectedSortBy })
     } else if (selectedView === "Words") {
-      console.log(selectedSortBy)
       this.setState({ selectedSortBy }, () => this.loadWords(true))
     }
   }
