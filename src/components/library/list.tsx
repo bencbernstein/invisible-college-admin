@@ -1,11 +1,9 @@
 import * as React from "react"
 import { Redirect } from "react-router"
 import { Link } from "react-router-dom"
-import styled from "styled-components"
 
 import AddBox from "../common/addBox"
 import Box from "../common/box"
-import Button from "../common/button"
 import Icon from "../common/icon"
 import IconsContainer from "../common/iconsContainer"
 import Header from "../common/header"
@@ -13,9 +11,8 @@ import Input from "../common/input"
 import ListContainer from "../common/listContainer"
 import Text from "../common/text"
 
-import { colors } from "../../lib/colors"
-
-import { SelectedView } from "./"
+import { SelectedView } from "./data"
+import { Removable, LinkButton, Choices, DescriptionText } from "./components"
 
 import choiceSetIcon from "../../lib/images/icon-choice-set.png"
 import deleteIconRed from "../../lib/images/icon-delete-red.png"
@@ -23,33 +20,6 @@ import deleteIcon from "../../lib/images/icon-delete.png"
 import textIcon from "../../lib/images/icon-text.png"
 import wordIcon from "../../lib/images/icon-word.png"
 import passageSequencesIcon from "../../lib/images/icon-passage-sequence.png"
-
-const Removable = styled.span`
-  cursor: pointer;
-  margin: 0px 3px;
-  &:hover {
-    color: ${colors.red};
-  }
-`
-
-const LinkButton = Button.regular.extend`
-  margin: 0;
-  padding: 10px 0px;
-  width: 100%;
-`
-
-const Choices = Text.regular.extend`
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-`
-
-const DescriptionText = styled.div`
-  position: absolute;
-  bottom: 10px;
-  left: 0;
-  right: 0;
-`
 
 interface Props {
   data: any[]

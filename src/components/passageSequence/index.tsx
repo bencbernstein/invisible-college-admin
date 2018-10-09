@@ -22,7 +22,7 @@ import Text from "../common/text"
 import deleteIcon from "../../lib/images/icon-delete.png"
 import passageSequenceIcon from "../../lib/images/icon-passage-sequence.png"
 
-import { highlight, move } from "../../lib/helpers"
+import { highlight, move, toSentences } from "../../lib/helpers"
 
 interface SpanProps {
   color: string
@@ -71,6 +71,8 @@ class Sequence extends React.Component<any, State> {
     const id = _.last(window.location.pathname.split("/"))!
     const passages = await fetchPassageSequence(id)
     if (!(passages instanceof Error)) {
+      passages.forEach(p => (p.sentences = toSentences(p.tagged)))
+      console.log(passages[0])
       this.setState({ passages, id })
     }
   }
@@ -132,12 +134,12 @@ class Sequence extends React.Component<any, State> {
       </AddBox>
     )
 
-    const span = (tag: Tag, idx: number) => (
+    const span = (tag: Tag, i: number) => (
       <Span
         marginLeft={!tag.isPunctuation}
         tag={tag}
         color={highlight(tag)}
-        key={idx}
+        key={i}
       >
         {tag.value}
       </Span>
@@ -152,7 +154,13 @@ class Sequence extends React.Component<any, State> {
         key={data.id}
       >
         {icons(data.id)}
-        <Text.regular>{_.flatten(data.tagged).map(span)}</Text.regular>
+        <Text.regular>
+          {_.flatten(
+            data.sentences.filter((tags: Tag[], i: number) =>
+              _.includes(data.filteredSentences, i)
+            )
+          ).map(span)}
+        </Text.regular>
         <BottomText>{`no. ${idx + 1}`}</BottomText>
         {isHovering === idx && addBox(idx)}
       </Box.regular>

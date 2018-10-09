@@ -1,36 +1,16 @@
 import * as React from "react"
-import styled from "styled-components"
 import * as _ from "underscore"
 import { Redirect } from "react-router"
 
 import Button from "../common/button"
 import Header from "../common/header"
 import Text from "../common/text"
+import FlexedDiv from "../common/flexedDiv"
+import { Container, Textarea } from "./components"
 
-import { colors } from "../../lib/colors"
 import { camelize } from "../../lib/helpers"
 
 import { wordsToEnrich, Word } from "../../models/word"
-
-const Container = styled.div`
-  border: 0.5px solid black;
-  width: 100%;
-  padding: 20px;
-  margin: 20px 0px;
-`
-
-const FlexedDiv = styled.div`
-  display: flex;
-  align-items: center;
-`
-
-const Textarea = styled.textarea`
-  width: 100%;
-  color: ${colors.gray};
-  padding: 10px;
-  box-sizing: border-box;
-  margin: 10px 0px 20px 0px;
-`
 
 const WORD_ATTRIBUTES = [
   "all",
