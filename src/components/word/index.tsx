@@ -40,7 +40,6 @@ interface State {
   redirect?: string
   imagesBase64: string[]
   enriching?: Enriching
-  imageSearchSource: string
 }
 
 class WordComponent extends React.Component<Props, State> {
@@ -48,8 +47,7 @@ class WordComponent extends React.Component<Props, State> {
     super(props)
 
     this.state = {
-      imagesBase64: [],
-      imageSearchSource: "All"
+      imagesBase64: []
     }
   }
 
@@ -218,8 +216,6 @@ class WordComponent extends React.Component<Props, State> {
       <Gallery
         key={8}
         word={word.value}
-        source={this.state.imageSearchSource}
-        changeSource={imageSearchSource => this.setState({ imageSearchSource })}
         removeImage={this.removeImage.bind(this)}
         addImage={this.addImage.bind(this)}
         imagesBase64={imagesBase64}
