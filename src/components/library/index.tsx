@@ -1,9 +1,7 @@
-import { get } from "lodash"
 import * as React from "react"
 import { Redirect } from "react-router"
 import * as _ from "underscore"
 
-import Button from "../common/button"
 import Subnav from "../nav/subnav"
 import List from "./list"
 import EnrichWordsMenu from "./enrichWordsMenu"
@@ -32,12 +30,15 @@ import {
 interface State {
   selectedView: SelectedView
   selectedSortBy: SelectedSortBy
+  selectedFilterBy: string
   redirect?: string
   passageSequences: PassageSequence[]
   words: Word[]
   texts: any[]
   choiceSets: any[]
 }
+
+const ALPHABET = "abcdefghijklmnopqrstuvwxyz".split("")
 
 class Library extends React.Component<any, State> {
   constructor(props: any) {
@@ -46,6 +47,7 @@ class Library extends React.Component<any, State> {
     this.state = {
       selectedView: viewForSearch(window.location.search),
       selectedSortBy: SelectedSortBy.Name,
+      selectedFilterBy: ALPHABET[0],
       passageSequences: [],
       words: [],
       texts: [],
@@ -80,13 +82,11 @@ class Library extends React.Component<any, State> {
   }
 
   public async loadWords(didChangeSort: boolean = false) {
-    const { words, selectedSortBy } = this.state
+    const { selectedSortBy, selectedFilterBy } = this.state
     const sortBy = attrForWordSortBy(selectedSortBy)
-    const last = didChangeSort ? undefined : get(_.last(words), sortBy)
-    const add = await fetchWords(30, sortBy, last)
-    if (!(add instanceof Error)) {
-      words.push(...add)
-      this.setState({ words: didChangeSort ? add : words })
+    const words = await fetchWords(30, selectedFilterBy, sortBy)
+    if (!(words instanceof Error)) {
+      this.setState({ words })
     }
   }
 
@@ -126,11 +126,11 @@ class Library extends React.Component<any, State> {
     }
   }
 
-  public didSelectView(selectedView: any): void {
+  public didSelectView(selectedView: any) {
     this.setState({ selectedView })
   }
 
-  public didSelectSortBy(selectedSortBy: any): void {
+  public didSelectSortBy(selectedSortBy: any) {
     const { texts, selectedView } = this.state
     if (selectedView === "Texts") {
       const sorted =
@@ -148,11 +148,16 @@ class Library extends React.Component<any, State> {
     }
   }
 
+  public didSelectFilterBy(character: string) {
+    this.setState({ selectedFilterBy: character }, this.loadWords)
+  }
+
   public render() {
     const {
       choiceSets,
       selectedView,
       selectedSortBy,
+      selectedFilterBy,
       redirect,
       texts,
       passageSequences,
@@ -213,6 +218,15 @@ class Library extends React.Component<any, State> {
               }
             />
           )}
+
+          {selectedView === "Words" && (
+            <Menus
+              title={"Filter By"}
+              didSelect={this.didSelectFilterBy.bind(this)}
+              chosen={selectedFilterBy}
+              options={ALPHABET}
+            />
+          )}
         </div>
 
         {selectedView === "Words" && <EnrichWordsMenu words={words} />}
@@ -223,12 +237,6 @@ class Library extends React.Component<any, State> {
           selectedView={selectedView}
           data={data}
         />
-
-        {selectedView === "Words" && (
-          <Button.regular onClick={() => this.loadWords()}>
-            load more
-          </Button.regular>
-        )}
       </div>
     )
   }

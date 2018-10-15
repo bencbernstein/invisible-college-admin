@@ -6,6 +6,7 @@ export interface Passage {
   id: string
   tagged: Tag[]
   filteredSentences: number[]
+  factoidOnCorrect: boolean
   matchIdx: number
   source: string
   title: string
@@ -20,6 +21,7 @@ export const fetchPassage = async (id: string): Promise<Passage | Error> => {
     source
     status
     filteredSentences
+    factoidOnCorrect
     tagged {
       id value tag isFocusWord isPunctuation isConnector isSentenceConnector wordId choiceSetId isUnfocused
     } 

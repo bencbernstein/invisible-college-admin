@@ -23,8 +23,8 @@ export const Sentence = Text.garamond.extend`
   margin: 5px 0;
 `
 
-export const SentencesContainer = styled.div`
-  margin: 20px 50px;
+export const PassageContainer = styled.div`
+  margin: 20px 50px 80px 50px;
 `
 
 interface IconProps {
@@ -34,7 +34,7 @@ interface IconProps {
 export const Icons = FlexedDiv.extend`
   width: 300px;
   position: fixed;
-  bottom: 50px;
+  bottom: 30px;
   left: 50%;
   margin-left: -150px;
   justify-content: space-between;

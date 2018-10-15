@@ -1,7 +1,10 @@
 import * as React from "react"
 import * as _ from "underscore"
 
-import { Span, Sentence, SentencesContainer, Icons, Icon } from "./components"
+import Slider from "rc-slider"
+import "rc-slider/assets/index.css"
+import Header from "../common/header"
+import { Span, Sentence, PassageContainer, Icons, Icon } from "./components"
 
 import { Tag } from "../../models/text"
 import { Passage } from "../../models/passage"
@@ -20,6 +23,7 @@ interface Props {
 
 interface State {
   filteredSentences: number[]
+  context: number
 }
 
 class FilterComponent extends React.Component<Props, State> {
@@ -27,10 +31,9 @@ class FilterComponent extends React.Component<Props, State> {
     super(props)
 
     this.state = {
-      filteredSentences: []
+      filteredSentences: [],
+      context: 10
     }
-
-    this.handleKeyDown = this.handleKeyDown.bind(this)
   }
 
   public componentDidMount() {
@@ -45,27 +48,6 @@ class FilterComponent extends React.Component<Props, State> {
 
   public setFilteredSentences(props: Props) {
     this.setState({ filteredSentences: props.passage.filteredSentences || [] })
-  }
-
-  public componentWillMount() {
-    document.addEventListener("keydown", this.handleKeyDown, false)
-  }
-
-  public componentWillUnmount() {
-    document.removeEventListener("keydown", this.handleKeyDown, false)
-  }
-
-  public handleKeyDown(e: any) {
-    const { filteredSentences } = this.state
-    const { idx, nextPassage } = this.props
-
-    if (e.key === "right arrow" || e.key === "ArrowRight") {
-      nextPassage(idx + 1, filteredSentences)
-    } else if (e.key === "left arrow" || e.key === "ArrowLeft") {
-      nextPassage(idx - 1, filteredSentences)
-    } else if (e.key === "k" || e.key === "K") {
-      this.keepAllSentences()
-    }
   }
 
   public keepAllSentences() {
@@ -90,7 +72,7 @@ class FilterComponent extends React.Component<Props, State> {
 
   public render() {
     const { passage, sentences, idx } = this.props
-    const { filteredSentences } = this.state
+    const { filteredSentences, context } = this.state
 
     const span = (tag: Tag, color: string, i: number) => (
       <Span key={i} color={color} highlight={tag.wordId || tag.choiceSetId}>
@@ -98,21 +80,35 @@ class FilterComponent extends React.Component<Props, State> {
       </Span>
     )
 
-    const sentenceComponents = sentences.map((tags: Tag[], i: number) => (
-      <Sentence
-        onClick={() => this.handleClickedSentence(i)}
-        underline={_.includes(filteredSentences, i)}
-        key={i}
-      >
-        {tags.map((t: Tag, i2: number) =>
-          span(t, i === passage.matchIdx ? "black" : colors.gray, i2)
-        )}
-      </Sentence>
-    ))
+    const sentenceComponents = sentences
+      .map((tags: Tag[], i: number) => (
+        <Sentence
+          onClick={() => this.handleClickedSentence(i)}
+          underline={_.includes(filteredSentences, i)}
+          key={i}
+        >
+          {tags.map((t: Tag, i2: number) =>
+            span(t, i === passage.matchIdx ? "black" : colors.lighterGray, i2)
+          )}
+        </Sentence>
+      ))
+      .slice(
+        Math.max(passage.matchIdx - context, 0),
+        passage.matchIdx + context + 1
+      )
 
     return (
-      <div>
-        <SentencesContainer>{sentenceComponents}</SentencesContainer>
+      <PassageContainer>
+        {sentenceComponents}
+        <Header.s margin="20px 0 0 0">context</Header.s>
+        <Slider
+          value={context}
+          onChange={newContext => this.setState({ context: newContext })}
+          style={{ margin: "10px 0 0 0", width: "150px" }}
+          min={0}
+          max={10}
+          marks={{ 0: "0", 5: "5", 10: "10" }}
+        />
         <Icons>
           <Icon
             disable={idx === 0}
@@ -126,7 +122,7 @@ class FilterComponent extends React.Component<Props, State> {
             src={nextImg}
           />
         </Icons>
-      </div>
+      </PassageContainer>
     )
   }
 }
