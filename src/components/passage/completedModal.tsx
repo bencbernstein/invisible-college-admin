@@ -40,7 +40,6 @@ class CompletedModal extends React.Component<Props, State> {
     let otherQueues = await recommendPassageQueues(type)
     if (!(otherQueues instanceof Error)) {
       otherQueues = otherQueues.filter(w => w !== this.props.word)
-      console.log(otherQueues)
       this.setState({ otherQueues })
     }
   }
