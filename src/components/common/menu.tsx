@@ -1,6 +1,8 @@
 import * as React from "react"
 import styled from "styled-components"
 
+import FlexedDiv from "./flexedDiv"
+
 import { colors } from "../../lib/colors"
 import Text from "../common/text"
 
@@ -59,12 +61,29 @@ class Menus extends React.Component<Props, any> {
       )
     })
 
+    const select = (
+      <FlexedDiv justifyContent="flex-start">
+        <Text.regular margin="0 10px 0 0" bold={true} color="black">
+          Character
+        </Text.regular>
+        <select
+          onChange={e => this.props.didSelect(e.target.value.toLowerCase())}
+        >
+          {options.map((o: string) => (
+            <option selected={o === chosen} key={o}>
+              {o.toUpperCase()}
+            </option>
+          ))}
+        </select>
+      </FlexedDiv>
+    )
+
     return (
       <Container>
         <Menu>
           <Text.regular>{title}</Text.regular>
           <Line />
-          {menuButtons}
+          {title === "Filter By" ? select : menuButtons}
         </Menu>
       </Container>
     )

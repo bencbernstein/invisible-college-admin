@@ -6,7 +6,6 @@ import { colors } from "../../lib/colors"
 import ListContainer from "../common/listContainer"
 import Header from "../common/header"
 import Button from "../common/button"
-import Text from "../common/text"
 import Icon from "../common/icon"
 
 import deleteIconRed from "../../lib/images/icon-delete-red.png"
@@ -40,8 +39,6 @@ interface Props {
   imagesBase64: string[]
   addImage: (file: File) => void
   removeImage: (imageId: string) => void
-  source: string
-  changeSource: (imageSearchSource: string) => void
   word: string
 }
 
@@ -61,16 +58,15 @@ class Gallery extends React.Component<Props, State> {
     }
   }
 
-  public search() {
-    const { word, source } = this.props
+  public search(site: string) {
+    const { word } = this.props
 
-    if (source === "Google" || source === "All") {
+    if (site === "google") {
       window.open(
         `https://www.google.com/search?q=${word}&source=lnms&tbm=isch&tbs=sur:fc,ic:gray`,
         "_blank"
       )
-    }
-    if (source === "DuckDuckGo" || source === "All") {
+    } else if (site === "duckDuckGo") {
       window.open(
         `https://duckduckgo.com/?q=${word}&t=h_&iax=images&ia=images&iaf=color%3Acolor2-bw`,
         "_blank"
@@ -95,24 +91,18 @@ class Gallery extends React.Component<Props, State> {
       </ImageContainer>
     )
 
-    const sources = ["DuckDuckGo", "Google", "All"]
-
     const searchBox = (
-      <div>
-        <Button.regular onClick={this.search.bind(this)}>
-          Search Images
+      <FlexedDiv justifyContent="flex-start">
+        <Button.regular
+          marginRight="15px"
+          onClick={() => this.search("google")}
+        >
+          Search Google
         </Button.regular>
-        {sources.map((source: string, i: number) => (
-          <FlexedDiv key={i} justifyContent="flex-start" alignItems="center">
-            <input
-              checked={source === this.props.source}
-              onChange={() => this.props.changeSource(source)}
-              type="checkbox"
-            />
-            <Text.garamond>{source}</Text.garamond>
-          </FlexedDiv>
-        ))}
-      </div>
+        <Button.regular onClick={() => this.search("duckDuckGo")}>
+          Search DuckDuckGo
+        </Button.regular>
+      </FlexedDiv>
     )
 
     return (

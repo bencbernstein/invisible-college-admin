@@ -59,12 +59,10 @@ const slim = [
 
 export const fetchWords = async (
   first: number,
-  sortBy: string,
-  after?: string
+  startingWith: string,
+  sortBy: string
 ): Promise<Word[] | Error> => {
-  const gqlQuery = after
-    ? `query { words(first: ${first}, sortBy: "${sortBy}", after: "${after}") { ${slim} } }`
-    : `query { words(first: ${first}, sortBy: "${sortBy}") { ${slim} } }`
+  const gqlQuery = `query { words(first: ${first}, startingWith: "${startingWith}", sortBy: "${sortBy}") { ${slim} } }`
   return query(gqlQuery, "words")
 }
 

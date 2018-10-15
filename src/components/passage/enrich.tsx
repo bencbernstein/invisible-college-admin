@@ -12,7 +12,7 @@ import {
   PartOfSpeech,
   Tagged,
   Textarea,
-  SentencesContainer,
+  PassageContainer,
   Icon,
   Icons
 } from "./components"
@@ -64,26 +64,6 @@ class EnrichComponent extends React.Component<Props, State> {
     this.state = {
       passage,
       sentences
-    }
-
-    this.handleKeyDown = this.handleKeyDown.bind(this)
-  }
-
-  public componentWillMount() {
-    document.addEventListener("keydown", this.handleKeyDown, false)
-  }
-
-  public componentWillUnmount() {
-    document.removeEventListener("keydown", this.handleKeyDown, false)
-  }
-
-  public handleKeyDown(e: any) {
-    const { passage } = this.state
-    const { idx, nextPassage } = this.props
-    if (e.key === "right arrow" || e.key === "ArrowRight") {
-      nextPassage(idx + 1, passage)
-    } else if (e.key === "left arrow" || e.key === "ArrowLeft") {
-      nextPassage(idx - 1, passage)
     }
   }
 
@@ -158,6 +138,12 @@ class EnrichComponent extends React.Component<Props, State> {
     this.setState({ passage, sentences })
   }
 
+  public changedFactoidOnCorrect() {
+    const { passage } = this.state
+    passage.factoidOnCorrect = !passage.factoidOnCorrect
+    this.setState({ passage })
+  }
+
   public render() {
     const { isEditing, sentences, passage } = this.state
     const { idx } = this.props
@@ -223,11 +209,20 @@ class EnrichComponent extends React.Component<Props, State> {
       )
 
     return (
-      <div>
-        <SentencesContainer>
-          <div>{sentences.map(wordComponent)}</div>
-          <div>{sentences.map(sentenceComponent)}</div>
-        </SentencesContainer>
+      <PassageContainer>
+        {sentences.map(wordComponent)}
+        <br />
+        <br />
+        {sentences.map(sentenceComponent)}
+        <br />
+        <FlexedDiv justifyContent="flex-start">
+          <input
+            type="checkbox"
+            checked={passage.factoidOnCorrect}
+            onChange={this.changedFactoidOnCorrect.bind(this)}
+          />
+          <Text.s margin="0 0 0 5px">Factoid on correct</Text.s>
+        </FlexedDiv>
         <Icons>
           <Icon
             disable={idx === 0}
@@ -244,7 +239,7 @@ class EnrichComponent extends React.Component<Props, State> {
             src={nextImg}
           />
         </Icons>
-      </div>
+      </PassageContainer>
     )
   }
 }
