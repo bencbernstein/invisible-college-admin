@@ -54,7 +54,7 @@ class QuestionComponent extends React.Component<Props, State> {
   }
 
   public async componentWillMount() {
-    const questions = await fetchQuestions("SENTENCE_TO_POS")
+    const questions = await fetchQuestions("PART_OF_SPEECH")
     if (!(questions instanceof Error)) {
       const ids = questions.map(q => q.id)
       this.setState({ questions: ids }, () => this.loadQuestion(0))
