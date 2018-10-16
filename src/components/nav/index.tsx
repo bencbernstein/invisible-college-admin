@@ -1,60 +1,20 @@
 import * as React from "react"
 import { Redirect } from "react-router"
 import { Link } from "react-router-dom"
-import styled from "styled-components"
-import { colors } from "../../lib/colors"
+
+import {
+  Modal,
+  ModalButton,
+  InvisibleCollege,
+  Button,
+  NavBox,
+  FlexBox
+} from "./components"
 
 import { User } from "../../models/user"
 
-const InvisibleCollege = styled.p`
-  text-transform: uppercase;
-  font-family: BrandonGrotesqueBold;
-  letter-spacing: 1px;
-  color: ${colors.gray};
-`
-
-const Container = styled.div`
-  text-align: center;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`
-
-interface ButtonProps {
-  bold?: boolean
-}
-
-const Button = styled.p`
-  cursor: pointer;
-  font-family: ${(p: ButtonProps) =>
-    p.bold ? "BrandonGrotesqueBold" : "BrandonGrotesque"};
-  margin-left: 20px;
-  color: ${colors.gray};
-`
-
-const ModalButton = styled.p`
-  color: ${colors.gray};
-  cursor: pointer;
-  font-family: BrandonGrotesqueBold;
-  letter-spacing: 1px;
-`
-
-const Modal = styled.div`
-  width: 250px;
-  text-align: left;
-  border: 5px solid ${colors.lightestGray};
-  padding: 0px 20px;
-  box-sizing: border-box;
-  position: absolute;
-  right: 0px;
-  top: 50px;
-  background-color: white;
-`
-
-const FlexDiv = styled.div`
-  display: flex;
-  position: relative;
-`
+import { colors } from "../../lib/colors"
+import { formatName } from "../../lib/helpers"
 
 interface Props {
   user: User
@@ -70,12 +30,6 @@ enum ModalType {
   Create = "Create",
   Profile = "Profile"
 }
-
-const formatName = (first: string, last: string): string =>
-  first.charAt(0).toUpperCase() +
-  first.substr(1).toLowerCase() +
-  " " +
-  last.charAt(0).toUpperCase()
 
 class Nav extends React.Component<Props, State> {
   constructor(props: any) {
@@ -146,12 +100,12 @@ class Nav extends React.Component<Props, State> {
     })()
 
     return (
-      <Container>
+      <NavBox>
         <Link style={{ textDecoration: "none" }} to="/library">
           <InvisibleCollege>invisible college</InvisibleCollege>
         </Link>
 
-        <FlexDiv onMouseLeave={this.displayModal.bind(this)}>
+        <FlexBox onMouseLeave={this.displayModal.bind(this)}>
           <Link
             style={{
               textDecoration: "none",
@@ -173,8 +127,8 @@ class Nav extends React.Component<Props, State> {
             {formatName(firstName, lastName)}
           </Button>
           {modal}
-        </FlexDiv>
-      </Container>
+        </FlexBox>
+      </NavBox>
     )
   }
 }

@@ -37,15 +37,11 @@ interface State {
   filters: any[]
 }
 
-interface Props {
-  play: (questions: string[], playNowIdx?: number) => void
-}
-
-class Gameplay extends React.Component<Props, State> {
+class Gameplay extends React.Component<any, State> {
   constructor(props: any) {
     super(props)
     this.state = {
-      selectedView: SelectedView.Questions,
+      selectedView: SelectedView.Sequences,
       questions: [],
       questionSequences: [],
       filters: []
@@ -167,7 +163,6 @@ class Gameplay extends React.Component<Props, State> {
 
         <List
           questionSequences={questionSequences}
-          play={this.props.play.bind(this)}
           removeSequence={this.removeSequence.bind(this)}
           addQuestionToSequence={this.addQuestionToSequence.bind(this)}
           data={

@@ -2,11 +2,12 @@ import * as React from "react"
 import * as _ from "underscore"
 
 import Gameplay from "../gameplay"
+import Play from "../question"
+import Home from "../home"
 import Library from "../library"
 import Nav from "../nav"
 import Discover from "../discover"
 import Passage from "../passage"
-import QuestionComponent from "../question"
 import Sequence from "../sequence"
 import PassageSequence from "../passageSequence"
 import Text from "../text"
@@ -78,19 +79,6 @@ class Container extends React.Component<ContainerProps, ContainerState> {
     }
   }
 
-  public async play(model: string, id: string) {
-    // TODO: - fix
-    // const questions
-    // if (model === "word") {
-    //   questions = await fetchQuestionsForWord(id)
-    // } else {
-    //   questions = await fetchQuestionsForText(id)
-    // }
-    // if (!(questions instanceof Error)) {
-    //   this.setState({ questions })
-    // }
-  }
-
   public render() {
     const { holdingShift, displayNav, wordBelowCursor, questions } = this.state
     const { component, user, keywords } = this.props
@@ -109,18 +97,13 @@ class Container extends React.Component<ContainerProps, ContainerState> {
         {
           {
             library: <Library />,
+            home: <Home />,
+            play: <Play />,
             discover: <Discover keywords={keywords} />,
-            gameplay: (
-              <Gameplay
-                play={(sequenceQuestions: string[], playNowIdx?: number) =>
-                  this.setState({ questions: sequenceQuestions, playNowIdx })
-                }
-              />
-            ),
+            gameplay: <Gameplay />,
             text: (
               <Text
                 displayNav={(b: boolean) => this.setState({ displayNav: b })}
-                play={(id: string) => this.play("text", id)}
                 user={user!}
                 keywords={keywords}
               />
@@ -128,30 +111,15 @@ class Container extends React.Component<ContainerProps, ContainerState> {
             passage: <Passage user={user!} keywords={keywords} />,
             word: (
               <Word
-                play={(id: string) => this.play("word", id)}
                 keywordValues={_.uniq(
                   _.flatten(_.values(keywords).map(_.keys))
                 )}
               />
             ),
-            sequence: (
-              <Sequence
-                play={(sequenceQuestions: string[], playNowIdx?: number) =>
-                  this.setState({ questions: sequenceQuestions, playNowIdx })
-                }
-              />
-            ),
+            sequence: <Sequence />,
             passageSequence: <PassageSequence />
           }[component]
         }
-
-        {questions.length > 0 && (
-          <QuestionComponent
-            playNowIdx={this.state.playNowIdx}
-            done={() => this.setState({ questions: [], playNowIdx: undefined })}
-            questions={questions}
-          />
-        )}
 
         {wordBelowCursor && (
           <WordModal

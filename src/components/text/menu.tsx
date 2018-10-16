@@ -32,7 +32,6 @@ interface Props {
   name: string
   isDisplaying: Screen
   displayScreen: (isDisplaying: Screen) => {}
-  play: () => {}
   next: () => {}
   displayNav: (displayNav: boolean) => void
   isEnriching: boolean
@@ -83,7 +82,6 @@ class Menu extends React.Component<Props, State> {
             subtitle={"texts"}
             subtitleLink={"/library?view=texts"}
             isEnriching={isEnriching}
-            play={this.props.play.bind(this)}
             invert={true}
           />
           <Minimize

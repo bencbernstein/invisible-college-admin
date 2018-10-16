@@ -25,7 +25,6 @@ import { Redirect } from "react-router"
 
 interface Props {
   keywordValues: string[]
-  play: (id: string) => {}
 }
 
 interface Enriching {
@@ -239,7 +238,6 @@ class WordComponent extends React.Component<Props, State> {
           title={word!.value}
           subtitle={"words"}
           subtitleLink={"/library?view=words"}
-          play={() => this.props.play(word!.id)}
           isEnriching={enriching !== undefined}
           next={enriching && this.next.bind(this)}
           invert={true}

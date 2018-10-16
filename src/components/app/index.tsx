@@ -18,13 +18,6 @@ import {
 } from "../../models/user"
 
 import { fetchKeywords, Keywords } from "../../models/word"
-// import { fetchUser } from "../../models/user"
-
-// import {
-//   fetchQuestionsForWord,
-//   fetchQuestionsForText,
-//   Question
-// } from "../../models/question"
 
 interface State {
   user?: User
@@ -95,6 +88,11 @@ class App extends React.Component<any, State> {
           />
           <ProtectedRoute
             {...defaultProtectedRouteProps}
+            path="/home"
+            component={contained("home", user)}
+          />
+          <ProtectedRoute
+            {...defaultProtectedRouteProps}
             path="/text"
             component={contained("text", user, keywords)}
           />
@@ -135,6 +133,12 @@ class App extends React.Component<any, State> {
             exact={true}
             path="/gameplay"
             component={contained("gameplay", user)}
+          />
+          <ProtectedRoute
+            {...defaultProtectedRouteProps}
+            exact={true}
+            path="/play"
+            component={contained("play", user)}
           />
         </Switch>
       </Router>

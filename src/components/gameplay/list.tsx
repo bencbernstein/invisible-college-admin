@@ -52,7 +52,6 @@ interface Props {
     sequence?: QuestionSequence,
     sequenceName?: string
   ) => {}
-  play: (questions: string[], playNowIdx?: number) => void
 }
 
 interface State {
@@ -168,7 +167,9 @@ class List extends React.Component<Props, State> {
         key={i}
       >
         {icons(i, true)}
-        <Text.l>{get(d.sources.word || d.sources.text, "value")}</Text.l>
+        {d.sources && (
+          <Text.l>{get(d.sources.word || d.sources.text, "value")}</Text.l>
+        )}
         <Text.regular>{d.TYPE}</Text.regular>
         {isHovering === i && inputBox(i)}
       </Box.regular>
@@ -182,12 +183,6 @@ class List extends React.Component<Props, State> {
         >
           <LinkButton>View</LinkButton>
         </Link>
-        <LinkButton
-          onClick={() => this.props.play(sequence.questions)}
-          style={{ width: "50%" }}
-        >
-          Play
-        </LinkButton>
       </AddBox>
     )
 

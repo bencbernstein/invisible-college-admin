@@ -1,45 +1,12 @@
 import * as React from "react"
 import * as _ from "underscore"
-import styled from "styled-components"
 
 import Text from "../common/text"
+import { AnswerBox, AnswerSpace, AnswerUnderline } from "./components"
 
 import { AnswerPart } from "../../models/question"
+
 import { isPunc } from "../../lib/helpers"
-
-interface ContainerProps {
-  height: string
-}
-
-const Container = styled.div`
-  height: ${(p: ContainerProps) => p.height};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`
-
-interface AnswerSpaceProps {
-  hide: boolean
-}
-
-const AnswerSpace = styled.span`
-  color: ${(p: AnswerSpaceProps) => (p.hide ? "white" : "black")};
-  display: ${(p: AnswerSpaceProps) => p.hide && "inline-block"};
-`
-
-const Underline = styled.span`
-  height: 4px;
-  background-color: black;
-  border-radius: 5px;
-`
-
-const Image = styled.img`
-  max-height: 65%;
-`
-
-const AnswerText = Text.xl.extend`
-  color: black;
-`
 
 interface Props {
   answer: AnswerPart[]
@@ -63,7 +30,7 @@ export default class Answer extends React.Component<Props, any> {
         style={{ display: "flex", flexDirection: "column", margin: "0px 10px" }}
       >
         {value}
-        <Underline />
+        <AnswerUnderline />
       </span>
     )
 
@@ -84,11 +51,11 @@ export default class Answer extends React.Component<Props, any> {
     }
 
     const answerComponent = displayImage ? (
-      <Image src={answer[0].value} />
+      <img style={{ maxHeight: "65%" }} src={answer[0].value} />
     ) : (
-      <AnswerText>{answer.map((a, i) => answerSpace(a, i))}</AnswerText>
+      <Text.xl color="black">{answer.map((a, i) => answerSpace(a, i))}</Text.xl>
     )
 
-    return <Container height={height}>{answerComponent}</Container>
+    return <AnswerBox height={height}>{answerComponent}</AnswerBox>
   }
 }
