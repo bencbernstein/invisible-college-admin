@@ -176,3 +176,9 @@ export const parseQueryString = (queryString: string): any => {
 }
 
 export const capitalize = (s: string) => s[0].toUpperCase() + s.slice(1)
+
+export const formatName = (first: string, last: string): string =>
+  first.charAt(0).toUpperCase() +
+  first.substr(1).toLowerCase() +
+  " " +
+  last.charAt(0).toUpperCase()

@@ -27,7 +27,6 @@ interface State {
 interface Props {
   user: User
   keywords?: Keywords
-  play: (id: string) => {}
   displayNav: (displayNav: boolean) => void
 }
 
@@ -184,7 +183,6 @@ class TextComponent extends React.Component<Props, State> {
               displayScreen={this.displayScreen.bind(this)}
               isDisplaying={isDisplaying}
               name={text!.name}
-              play={() => this.props.play(text!.id)}
               next={this.next.bind(this)}
               isEnriching={isEnriching}
             />

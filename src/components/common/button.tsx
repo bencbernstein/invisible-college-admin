@@ -8,7 +8,26 @@ interface Props {
   marginRight?: string
   marginLeft?: string
   margin?: string
+  width?: string
 }
+
+const RegularWC = styled.p`
+  font-family: BrandonGrotesque;
+  outline: none;
+  width: ${(p: Props) => p.width};
+  margin: ${(p: Props) => p.margin};
+  padding: 5px;
+  transition: all 0.2s ease;
+  font-size: 1em;
+  border-radius: 5px;
+  box-sizing: border-box;
+  border: 2px solid ${(p: Props) => p.color || colors.blue};
+  background-color: ${(p: Props) => p.color || colors.blue};
+  box-sizing: broder-box;
+  color: white;
+  text-align: center;
+  margin: 0;
+`
 
 const Regular = styled.p`
   border: 4px solid ${(p: Props) => p.color || colors.lightGray};
@@ -49,6 +68,7 @@ const Circular = Small.extend`
 export default {
   l: Large,
   regular: Regular,
+  regularWc: RegularWC,
   s: Small,
   circ: Circular
 }

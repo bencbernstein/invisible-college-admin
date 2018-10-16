@@ -1,35 +1,9 @@
 import * as React from "react"
-import styled from "styled-components"
-import { colors } from "../../lib/colors"
 
-const Container = styled.div`
-  width: 80%;
-  position: relative;
-`
-
-const Background = styled.div`
-  height: 10px;
-  width: 100%;
-  border-radius: 5px;
-  background-color: ${colors.lightGray};
-`
-
-interface ProgressProps {
-  completion: number
-}
-
-const Progress = styled.div`
-  height: 10px;
-  width: ${(p: ProgressProps) => p.completion * 100}%;
-  border-radius: 5px;
-  background-color: ${colors.yellow};
-  position: absolute;
-  top: 0;
-`
+import { ProgressBarBox, Background, Progress } from "./components"
 
 interface Props {
   completion: number
-  goTo: (newIdx: number) => void
 }
 
 export default class ProgressBar extends React.Component<Props, any> {
@@ -41,10 +15,10 @@ export default class ProgressBar extends React.Component<Props, any> {
     const { completion } = this.props
 
     return (
-      <Container>
+      <ProgressBarBox>
         <Background />
         <Progress completion={completion} />
-      </Container>
+      </ProgressBarBox>
     )
   }
 }

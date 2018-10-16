@@ -6,6 +6,7 @@ interface Props {
   textAlign?: string
   margin?: string
   textDecoration?: string
+  flex?: number
 }
 
 const Large = styled.p`
@@ -15,6 +16,7 @@ const Large = styled.p`
   margin: ${(p: Props) => p.margin};
   text-align: ${(p: Props) => p.textAlign};
   text-decoration: ${(p: Props) => p.textDecoration};
+  flex: ${(p: Props) => p.flex};
 `
 
 const Medium = styled.h3`
@@ -24,6 +26,7 @@ const Medium = styled.h3`
   margin: ${(p: Props) => p.margin};
   text-align: ${(p: Props) => p.textAlign};
   text-decoration: ${(p: Props) => p.textDecoration};
+  flex: ${(p: Props) => p.flex};
 `
 
 const Small = styled.h5`
@@ -34,6 +37,7 @@ const Small = styled.h5`
   margin: ${(p: Props) => p.margin};
   text-align: ${(p: Props) => p.textAlign};
   text-decoration: ${(p: Props) => p.textDecoration};
+  flex: ${(p: Props) => p.flex};
 `
 
 const ForInput = Small.extend`

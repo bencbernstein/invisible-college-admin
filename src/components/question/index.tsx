@@ -1,43 +1,18 @@
 import * as React from "react"
 import * as _ from "underscore"
-import styled from "styled-components"
+import { Redirect } from "react-router"
 
-import { Question, fetchQuestion } from "../../models/question"
-
+import { Box, TopInfo, ReadMoreTab, ExitReadMode } from "./components"
 import Icon from "../common/icon"
 
 import Answer from "./answer"
 import Choices from "./choices"
-import ProgressBar from "./progressBar"
+// import ProgressBar from "./progressBar"
 import Prompt from "./prompt"
 
+import { Question, fetchQuestion, fetchQuestions } from "../../models/question"
+
 import DeleteIcon from "../../lib/images/icon-delete.png"
-
-const Container = styled.div`
-  height: 100vh;
-  width: 100vw;
-  background-color: white;
-  bottom: 0;
-  left: 0;
-  position: fixed;
-  top: 0;
-  right: 0;
-  box-sizing: border-box;
-  padding: 0% 5%;
-`
-
-const TopContainer = styled.div`
-  height: 10%;
-  align-items: center;
-  display: flex;
-`
-
-const TopDiv = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 10%;
-`
 
 export interface Guess {
   correct: boolean
@@ -45,16 +20,24 @@ export interface Guess {
 }
 
 interface Props {
-  questions: string[]
-  done: () => void
+  questions?: string[]
   playNowIdx?: number
 }
 
 interface State {
   idx: number
   question?: Question
+  questions: string[]
   guess?: Guess
   guessedCorrectly: string[]
+  isViewing: IsViewing
+  redirect?: string
+  promptIsOverflowing: boolean
+}
+
+export enum IsViewing {
+  Question = "Question",
+  Read = "Read"
 }
 
 class QuestionComponent extends React.Component<Props, State> {
@@ -63,37 +46,28 @@ class QuestionComponent extends React.Component<Props, State> {
 
     this.state = {
       idx: this.props.playNowIdx || 0,
-      guessedCorrectly: []
+      guessedCorrectly: [],
+      isViewing: IsViewing.Question,
+      questions: [],
+      promptIsOverflowing: false
     }
-
-    this.handleKeyDown = this.handleKeyDown.bind(this)
   }
 
-  public componentWillMount() {
-    document.addEventListener("keydown", this.handleKeyDown, false)
-    this.loadQuestion(this.state.idx)
-  }
-
-  public componentWillUnmount() {
-    document.removeEventListener("keydown", this.handleKeyDown, false)
+  public async componentWillMount() {
+    const questions = await fetchQuestions("SENTENCE_TO_POS")
+    if (!(questions instanceof Error)) {
+      const ids = questions.map(q => q.id)
+      this.setState({ questions: ids }, () => this.loadQuestion(0))
+    }
   }
 
   public async loadQuestion(idx: number) {
-    const id = this.props.questions[idx]
+    const id = this.state.questions[idx]
     if (id) {
       const question = await fetchQuestion(id)
       if (!(question instanceof Error)) {
         this.setState({ question, guess: undefined, idx, guessedCorrectly: [] })
       }
-    }
-  }
-
-  public handleKeyDown(e: any) {
-    const { idx } = this.state
-    if (e.key === "ArrowRight") {
-      this.loadQuestion(Math.min(this.props.questions.length - 1, idx + 1))
-    } else if (e.key === "ArrowLeft") {
-      this.loadQuestion(Math.max(0, idx - 1))
     }
   }
 
@@ -114,48 +88,81 @@ class QuestionComponent extends React.Component<Props, State> {
 
       if (correctValue) {
         guessedCorrectly.push(correctValue)
-        const done = this.props.questions.length === idx + 1
-        if (done) {
-          this.props.done()
-        } else {
-          idx += 1
-        }
+        // const done = this.props.questions.length === idx + 1
+        idx += 1
       }
 
       this.loadQuestion(idx)
     }, 1500)
   }
 
-  public render() {
-    const { questions } = this.props
-    const { idx, guess, guessedCorrectly, question } = this.state
+  public promptIsOverflowing(bool: boolean) {
+    this.setState({ promptIsOverflowing: bool })
+  }
 
-    if (!question) {
+  public render() {
+    const {
+      guess,
+      guessedCorrectly,
+      question,
+      isViewing,
+      redirect,
+      promptIsOverflowing
+    } = this.state
+
+    if (redirect) {
+      return <Redirect to={redirect} />
+    } else if (!question) {
       return null
     }
 
     const { prompt, answer, redHerrings, TYPE } = question
+
+    const isReadMode = isViewing === IsViewing.Read
+
     const noPrompt = prompt.length === 0
 
+    const showReadMoreTab = !isReadMode && promptIsOverflowing
+    // <ProgressBar completion={idx / questions.length} />
+
     return (
-      <Container>
-        <TopContainer>
-          <TopDiv />
-          <ProgressBar
-            goTo={(newIdx: number) => this.setState({ idx: newIdx })}
-            completion={idx / questions.length}
-          />
-          <TopDiv>
+      <Box isReadMode={isReadMode}>
+        <TopInfo>
+          {!isReadMode && (
             <Icon
-              onClick={this.props.done.bind(this)}
+              onClick={() => this.setState({ redirect: "/home" })}
               pointer={true}
-              large={true}
               src={DeleteIcon}
             />
-          </TopDiv>
-        </TopContainer>
+          )}
+        </TopInfo>
 
-        {!noPrompt && <Prompt type={TYPE} prompt={prompt} />}
+        {!noPrompt && (
+          <Prompt
+            isOverflowing={this.promptIsOverflowing.bind(this)}
+            isReadMode={isReadMode}
+            type={TYPE}
+            prompt={prompt}
+          />
+        )}
+
+        {showReadMoreTab && (
+          <div>
+            <ReadMoreTab
+              onClick={() => this.setState({ isViewing: IsViewing.Read })}
+            >
+              Read
+            </ReadMoreTab>
+          </div>
+        )}
+
+        {isReadMode && (
+          <ExitReadMode
+            onClick={() => this.setState({ isViewing: IsViewing.Question })}
+          >
+            Back
+          </ExitReadMode>
+        )}
 
         <Answer
           type={TYPE}
@@ -171,7 +178,7 @@ class QuestionComponent extends React.Component<Props, State> {
           redHerrings={redHerrings}
           type={TYPE}
         />
-      </Container>
+      </Box>
     )
   }
 }

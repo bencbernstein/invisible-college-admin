@@ -1,11 +1,20 @@
 import * as React from "react"
 import { Redirect } from "react-router"
 
-import Header from "../common/header"
+import Button from "../common/button"
 import Input from "../common/input"
-import { Container, Form, ErrorMessage } from "./components"
+import {
+  Container,
+  Form,
+  ErrorMessage,
+  BackgroundImage,
+  GameTitle
+} from "./components"
 
 import { loginUser } from "../../models/user"
+
+import animals from "../../lib/images/animals.png"
+import { colors } from "../../lib/colors"
 
 export interface Props {
   login: (token: string, cb: () => void) => void
@@ -44,6 +53,10 @@ class Login extends React.Component<Props, State> {
     }
   }
 
+  public signUp() {
+    console.log("sign up")
+  }
+
   public render() {
     const { redirect, email, password, error } = this.state
 
@@ -53,27 +66,47 @@ class Login extends React.Component<Props, State> {
 
     return (
       <Container>
-        <Header.m>invisible college</Header.m>
+        <GameTitle>invisible college</GameTitle>
+
+        <BackgroundImage src={animals} />
 
         <Form onSubmit={this.handleSubmit.bind(this)}>
-          <Input.m
-            onChange={e => this.setState({ email: e.target.value })}
-            value={email}
-            autoCapitalize={"none"}
-            placeholder="Email"
-            type="text"
-          />
-          <Input.m
-            onChange={e => this.setState({ password: e.target.value })}
-            value={password}
-            autoCapitalize={"none"}
-            placeholder="Password"
-            type="text"
-          />
-          <Input.submit type="submit" />
+          <div>
+            <Input.rounded
+              width="100%"
+              margin="0 0 5px 0"
+              onChange={e => this.setState({ email: e.target.value })}
+              value={email}
+              autoCapitalize={"none"}
+              placeholder="Email"
+              type="text"
+            />
+            <Input.rounded
+              width="100%"
+              onChange={e => this.setState({ password: e.target.value })}
+              value={password}
+              autoCapitalize={"none"}
+              placeholder="Password"
+              type="text"
+            />
+          </div>
+          <div style={{ margin: "0 auto" }}>
+            <Input.roundedS
+              margin="0 0 5px 0"
+              width="200px"
+              type="submit"
+              value="Log In"
+            />
+            <Button.regularWc
+              disabled={true}
+              onClick={this.signUp.bind(this)}
+              color={colors.green}
+            >
+              Sign Up
+            </Button.regularWc>
+            <ErrorMessage>{error}</ErrorMessage>
+          </div>
         </Form>
-
-        <ErrorMessage>{error}</ErrorMessage>
       </Container>
     )
   }

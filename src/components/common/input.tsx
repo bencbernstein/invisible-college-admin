@@ -3,17 +3,46 @@ import { colors } from "../../lib/colors"
 
 interface Props {
   marginRight?: string
+  margin?: string
   width?: string
 }
 
 const Basic = styled.input`
   font-family: BrandonGrotesque;
   outline: none;
-  margin-right: ${(p: Props) => p.marginRight || "0"};
+  margin-right: ${(p: Props) => p.marginRight};
   display: block;
-  width: ${(p: Props) => p.width || ""};
+  width: ${(p: Props) => p.width};
+  margin: ${(p: Props) => p.margin};
   border: none;
   box-sizing: border-box;
+`
+
+const Rounded = styled.input`
+  font-family: BrandonGrotesque;
+  outline: none;
+  width: ${(p: Props) => p.width};
+  margin: ${(p: Props) => p.margin};
+  padding: 5px;
+  border: 2px solid ${colors.lightestGray};
+  &:focus {
+    border: 2px solid ${colors.blue};
+  }
+  &:hover {
+    border: 2px solid ${colors.blue};
+  }
+  transition: all 0.2s ease;
+  font-size: 1em;
+  border-radius: 5px;
+  box-sizing: border-box;
+`
+
+const RoundedSubmit = Rounded.extend`
+  border: 2px solid ${colors.blue};
+  background-color: ${colors.blue};
+  text-align: center;
+  color: white;
+  cursor: pointer;
 `
 
 const FileLabel = styled.label`
@@ -79,6 +108,8 @@ export default {
   l: Large,
   file: FileLabel,
   m: Medium,
+  rounded: Rounded,
+  roundedS: RoundedSubmit,
   s: Small,
   circ: Circular,
   box: Box,

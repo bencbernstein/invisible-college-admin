@@ -1,62 +1,31 @@
 import * as React from "react"
-import { Redirect } from "react-router"
 import { Link } from "react-router-dom"
-import styled from "styled-components"
-import { colors } from "../../lib/colors"
 
 import Button from "../common/button"
 import Header from "../common/header"
 
-interface ContainerProps {
-  minimized: boolean
-}
-const Container = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: ${(p: ContainerProps) => (p.minimized ? "flex-end" : "space-between")};
-  width: 100%;
-`
+import {
+  Span,
+  SubnavBox,
+  ButtonsBox
+} from "./components"
 
-const ButtonsContainer = styled.div`
-  display: flex;
-`
-
-interface SpanProps {
-  color?: string
-}
-
-const Span = styled.span`
-  text-transform: capitalize;
-  color: ${(p: SpanProps) => p.color};
-`
+import { colors } from "../../lib/colors"
 
 interface Props {
   title: string
   invert?: boolean
   subtitle?: string
   subtitleLink?: string
-  play?: () => void
   minimized: boolean
   next?: () => void
   isEnriching?: boolean
 }
 
-interface State {
-  redirect?: string
-}
 
-class Subnav extends React.Component<Props, State> {
-  constructor(props: any) {
-    super(props)
-    this.state = {}
-  }
-
-
+class Subnav extends React.Component<Props, any> {
   public render() {
-    const { redirect } = this.state
-    const { title, subtitle, subtitleLink, invert, play, next, isEnriching, minimized } = this.props
-
-    if (redirect) { return <Redirect to={redirect} /> }
+    const { title, subtitle, subtitleLink, invert, isEnriching, minimized } = this.props
 
     const headerComponents = () => {
       const header = <Span key={1}>
@@ -83,26 +52,21 @@ class Subnav extends React.Component<Props, State> {
         : [header, divider, subheader]
     }
 
-    const nextButton = next && <Button.circ 
+    const nextButton = (isEnriching && this.props.next !==  undefined) ? <Button.circ 
       marginRight={"10px"}
-      onClick={next.bind(this)}>
+      onClick={this.props.next.bind(this)}>
       Next
-    </Button.circ>
-
-    const playButton = play && <Button.circ onClick={play.bind(this)}>
-      Play
-    </Button.circ>
+    </Button.circ> : null
 
     return (
-      <Container minimized={minimized}>
+      <SubnavBox minimized={minimized}>
         {!minimized && <Header.l>
           {headerComponents()}
         </Header.l>}
-        <ButtonsContainer>
-          {isEnriching && nextButton}
-          {playButton}
-        </ButtonsContainer>
-      </Container>
+        <ButtonsBox>
+          {nextButton}
+        </ButtonsBox>
+      </SubnavBox>
     )
   }
 }
