@@ -68,10 +68,15 @@ export const Progress = styled.div`
 
 interface PromptBoxProps {
   isReadMode: boolean
+  flex: any
+  isInteractive: boolean
 }
 
 export const PromptBox = styled.div`
-  flex: ${(p: PromptBoxProps) => (p.isReadMode ? "" : "7")};
+  display: ${(p: PromptBoxProps) => p.isInteractive && "flex"};
+  align-items: ${(p: PromptBoxProps) => p.isInteractive && "center"};
+  justify-content: ${(p: PromptBoxProps) => p.isInteractive && "center"};
+  flex: ${(p: PromptBoxProps) => p.flex};
   height: ${(p: PromptBoxProps) => (p.isReadMode ? "100vh" : "")};
   box-sizing: border-box;
   overflow: ${(p: PromptBoxProps) => (p.isReadMode ? "scroll" : "hidden")};
@@ -101,13 +106,25 @@ export const PromptText = Text.l.extend`
 
 interface SpanProps {
   highlight?: boolean
+  guessedCorrectly?: boolean
+  isInteractive?: boolean
+  hide?: boolean
 }
 
 export const Span = styled.span`
-  color: ${(p: SpanProps) => (p.highlight ? colors.warmYellow : colors.black)};
+  color: ${(p: SpanProps) =>
+    p.hide ? "#f9f9f9" : p.highlight ? colors.warmYellow : colors.black};
+  user-select: ${(p: SpanProps) => p.hide && "none"};
+  background-color: ${(p: SpanProps) =>
+    p.guessedCorrectly && colors.warmYellow};
+  padding: ${(p: SpanProps) => p.guessedCorrectly && "4px 2px 0 3px;"};
   font-family: EBGaramond;
   font-size: 1em;
   line-height: 24px;
+  border-bottom: ${(p: SpanProps) => p.hide && "1px solid black"};
+  border-radius: ${(p: SpanProps) => !p.hide && "3px"};
+  box-sizing: border-box;
+  cursor: ${(p: SpanProps) => p.isInteractive && "pointer"};
 `
 
 export const PromptUnderline = styled.div`
@@ -162,7 +179,7 @@ export const ChoicesFlexBox = styled.div`
   justify-content: ${(p: ContainerProps) => "center"};
   align-items: center;
   height: 40%;
-  flex: 5;
+  flex: 6;
 `
 
 export const ChoicesGridBox = styled.div`
@@ -171,7 +188,7 @@ export const ChoicesGridBox = styled.div`
   height: 40%;
   justify-items: center;
   align-items: center;
-  flex: 5;
+  flex: 6;
 `
 
 interface ChoiceProps {
@@ -237,4 +254,17 @@ export const AnswerUnderline = styled.span`
   height: 4px;
   background-color: black;
   border-radius: 5px;
+`
+
+// INTERACTIVE
+
+export const InteractiveBox = styled.div`
+  flex: 12;
+  box-sizing: border-box;
+  padding: 10px 0px;
+  font-size: 1.2em;
+  overflow: scroll;
+  ::-webkit-scrollbar {
+    display: none;
+  }
 `

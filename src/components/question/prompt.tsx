@@ -1,7 +1,7 @@
 import { isString, isEqual, findIndex } from "underscore"
 import * as React from "react"
 
-import { PromptBox, Span, PromptUnderline, PromptText } from "./components"
+import { PromptBox, Span, PromptText } from "./components"
 
 import { PromptPart } from "../../models/question"
 
@@ -13,6 +13,7 @@ interface Props {
   isReadMode: boolean
   isOverflowing: (bool: boolean) => {}
   bottom?: number
+  isInteractive: boolean
 }
 
 interface State {
@@ -26,6 +27,7 @@ export default class Prompt extends React.Component<Props, State> {
   }
 
   public componentDidMount() {
+    console.log(this.props.prompt)
     this.checkOverflow(this.props.prompt)
   }
 
@@ -62,16 +64,14 @@ export default class Prompt extends React.Component<Props, State> {
   }
 
   public render() {
-    const { prompt, type, isReadMode } = this.props
+    const { prompt, type, isReadMode, isInteractive } = this.props
 
-    const span = (p: PromptPart, i: number) =>
-      p.value === "_underline_" ? (
-        <PromptUnderline />
-      ) : (
-        <Span key={i} highlight={p.highlight}>
-          {isPunc(p.value) ? p.value : ` ${p.value || ""}`}
-        </Span>
-      )
+    // TODO - use punctuation as in ./interactive
+    const span = (p: PromptPart, i: number): any => (
+      <Span hide={p.hide} key={i} highlight={p.highlight}>
+        {p.value}
+      </Span>
+    )
 
     const isImage =
       type === "WORD_TO_IMG" &&
@@ -89,12 +89,25 @@ export default class Prompt extends React.Component<Props, State> {
         large={length < 50}
         margin={isReadMode ? "20px 0" : "0"}
       >
-        {prompt.map((p: PromptPart, i: number) => span(p, i))}
+        {prompt
+          .map(span)
+          .reduce((prev: any[], curr: any, i: number) => [
+            prev,
+            isPunc(prompt[i].value) ? "" : " ",
+            curr
+          ])}
       </PromptText>
     )
 
+    const flex = isInteractive ? 2 : isReadMode ? "" : 8
+
     return (
-      <PromptBox id="prompt" isReadMode={isReadMode}>
+      <PromptBox
+        isInteractive={isInteractive}
+        id="prompt"
+        isReadMode={isReadMode}
+        flex={flex}
+      >
         {promptComponent}
       </PromptBox>
     )

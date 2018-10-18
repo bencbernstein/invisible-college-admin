@@ -5,8 +5,9 @@ import { Redirect } from "react-router"
 import { Box, TopInfo, ReadMoreTab, ExitReadMode } from "./components"
 import Icon from "../common/icon"
 
-import Answer from "./answer"
+// import Answer from "./answer"
 import Choices from "./choices"
+import Interactive from "./interactive"
 // import ProgressBar from "./progressBar"
 import Prompt from "./prompt"
 
@@ -33,6 +34,7 @@ interface State {
   isViewing: IsViewing
   redirect?: string
   promptIsOverflowing: boolean
+  isInteractive: boolean
 }
 
 export enum IsViewing {
@@ -49,12 +51,13 @@ class QuestionComponent extends React.Component<Props, State> {
       guessedCorrectly: [],
       isViewing: IsViewing.Question,
       questions: [],
-      promptIsOverflowing: false
+      promptIsOverflowing: false,
+      isInteractive: false
     }
   }
 
   public async componentWillMount() {
-    const questions = await fetchQuestions("PART_OF_SPEECH")
+    const questions = await fetchQuestions("SENTENCE_TO_TRUTH")
     if (!(questions instanceof Error)) {
       const ids = questions.map(q => q.id)
       this.setState({ questions: ids }, () => this.loadQuestion(0))
@@ -66,20 +69,38 @@ class QuestionComponent extends React.Component<Props, State> {
     if (id) {
       const question = await fetchQuestion(id)
       if (!(question instanceof Error)) {
-        this.setState({ question, guess: undefined, idx, guessedCorrectly: [] })
+        const isInteractive = question.interactive.length > 0
+        this.setState({
+          question,
+          guess: undefined,
+          idx,
+          guessedCorrectly: [],
+          isInteractive
+        })
       }
+    }
+  }
+
+  public interactiveGuessed(count: number) {
+    const { question, idx } = this.state
+
+    if (count === question!.answerCount) {
+      setTimeout(() => this.loadQuestion(idx + 1), 1500)
     }
   }
 
   public guessed(choice: string, buttonIdx: number, answerValues: string[]) {
     const { guessedCorrectly } = this.state
+
     const correctValue = _.find(
       _.without(answerValues, ...guessedCorrectly),
       value => value === choice
     )
+
     if (correctValue) {
       guessedCorrectly.push(correctValue)
     }
+
     const guess = { correct: correctValue !== undefined, buttonIdx }
     this.setState({ guess, guessedCorrectly })
 
@@ -103,11 +124,11 @@ class QuestionComponent extends React.Component<Props, State> {
   public render() {
     const {
       guess,
-      guessedCorrectly,
       question,
       isViewing,
       redirect,
-      promptIsOverflowing
+      promptIsOverflowing,
+      isInteractive
     } = this.state
 
     if (redirect) {
@@ -116,7 +137,7 @@ class QuestionComponent extends React.Component<Props, State> {
       return null
     }
 
-    const { prompt, answer, redHerrings, TYPE } = question
+    const { prompt, answer, redHerrings, TYPE, interactive } = question
 
     const isReadMode = isViewing === IsViewing.Read
 
@@ -139,6 +160,7 @@ class QuestionComponent extends React.Component<Props, State> {
 
         {!noPrompt && (
           <Prompt
+            isInteractive={isInteractive}
             isOverflowing={this.promptIsOverflowing.bind(this)}
             isReadMode={isReadMode}
             type={TYPE}
@@ -164,23 +186,34 @@ class QuestionComponent extends React.Component<Props, State> {
           </ExitReadMode>
         )}
 
-        <Answer
-          type={TYPE}
-          height={noPrompt ? "45%" : "20%"}
-          guessedCorrectly={guessedCorrectly}
-          answer={answer}
-        />
+        {isInteractive && (
+          <Interactive
+            guessed={this.interactiveGuessed.bind(this)}
+            data={interactive}
+          />
+        )}
 
-        <Choices
-          answer={answer}
-          guess={guess}
-          guessed={this.guessed.bind(this)}
-          redHerrings={redHerrings}
-          type={TYPE}
-        />
+        {redHerrings.length > 0 && (
+          <Choices
+            answer={answer}
+            guess={guess}
+            guessed={this.guessed.bind(this)}
+            redHerrings={redHerrings}
+            type={TYPE}
+          />
+        )}
       </Box>
     )
   }
 }
+
+// {answer.length > 0 && (
+//   <Answer
+//     type={TYPE}
+//     height={noPrompt ? "45%" : "20%"}
+//     guessedCorrectly={guessedCorrectly}
+//     answer={answer}
+//   />
+// )}
 
 export default QuestionComponent
