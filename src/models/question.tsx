@@ -13,6 +13,7 @@ export interface Sources {
 export interface PromptPart {
   value?: string
   highlight?: boolean
+  hide?: boolean
   isSentenceConnector?: boolean
 }
 
@@ -22,13 +23,20 @@ export interface AnswerPart {
   isSentenceConnector?: boolean
 }
 
+export interface InteractivePart {
+  correct: boolean
+  value: string
+}
+
 export interface Question {
   id: string
   TYPE: string
   prompt: PromptPart[]
   answer: AnswerPart[]
   redHerrings: string[]
+  interactive: InteractivePart[]
   sources: Sources
+  answerCount: number
 }
 
 const sources = `
@@ -50,11 +58,17 @@ export const questionFragment = `
   prompt {
     value
     highlight
+    hide
   }
   answer {
     value
     prefill
   }
+  interactive {
+    value
+    correct
+  }
+  answerCount
   redHerrings
   ${sources}
 `

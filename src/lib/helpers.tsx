@@ -125,8 +125,8 @@ export const move = (arr: any[], old_index: number, new_index: number) => {
   return arr
 }
 
-export const isPunc = (char?: string) =>
-  char && [".", ",", ")", "'"].indexOf(char) > -1
+export const isPunc = (char?: string): boolean =>
+  char !== undefined && [".", ",", ")", "'"].indexOf(char) > -1
 
 export const toSentences = (tags: Tag[]): Tag[][] => {
   const sentences: Tag[][] = [[]]
