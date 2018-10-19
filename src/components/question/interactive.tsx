@@ -10,6 +10,7 @@ import { isPunc } from "../../lib/helpers"
 interface Props {
   data: InteractivePart[]
   guessed: (count: number) => void
+  flex: number
 }
 
 interface State {
@@ -37,7 +38,7 @@ export default class Prompt extends React.Component<Props, State> {
   }
 
   public render() {
-    const { data } = this.props
+    const { data, flex } = this.props
     const { guessedCorrectly } = this.state
 
     const span = (p: InteractivePart, i: number): any => (
@@ -52,7 +53,7 @@ export default class Prompt extends React.Component<Props, State> {
     )
 
     return (
-      <InteractiveBox>
+      <InteractiveBox flex={flex}>
         {data
           .map(span)
           .reduce((prev: any[], curr: any, i: number) => [

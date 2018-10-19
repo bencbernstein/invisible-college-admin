@@ -1,33 +1,39 @@
 import styled from "styled-components"
-import { colors } from "../../lib/colors"
 
-interface TextProps {
+interface Props {
   color?: string
   bold?: boolean
   pointer?: boolean
   center?: boolean
   margin?: string
+  uppercase?: boolean
+  fontFamily?: string
 }
 
 const Large = styled.p`
-  text-align: ${(p: TextProps) => p.center && "center"};
-  color: ${(p: TextProps) => p.color || colors.gray};
-  font-family: ${(p: TextProps) =>
-    p.bold ? "BrandonGrotesqueBold" : "BrandonGrotesque"};
-  margin: ${(p: TextProps) => p.margin || "2.5px 0px"};
-  cursor: ${(p: TextProps) => (p.pointer ? "pointer" : "")};
+  text-transform: ${(p: Props) => p.uppercase && "uppercase"}
+  text-align: ${(p: Props) => p.center && "center"};
+  color: ${(p: Props) => p.color};
+  font-family: ${(p: Props) =>
+    p.fontFamily
+      ? p.fontFamily
+      : p.bold
+        ? "BrandonGrotesqueBold"
+        : "BrandonGrotesque"};
+  margin: ${(p: Props) => p.margin || "2.5px 0px"};
+  cursor: ${(p: Props) => (p.pointer ? "pointer" : "")};
 `
 
 const Regular = Large.extend`
-  font-size: 0.85em;
+  font-size: 0.9em;
 `
 
 const Small = Large.extend`
-  font-size: 0.7em;
+  font-size: 0.8em;
 `
 
 const ExtraSmall = Large.extend`
-  font-size: 0.6em;
+  font-size: 0.7em;
 `
 
 const ExtraLarge = Large.extend`

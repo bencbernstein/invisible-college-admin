@@ -71,6 +71,7 @@ export const questionFragment = `
   answerCount
   redHerrings
   ${sources}
+  experience
 `
 
 const slim = `
@@ -86,6 +87,17 @@ export const fetchQuestion = async (id: string): Promise<Question | Error> => {
     }
   }`
   return query(gqlQuery, "question")
+}
+
+export const questionsForUser = async (
+  id: string
+): Promise<Question[] | Error> => {
+  const gqlQuery = `query {
+    questionsForUser(id: "${id}") {
+      ${questionFragment}
+    }
+  }`
+  return query(gqlQuery, "questionsForUser")
 }
 
 export const fetchQuestions = async (

@@ -4,6 +4,7 @@ import { Router } from "react-router-dom"
 
 import Container from "./container"
 import Login from "../login"
+import Home from "../home"
 
 import history from "../../history"
 
@@ -50,6 +51,7 @@ class App extends React.Component<any, State> {
   public async checkForAuth() {
     const checkedAuth = true
     const user = fetchUserFromStorage()
+    console.log(user)
     const isAuthenticated = user !== undefined
     this.setState({ user, checkedAuth, isAuthenticated })
   }
@@ -89,7 +91,7 @@ class App extends React.Component<any, State> {
           <ProtectedRoute
             {...defaultProtectedRouteProps}
             path="/home"
-            component={contained("home", user)}
+            render={() => <Home user={user!} />}
           />
           <ProtectedRoute
             {...defaultProtectedRouteProps}

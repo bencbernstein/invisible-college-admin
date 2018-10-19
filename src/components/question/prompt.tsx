@@ -11,9 +11,10 @@ interface Props {
   prompt: PromptPart[]
   type: string
   isReadMode: boolean
-  isOverflowing: (bool: boolean) => {}
+  isOverflowing: (bool: boolean) => void
   bottom?: number
   isInteractive: boolean
+  flex: number
 }
 
 interface State {
@@ -27,7 +28,6 @@ export default class Prompt extends React.Component<Props, State> {
   }
 
   public componentDidMount() {
-    console.log(this.props.prompt)
     this.checkOverflow(this.props.prompt)
   }
 
@@ -64,7 +64,7 @@ export default class Prompt extends React.Component<Props, State> {
   }
 
   public render() {
-    const { prompt, type, isReadMode, isInteractive } = this.props
+    const { prompt, type, isReadMode, isInteractive, flex } = this.props
 
     // TODO - use punctuation as in ./interactive
     const span = (p: PromptPart, i: number): any => (
@@ -98,8 +98,6 @@ export default class Prompt extends React.Component<Props, State> {
           ])}
       </PromptText>
     )
-
-    const flex = isInteractive ? 2 : isReadMode ? "" : 8
 
     return (
       <PromptBox

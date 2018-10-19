@@ -14,6 +14,7 @@ interface Props {
   guess?: Guess
   guessed: (choice: string, buttonIdx: number, answerValues: string[]) => void
   type: string
+  flex: number
 }
 
 const disabledColor = (buttonIdx: number, g: Guess): string =>
@@ -25,7 +26,7 @@ const disabledColor = (buttonIdx: number, g: Guess): string =>
 
 export default class Choices extends React.Component<Props, any> {
   public render() {
-    const { answer, guess, redHerrings, type } = this.props
+    const { answer, guess, redHerrings, type, flex } = this.props
 
     const isImage =
       type === "WORD_TO_IMG" && redHerrings[0].startsWith("data:image")
@@ -58,6 +59,10 @@ export default class Choices extends React.Component<Props, any> {
 
     const Container = false ? ChoicesFlexBox : ChoicesGridBox
 
-    return <Container count={choices.length}>{choices}</Container>
+    return (
+      <Container flex={flex} count={choices.length}>
+        {choices}
+      </Container>
+    )
   }
 }

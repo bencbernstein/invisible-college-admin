@@ -13,11 +13,12 @@ interface Props {
   type: string
   height: string
   guessedCorrectly: string[]
+  flex: number
 }
 
 export default class Answer extends React.Component<Props, any> {
   public render() {
-    const { answer, type, guessedCorrectly, height } = this.props
+    const { answer, type, guessedCorrectly, height, flex } = this.props
 
     const displayImage =
       type === "WORD_TO_IMG" &&
@@ -56,6 +57,10 @@ export default class Answer extends React.Component<Props, any> {
       <Text.xl color="black">{answer.map((a, i) => answerSpace(a, i))}</Text.xl>
     )
 
-    return <AnswerBox height={height}>{answerComponent}</AnswerBox>
+    return (
+      <AnswerBox flex={flex} height={height}>
+        {answerComponent}
+      </AnswerBox>
+    )
   }
 }

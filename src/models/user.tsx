@@ -11,19 +11,37 @@ export interface User {
   password: string
   firstName: string
   lastName: string
+  questionsAnswered: number
+  wordsLearned: number
+  passagesRead: number
+  rank: number
+  level: number
   bookmarks: Bookmark[]
 }
+
+const attrs =
+  "id email firstName lastName questionsAnswered wordsLearned passagesRead rank level"
 
 export const loginUser = async (
   email: string,
   password: string
 ): Promise<any | Error> => {
-  const gqlQuery = `mutation { loginUser(email: "${email}", password: "${password}") { id email firstName lastName } }`
+  const gqlQuery = `mutation { loginUser(email: "${email}", password: "${password}") { ${attrs} } }`
   return query(gqlQuery, "loginUser")
 }
 
+export const createUser = async (
+  email: string,
+  password: string,
+  firstName: string,
+  lastName: string
+): Promise<any | Error> => {
+  const gqlQuery = `mutation { createUser(email: "${email}", password: "${password}", firstName: "${firstName}", lastName: "${lastName}") { ${attrs} } }`
+  return query(gqlQuery, "createUser")
+}
+
 export const fetchUser = async (id: string): Promise<any | Error> => {
-  const gqlQuery = `query { user(id: "${id}") { email firstName lastName bookmarks { textId sentenceIdx } } }`
+  const gqlQuery = `query { user(id: "${id}") { ${attrs} bookmarks { textId sentenceIdx } } }`
   return query(gqlQuery, "user")
 }
 

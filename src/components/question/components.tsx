@@ -8,6 +8,25 @@ interface BoxProps {
   isReadMode: boolean
 }
 
+export const FLEXES: any = {
+  interactive: {
+    top: 1,
+    prompt: 2,
+    passage: 12
+  },
+  withAnswer: {
+    top: 1,
+    answer: 2,
+    prompt: 7,
+    choices: 5
+  },
+  withoutAnswer: {
+    top: 1,
+    prompt: 8,
+    choices: 6
+  }
+}
+
 export const Box = styled.div`
   height: 100vh;
   width: 100vw;
@@ -24,8 +43,12 @@ export const Box = styled.div`
   justify-content: space-between;
 `
 
-export const TopInfo = styled.div`
-  flex: 1;
+interface InformationBoxProps {
+  flex: number
+}
+
+export const InformationBox = styled.div`
+  flex: ${(p: InformationBoxProps) => p.flex};
   align-items: center;
   display: flex;
 `
@@ -171,6 +194,7 @@ export const ExitReadMode = styled.p`
 
 interface ContainerProps {
   count: number
+  flex: number
 }
 
 export const ChoicesFlexBox = styled.div`
@@ -179,7 +203,7 @@ export const ChoicesFlexBox = styled.div`
   justify-content: ${(p: ContainerProps) => "center"};
   align-items: center;
   height: 40%;
-  flex: 6;
+  flex: ${(p: ContainerProps) => p.flex};
 `
 
 export const ChoicesGridBox = styled.div`
@@ -188,7 +212,7 @@ export const ChoicesGridBox = styled.div`
   height: 40%;
   justify-items: center;
   align-items: center;
-  flex: 6;
+  flex: ${(p: ContainerProps) => p.flex};
 `
 
 interface ChoiceProps {
@@ -231,6 +255,7 @@ export const Image = styled.img`
 
 interface AnswerBoxProps {
   height: string
+  flex: number
 }
 
 export const AnswerBox = styled.div`
@@ -238,7 +263,7 @@ export const AnswerBox = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  flex: 2;
+  flex: ${(p: AnswerBoxProps) => p.flex};
 `
 
 interface AnswerSpaceProps {
@@ -258,8 +283,12 @@ export const AnswerUnderline = styled.span`
 
 // INTERACTIVE
 
+interface InteractiveBoxProps {
+  flex: number
+}
+
 export const InteractiveBox = styled.div`
-  flex: 12;
+  flex: ${(p: InteractiveBoxProps) => p.flex};
   box-sizing: border-box;
   padding: 10px 0px;
   font-size: 1.2em;

@@ -9,24 +9,29 @@ interface Props {
   marginLeft?: string
   margin?: string
   width?: string
+  uppercase?: boolean
+  bold?: boolean
 }
 
 const RegularWC = styled.p`
-  font-family: BrandonGrotesque;
+  font-family: ${(p: Props) => p.bold && "BrandonGrotesqueBold"};
+  text-transform: ${(p: Props) => p.uppercase && "uppercase"};
   outline: none;
+  cursor: pointer;
+  letter-spacing: 1px;
+  max-width: 275px;
   width: ${(p: Props) => p.width};
   margin: ${(p: Props) => p.margin};
-  padding: 5px;
+  padding: 12px 5px;
   transition: all 0.2s ease;
   font-size: 1em;
   border-radius: 5px;
-  box-sizing: border-box;
   border: 2px solid ${(p: Props) => p.color || colors.blue};
   background-color: ${(p: Props) => p.color || colors.blue};
-  box-sizing: broder-box;
+  box-sizing: border-box;
   color: white;
   text-align: center;
-  margin: 0;
+  margin: ${(p: Props) => p.margin || "0"};
 `
 
 const Regular = styled.p`

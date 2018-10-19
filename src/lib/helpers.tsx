@@ -182,3 +182,6 @@ export const formatName = (first: string, last: string): string =>
   first.substr(1).toLowerCase() +
   " " +
   last.charAt(0).toUpperCase()
+
+export const sleep = (s: number) =>
+  new Promise(resolve => setTimeout(resolve, s * 1000))
