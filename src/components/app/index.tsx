@@ -51,7 +51,6 @@ class App extends React.Component<any, State> {
   public async checkForAuth() {
     const checkedAuth = true
     const user = fetchUserFromStorage()
-    console.log(user)
     const isAuthenticated = user !== undefined
     this.setState({ user, checkedAuth, isAuthenticated })
   }

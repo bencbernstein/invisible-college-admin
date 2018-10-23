@@ -9,7 +9,13 @@ import Interactive from "./interactive"
 // import ProgressBar from "./progressBar"
 import Prompt from "./prompt"
 
-import { Question, questionsForUser } from "../../models/question"
+import {
+  Question,
+  QuestionLog,
+  questionsForUser,
+  QuestionType,
+  saveQuestionsForUser
+} from "../../models/question"
 
 import { sleep } from "../../lib/helpers"
 
@@ -21,12 +27,6 @@ export interface Guess {
 export enum IsViewing {
   Question = "Question",
   Read = "Read"
-}
-
-interface QuestionLog {
-  value: string
-  id: string
-  correct: boolean
 }
 
 interface Props {
@@ -45,6 +45,7 @@ interface State {
   isBetweenQuestions: boolean
   questionLog: QuestionLog[]
   isInteractive: boolean
+  correct: boolean
   userId: string
 }
 
@@ -60,6 +61,7 @@ class QuestionComponent extends React.Component<Props, State> {
       isInteractive: false,
       displayAnswerSpace: false,
       userId: "",
+      correct: true,
       questionLog: [],
       isBetweenQuestions: false
     }
@@ -81,13 +83,29 @@ class QuestionComponent extends React.Component<Props, State> {
     }
   }
 
+  public record(question: Question) {
+    const { correct, userId, questionLog } = this.state
+    const { sources } = question
+    const type = sources.word ? QuestionType.word : QuestionType.passage
+    const { id, value } =
+      type === QuestionType.word ? sources.word! : sources.text!
+    questionLog.push({ correct, type, id, value })
+    if (questionLog.length === 1) {
+      saveQuestionsForUser(userId, questionLog) // TODO: - what to do with error?
+      this.setState({ questionLog: [] })
+    } else {
+      this.setState({ questionLog })
+    }
+  }
+
   public async nextQuestion() {
     this.setState({ isBetweenQuestions: true })
-    await sleep(1.5)
+    await sleep(2)
 
     const { questions } = this.state
 
     if (this.state.question) {
+      this.record(this.state.question)
       questions.shift()
     }
 
@@ -110,14 +128,18 @@ class QuestionComponent extends React.Component<Props, State> {
       displayAnswerSpace,
       isBetweenQuestions: false,
       guess: undefined,
+      correct: true,
       guessedCorrectly: []
     })
   }
 
-  public interactiveGuessed(count: number) {
+  public interactiveGuessed(correct: boolean, count: number) {
     const { question } = this.state
     if (count === question!.answerCount) {
       this.nextQuestion()
+    }
+    if (!correct) {
+      this.setState({ correct: false })
     }
   }
 
@@ -128,20 +150,21 @@ class QuestionComponent extends React.Component<Props, State> {
       without(answerValues, ...guessedCorrectly),
       value => value === choice
     )
+    const correct = correctValue !== undefined && this.state.correct
+    const guess = { correct, buttonIdx }
 
     if (correctValue) {
       guessedCorrectly.push(correctValue)
     }
 
-    const guess = { correct: correctValue !== undefined, buttonIdx }
-    this.setState({ guess, guessedCorrectly })
-
-    if (correctValue) {
-      guessedCorrectly.push(correctValue)
-      // const done = this.props.questions.length === idx + 1
-    }
-
-    this.nextQuestion()
+    this.setState({ guess, guessedCorrectly, correct }, async () => {
+      if (correctValue) {
+        this.nextQuestion()
+      } else {
+        await sleep(1)
+        this.setState({ guess: undefined })
+      }
+    })
   }
 
   public render() {
@@ -153,7 +176,8 @@ class QuestionComponent extends React.Component<Props, State> {
       guessedCorrectly,
       isBetweenQuestions,
       displayAnswerSpace,
-      isInteractive
+      isInteractive,
+      correct
     } = this.state
 
     if (!question) {
@@ -176,6 +200,7 @@ class QuestionComponent extends React.Component<Props, State> {
     return (
       <Box isReadMode={isReadMode}>
         <Information
+          correct={correct}
           isBetweenQuestions={isBetweenQuestions}
           question={question}
           isReadMode={isReadMode}
@@ -184,6 +209,9 @@ class QuestionComponent extends React.Component<Props, State> {
 
         {!noPrompt && (
           <Prompt
+            questionType={
+              question.sources.word ? QuestionType.word : QuestionType.passage
+            }
             flex={flexes.prompt}
             isInteractive={isInteractive}
             isOverflowing={(bool: boolean) =>
@@ -215,6 +243,7 @@ class QuestionComponent extends React.Component<Props, State> {
 
         {displayAnswerSpace && (
           <Answer
+            isBetweenQuestions={isBetweenQuestions}
             type={TYPE}
             flex={flexes.answer}
             height={noPrompt ? "45%" : "20%"}

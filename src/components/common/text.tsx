@@ -10,37 +10,38 @@ interface Props {
   fontFamily?: string
 }
 
-const Large = styled.p`
-  text-transform: ${(p: Props) => p.uppercase && "uppercase"}
-  text-align: ${(p: Props) => p.center && "center"};
-  color: ${(p: Props) => p.color};
-  font-family: ${(p: Props) =>
-    p.fontFamily
-      ? p.fontFamily
-      : p.bold
-        ? "BrandonGrotesqueBold"
-        : "BrandonGrotesque"};
-  margin: ${(p: Props) => p.margin || "2.5px 0px"};
-  cursor: ${(p: Props) => (p.pointer ? "pointer" : "")};
+const Regular = styled.p`
+text-transform: ${(p: Props) => p.uppercase && "uppercase"}
+text-align: ${(p: Props) => p.center && "center"};
+color: ${(p: Props) => p.color};
+
+font-family: ${(p: Props) =>
+  p.fontFamily
+    ? p.fontFamily
+    : p.bold
+      ? "BrandonGrotesqueBold"
+      : "BrandonGrotesque"};
+margin: ${(p: Props) => p.margin || "2.5px 0px"};
+cursor: ${(p: Props) => (p.pointer ? "pointer" : "")};
 `
 
-const Regular = Large.extend`
+const Large = Regular.extend`
+  font-size: 1.1em;
+`
+
+const Small = Regular.extend`
   font-size: 0.9em;
 `
 
-const Small = Large.extend`
+const ExtraSmall = Regular.extend`
   font-size: 0.8em;
 `
 
-const ExtraSmall = Large.extend`
-  font-size: 0.7em;
-`
-
-const ExtraLarge = Large.extend`
+const ExtraLarge = Regular.extend`
   font-size: 2em;
 `
 
-const Garamond = Large.extend`
+const Garamond = Regular.extend`
   font-family: EBGaramond;
   line-height: 24px;
 `

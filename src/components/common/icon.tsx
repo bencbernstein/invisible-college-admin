@@ -5,6 +5,7 @@ interface Props {
   topRight?: boolean
   large?: boolean
   small?: boolean
+  margin?: string
   hide?: boolean
   cursor?: boolean
 }
@@ -15,6 +16,7 @@ export default styled.img`
   cursor: ${(p: Props) => (p.pointer ? "pointer" : "auto")};
   position: ${(p: Props) => (p.topRight ? "absolute" : "")};
   top: ${(p: Props) => (p.topRight ? "5px" : "")};
+  margin: ${(p: Props) => p.margin};
   right: ${(p: Props) => (p.topRight ? "5px" : "")};
   visibility: ${(p: Props) => (p.hide ? "hidden" : "visible")};
   cursor: ${(p: Props) => p.pointer && "pointer"};

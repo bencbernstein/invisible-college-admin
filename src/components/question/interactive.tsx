@@ -9,7 +9,7 @@ import { isPunc } from "../../lib/helpers"
 
 interface Props {
   data: InteractivePart[]
-  guessed: (count: number) => void
+  guessed: (correct: boolean, count: number) => void
   flex: number
 }
 
@@ -34,7 +34,7 @@ export default class Prompt extends React.Component<Props, State> {
       this.setState({ guessedCorrectly })
     }
 
-    this.props.guessed(guessedCorrectly.length)
+    this.props.guessed(correct, guessedCorrectly.length)
   }
 
   public render() {

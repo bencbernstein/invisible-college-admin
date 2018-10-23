@@ -50,6 +50,7 @@ interface InformationBoxProps {
 export const InformationBox = styled.div`
   flex: ${(p: InformationBoxProps) => p.flex};
   align-items: center;
+  justify-content: space-between;
   display: flex;
 `
 
@@ -93,21 +94,25 @@ interface PromptBoxProps {
   isReadMode: boolean
   flex: any
   isInteractive: boolean
+  isShort: boolean
 }
 
 export const PromptBox = styled.div`
-  display: ${(p: PromptBoxProps) => p.isInteractive && "flex"};
-  align-items: ${(p: PromptBoxProps) => p.isInteractive && "center"};
-  justify-content: ${(p: PromptBoxProps) => p.isInteractive && "center"};
+  display: ${(p: PromptBoxProps) => (p.isInteractive || p.isShort) && "flex"};
+  align-items: ${(p: PromptBoxProps) =>
+    (p.isInteractive || p.isShort) && "center"};
+  justify-content: ${(p: PromptBoxProps) =>
+    (p.isInteractive || p.isShort) && "center"};
   flex: ${(p: PromptBoxProps) => p.flex};
   height: ${(p: PromptBoxProps) => (p.isReadMode ? "100vh" : "")};
   box-sizing: border-box;
   overflow: ${(p: PromptBoxProps) => (p.isReadMode ? "scroll" : "hidden")};
-  background-color: ${(p: PromptBoxProps) => (p.isReadMode ? "" : "#f9f9f9")};
+  background-color: ${(p: PromptBoxProps) =>
+    !p.isReadMode && !p.isShort && "#f9f9f9"};
   border-radius: ${(p: PromptBoxProps) =>
     p.isReadMode ? "" : "5px 5px 0 5px"};
   border: ${(p: PromptBoxProps) =>
-    p.isReadMode ? "" : `1px solid ${colors.lightestGray}`};
+    !p.isReadMode && !p.isShort && `1px solid ${colors.lightestGray}`};
   padding: ${(p: PromptBoxProps) => (p.isReadMode ? "" : "0 5px")};
   ::-webkit-scrollbar {
     display: none;
@@ -266,19 +271,38 @@ export const AnswerBox = styled.div`
   flex: ${(p: AnswerBoxProps) => p.flex};
 `
 
-interface AnswerSpaceProps {
+export const AnswerText = Text.xl.extend`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: black
+`
+
+interface AnswerPartBoxProps {
   hide: boolean
+  margin: number
 }
 
-export const AnswerSpace = styled.span`
-  color: ${(p: AnswerSpaceProps) => (p.hide ? "white" : "black")};
-  display: ${(p: AnswerSpaceProps) => p.hide && "inline-block"};
+export const AnswerPartBox = styled.span`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 2px;
+  margin: 0 ${(p: AnswerPartBoxProps) => p.margin}px;
+  transition: margin 200ms;
+  color: ${(p: AnswerPartBoxProps) => (p.hide ? "white" : "black")};
 `
+
+interface AnswerUnderlineProps {
+  color: string
+}
 
 export const AnswerUnderline = styled.span`
   height: 4px;
-  background-color: black;
   border-radius: 5px;
+  background-color: ${(p: AnswerUnderlineProps) => p.color};
+  width: 100%;
+  padding: 0 2px;
 `
 
 // INTERACTIVE

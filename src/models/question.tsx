@@ -1,4 +1,5 @@
 import { query } from "./query"
+import { User } from "./user"
 
 export interface Source {
   value: string
@@ -37,6 +38,19 @@ export interface Question {
   interactive: InteractivePart[]
   sources: Sources
   answerCount: number
+  experience?: number
+}
+
+export enum QuestionType {
+  passage = "passage",
+  word = "word"
+}
+
+export interface QuestionLog {
+  type: QuestionType
+  value: string
+  id: string
+  correct: boolean
 }
 
 const sources = `
@@ -140,4 +154,17 @@ export const fetchQuestionsForWord = async (
     }
   }`
   return query(gqlQuery, "questionsForWord")
+}
+
+export const saveQuestionsForUser = async (
+  id: string,
+  questions: QuestionLog[]
+): Promise<User | Error> => {
+  const encoded = encodeURIComponent(JSON.stringify(questions))
+  const gqlQuery = `mutation {
+    saveQuestionsForUser(id: "${id}", questions: "${encoded}") {
+      id
+    }
+  }`
+  return query(gqlQuery, "saveQuestionsForUser")
 }

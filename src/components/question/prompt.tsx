@@ -3,7 +3,7 @@ import * as React from "react"
 
 import { PromptBox, Span, PromptText } from "./components"
 
-import { PromptPart } from "../../models/question"
+import { PromptPart, QuestionType } from "../../models/question"
 
 import { isPunc } from "../../lib/helpers"
 
@@ -15,6 +15,7 @@ interface Props {
   bottom?: number
   isInteractive: boolean
   flex: number
+  questionType: QuestionType
 }
 
 interface State {
@@ -64,7 +65,14 @@ export default class Prompt extends React.Component<Props, State> {
   }
 
   public render() {
-    const { prompt, type, isReadMode, isInteractive, flex } = this.props
+    const {
+      prompt,
+      type,
+      isReadMode,
+      isInteractive,
+      flex,
+      questionType
+    } = this.props
 
     // TODO - use punctuation as in ./interactive
     const span = (p: PromptPart, i: number): any => (
@@ -101,6 +109,7 @@ export default class Prompt extends React.Component<Props, State> {
 
     return (
       <PromptBox
+        isShort={questionType === QuestionType.word}
         isInteractive={isInteractive}
         id="prompt"
         isReadMode={isReadMode}
