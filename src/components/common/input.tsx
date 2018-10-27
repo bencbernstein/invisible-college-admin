@@ -23,22 +23,23 @@ const Rounded = styled.input`
   outline: none;
   width: ${(p: Props) => p.width};
   margin: ${(p: Props) => p.margin};
-  padding: 5px;
-  border: 2px solid ${colors.lightestGray};
+  padding: 12px 5px;
+  border: 3px solid ${colors.lightestGray};
   &:focus {
-    border: 2px solid ${colors.blue};
+    border: 3px solid ${colors.blue};
   }
   &:hover {
-    border: 2px solid ${colors.blue};
+    border: 3px solid ${colors.blue};
   }
   transition: all 0.2s ease;
   font-size: 1em;
+  max-width: 275px;
   border-radius: 5px;
   box-sizing: border-box;
 `
 
 const RoundedSubmit = Rounded.extend`
-  border: 2px solid ${colors.blue};
+  border: 3px solid ${colors.blue};
   background-color: ${colors.blue};
   text-align: center;
   color: white;

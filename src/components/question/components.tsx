@@ -8,6 +8,25 @@ interface BoxProps {
   isReadMode: boolean
 }
 
+export const FLEXES: any = {
+  interactive: {
+    top: 1,
+    prompt: 2,
+    interactive: 12
+  },
+  withAnswer: {
+    top: 1,
+    answer: 2,
+    prompt: 7,
+    choices: 5
+  },
+  withoutAnswer: {
+    top: 1,
+    prompt: 8,
+    choices: 6
+  }
+}
+
 export const Box = styled.div`
   height: 100vh;
   width: 100vw;
@@ -24,9 +43,14 @@ export const Box = styled.div`
   justify-content: space-between;
 `
 
-export const TopInfo = styled.div`
-  flex: 1;
+interface InformationBoxProps {
+  flex: number
+}
+
+export const InformationBox = styled.div`
+  flex: ${(p: InformationBoxProps) => p.flex};
   align-items: center;
+  justify-content: space-between;
   display: flex;
 `
 
@@ -66,26 +90,40 @@ export const Progress = styled.div`
 
 // Prompt
 
+export const PromptImage = styled.img`
+  max-height: 80%;
+  max-width: 80%;
+  height: auto;
+  width: auto;
+`
+
 interface PromptBoxProps {
   isReadMode: boolean
   flex: any
   isInteractive: boolean
+  isShort: boolean
 }
 
 export const PromptBox = styled.div`
-  display: ${(p: PromptBoxProps) => p.isInteractive && "flex"};
-  align-items: ${(p: PromptBoxProps) => p.isInteractive && "center"};
-  justify-content: ${(p: PromptBoxProps) => p.isInteractive && "center"};
+  display: ${(p: PromptBoxProps) => (p.isInteractive || p.isShort) && "flex"};
+  align-items: ${(p: PromptBoxProps) =>
+    (p.isInteractive || p.isShort) && "center"};
+  justify-content: ${(p: PromptBoxProps) =>
+    (p.isInteractive || p.isShort) && "center"};
   flex: ${(p: PromptBoxProps) => p.flex};
   height: ${(p: PromptBoxProps) => (p.isReadMode ? "100vh" : "")};
   box-sizing: border-box;
   overflow: ${(p: PromptBoxProps) => (p.isReadMode ? "scroll" : "hidden")};
-  background-color: ${(p: PromptBoxProps) => (p.isReadMode ? "" : "#f9f9f9")};
+  position: ${(p: PromptBoxProps) => p.isReadMode && "absolute"};
+  top: 0;
+  left: 0;
+  background-color: ${(p: PromptBoxProps) =>
+    !p.isReadMode && !p.isShort ? "#f9f9f9" : "white"};
   border-radius: ${(p: PromptBoxProps) =>
     p.isReadMode ? "" : "5px 5px 0 5px"};
   border: ${(p: PromptBoxProps) =>
-    p.isReadMode ? "" : `1px solid ${colors.lightestGray}`};
-  padding: ${(p: PromptBoxProps) => (p.isReadMode ? "" : "0 5px")};
+    !p.isReadMode && !p.isShort && `1px solid ${colors.lightestGray}`};
+  padding: 10px 15px;
   ::-webkit-scrollbar {
     display: none;
   }
@@ -171,6 +209,7 @@ export const ExitReadMode = styled.p`
 
 interface ContainerProps {
   count: number
+  flex: number
 }
 
 export const ChoicesFlexBox = styled.div`
@@ -179,7 +218,7 @@ export const ChoicesFlexBox = styled.div`
   justify-content: ${(p: ContainerProps) => "center"};
   align-items: center;
   height: 40%;
-  flex: 6;
+  flex: ${(p: ContainerProps) => p.flex};
 `
 
 export const ChoicesGridBox = styled.div`
@@ -188,7 +227,7 @@ export const ChoicesGridBox = styled.div`
   height: 40%;
   justify-items: center;
   align-items: center;
-  flex: 6;
+  flex: ${(p: ContainerProps) => p.flex};
 `
 
 interface ChoiceProps {
@@ -199,6 +238,7 @@ interface ChoiceProps {
 const templateForCount = (count: number) =>
   ({
     2: "1fr 1fr",
+    4: "1fr 1fr",
     6: "1fr 1fr"
   }[count] || "1fr 1fr 1fr")
 
@@ -221,8 +261,10 @@ export const Button = styled.p`
 export const Image = styled.img`
   pointer-events: ${(p: ChoiceProps) => (p.disabled ? "none" : "auto")};
   border: 3px solid ${(p: ChoiceProps) => p.backgroundColor};
-  max-height: 150px;
-  max-width: 150px;
+  max-height: 80%;
+  max-width: 80%;
+  width: auto;
+  height: auto;
   margin: 10px;
   cursor: pointer;
 `
@@ -231,6 +273,7 @@ export const Image = styled.img`
 
 interface AnswerBoxProps {
   height: string
+  flex: number
 }
 
 export const AnswerBox = styled.div`
@@ -238,28 +281,51 @@ export const AnswerBox = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  flex: 2;
+  flex: ${(p: AnswerBoxProps) => p.flex};
 `
 
-interface AnswerSpaceProps {
+export const AnswerText = Text.xl.extend`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: black
+`
+
+interface AnswerPartBoxProps {
   hide: boolean
+  margin: number
 }
 
-export const AnswerSpace = styled.span`
-  color: ${(p: AnswerSpaceProps) => (p.hide ? "white" : "black")};
-  display: ${(p: AnswerSpaceProps) => p.hide && "inline-block"};
+export const AnswerPartBox = styled.span`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 2px;
+  margin: 0 ${(p: AnswerPartBoxProps) => p.margin}px;
+  transition: margin 200ms;
+  color: ${(p: AnswerPartBoxProps) => (p.hide ? "white" : "black")};
 `
+
+interface AnswerUnderlineProps {
+  color: string
+}
 
 export const AnswerUnderline = styled.span`
   height: 4px;
-  background-color: black;
   border-radius: 5px;
+  background-color: ${(p: AnswerUnderlineProps) => p.color};
+  width: 100%;
+  padding: 0 2px;
 `
 
 // INTERACTIVE
 
+interface InteractiveBoxProps {
+  flex: number
+}
+
 export const InteractiveBox = styled.div`
-  flex: 12;
+  flex: ${(p: InteractiveBoxProps) => p.flex};
   box-sizing: border-box;
   padding: 10px 0px;
   font-size: 1.2em;

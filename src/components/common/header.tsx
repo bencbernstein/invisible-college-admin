@@ -7,6 +7,7 @@ interface Props {
   margin?: string
   textDecoration?: string
   flex?: number
+  uppercase?: boolean
 }
 
 const Large = styled.p`
@@ -17,10 +18,21 @@ const Large = styled.p`
   text-align: ${(p: Props) => p.textAlign};
   text-decoration: ${(p: Props) => p.textDecoration};
   flex: ${(p: Props) => p.flex};
+  text-transform: ${(p: Props) => p.uppercase && "uppercase"};
+`
+
+const MediumL = styled.h2`
+  text-transform: ${(p: Props) => p.uppercase && "uppercase"};
+  font-family: BrandonGrotesqueBold;
+  letter-spacing: 1px;
+  margin: ${(p: Props) => p.margin};
+  text-align: ${(p: Props) => p.textAlign};
+  text-decoration: ${(p: Props) => p.textDecoration};
+  flex: ${(p: Props) => p.flex};
 `
 
 const Medium = styled.h3`
-  text-transform: uppercase;
+  text-transform: ${(p: Props) => p.uppercase && "uppercase"};
   font-family: BrandonGrotesqueBold;
   letter-spacing: 1px;
   margin: ${(p: Props) => p.margin};
@@ -30,7 +42,7 @@ const Medium = styled.h3`
 `
 
 const Small = styled.h5`
-  text-transform: uppercase;
+  text-transform: ${(p: Props) => p.uppercase && "uppercase"};
   font-family: BrandonGrotesqueBold;
   margin: 15px 0px;
   letter-spacing: 1px;
@@ -50,6 +62,7 @@ const ForInput = Small.extend`
 export default {
   l: Large,
   m: Medium,
+  ml: MediumL,
   s: Small,
   forInput: ForInput
 }

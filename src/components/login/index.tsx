@@ -1,20 +1,11 @@
 import * as React from "react"
 import { Redirect } from "react-router"
 
-import Button from "../common/button"
+import Text from "../common/text"
 import Input from "../common/input"
-import {
-  Container,
-  Form,
-  ErrorMessage,
-  BackgroundImage,
-  GameTitle
-} from "./components"
+import { Form, BoldSpan, ErrorMessage, MainHeader } from "./components"
 
-import { loginUser } from "../../models/user"
-
-import animals from "../../lib/images/animals.png"
-import { colors } from "../../lib/colors"
+import { loginUser, createUser } from "../../models/user"
 
 export interface Props {
   login: (token: string, cb: () => void) => void
@@ -23,8 +14,16 @@ export interface Props {
 interface State {
   email: string
   password: string
+  firstName: string
+  lastName: string
   error?: string
   redirect?: string
+  view: View
+}
+
+enum View {
+  Login,
+  SignUp
 }
 
 class Login extends React.Component<Props, State> {
@@ -32,82 +31,153 @@ class Login extends React.Component<Props, State> {
     super(props)
     this.state = {
       email: "",
-      password: ""
+      password: "",
+      firstName: "",
+      lastName: "",
+      view: View.Login
     }
   }
 
-  public async handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  public handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    const { email, password } = this.state
+    const { email, password, firstName, lastName, view } = this.state
+
     if (!email || !password) {
-      this.setState({ error: "Email & password are required." })
-    } else {
-      const response = await loginUser(email, password)
-      if (response instanceof Error) {
-        this.setState({ error: response.message })
-      } else {
-        this.props.login(response, () =>
+      this.setState({ error: "Email and  password are required." })
+    } else if (view === View.SignUp) {
+      const error = this.invalidLogin(email, password, firstName, lastName)
+      error === null
+        ? this.signUp(email, password, firstName, lastName)
+        : this.setState({ error })
+    } else if (view === View.Login) {
+      this.logIn(email, password)
+    }
+  }
+
+  public invalidLogin(
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string
+  ): string | null {
+    if (email.length < 4) {
+      return "Email must be longer than 4 characters."
+    } else if (password.length < 6 || password.length > 20) {
+      return "Password must be between 6 and 20 characters."
+    } else if (!firstName || !lastName) {
+      return "First and last name required."
+    }
+    return null
+  }
+
+  public async logIn(email: string, password: string) {
+    const response = await loginUser(email, password)
+    response instanceof Error
+      ? this.setState({ error: response.message })
+      : this.props.login(response, () =>
           this.setState({ redirect: "/library" })
         )
-      }
-    }
   }
 
-  public signUp() {
-    console.log("sign up")
+  public async signUp(
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string
+  ) {
+    const response = await createUser(email, password, firstName, lastName)
+    response instanceof Error
+      ? this.setState({ error: response.message })
+      : this.props.login(response, () =>
+          this.setState({ redirect: "/library" })
+        )
   }
 
   public render() {
-    const { redirect, email, password, error } = this.state
+    const {
+      redirect,
+      email,
+      password,
+      firstName,
+      lastName,
+      error,
+      view
+    } = this.state
 
     if (redirect) {
       return <Redirect to={redirect} />
     }
 
+    const isLoggingIn = view === View.Login
+
     return (
-      <Container>
-        <GameTitle>invisible college</GameTitle>
+      <Form onSubmit={this.handleSubmit.bind(this)}>
+        <MainHeader isGameTitle={isLoggingIn}>
+          {isLoggingIn ? "invisible college" : "sign up"}
+        </MainHeader>
 
-        <BackgroundImage src={animals} />
+        <br />
 
-        <Form onSubmit={this.handleSubmit.bind(this)}>
+        <Input.rounded
+          width="100%"
+          margin="0 0 10px 0"
+          onChange={e => this.setState({ email: e.target.value })}
+          value={email}
+          autoCapitalize={"none"}
+          placeholder="Email"
+          type="text"
+        />
+
+        <Input.rounded
+          width="100%"
+          margin="0 0 10px 0"
+          onChange={e => this.setState({ password: e.target.value })}
+          value={password}
+          autoCapitalize={"none"}
+          placeholder="Password"
+          type="password"
+        />
+
+        {!isLoggingIn && (
           <div>
+            {" "}
             <Input.rounded
               width="100%"
-              margin="0 0 5px 0"
-              onChange={e => this.setState({ email: e.target.value })}
-              value={email}
-              autoCapitalize={"none"}
-              placeholder="Email"
+              margin="0 0 10px 0"
+              onChange={e => this.setState({ firstName: e.target.value })}
+              value={firstName}
+              placeholder="First name"
               type="text"
             />
             <Input.rounded
               width="100%"
-              onChange={e => this.setState({ password: e.target.value })}
-              value={password}
-              autoCapitalize={"none"}
-              placeholder="Password"
+              margin="0 0 10px 0"
+              onChange={e => this.setState({ lastName: e.target.value })}
+              value={lastName}
+              placeholder="Last name"
               type="text"
             />
           </div>
-          <div style={{ margin: "0 auto" }}>
-            <Input.roundedS
-              margin="0 0 5px 0"
-              width="200px"
-              type="submit"
-              value="Log In"
-            />
-            <Button.regularWc
-              disabled={true}
-              onClick={this.signUp.bind(this)}
-              color={colors.green}
-            >
-              Sign Up
-            </Button.regularWc>
-            <ErrorMessage>{error}</ErrorMessage>
-          </div>
-        </Form>
-      </Container>
+        )}
+
+        <Input.roundedS
+          width="100%"
+          margin="0 0 20px 0"
+          type="submit"
+          value={isLoggingIn ? "Log In" : "Create Account"}
+        />
+
+        {isLoggingIn && (
+          <Text.l
+            pointer={true}
+            onClick={() => this.setState({ view: View.SignUp })}
+          >
+            No account? <BoldSpan>Sign Up</BoldSpan>
+          </Text.l>
+        )}
+
+        <ErrorMessage>{error}</ErrorMessage>
+      </Form>
     )
   }
 }

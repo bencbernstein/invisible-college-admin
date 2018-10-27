@@ -1,23 +1,41 @@
 import * as React from "react"
-import * as _ from "underscore"
-import { Redirect } from "react-router"
+import { find, without, uniq } from "lodash"
 
-import { Box, TopInfo, ReadMoreTab, ExitReadMode } from "./components"
-import Icon from "../common/icon"
-
-// import Answer from "./answer"
+import { FLEXES, Box, ReadMoreTab, ExitReadMode } from "./components"
+import Information from "./information"
+import Answer from "./answer"
 import Choices from "./choices"
 import Interactive from "./interactive"
-// import ProgressBar from "./progressBar"
+import OnCorrect from "./onCorrect"
 import Prompt from "./prompt"
 
-import { Question, fetchQuestion, fetchQuestions } from "../../models/question"
+import {
+  Question,
+  QuestionLog,
+  questionsForUser,
+  saveQuestionsForUser,
+  questionsForType
+} from "../../models/question"
 
-import DeleteIcon from "../../lib/images/icon-delete.png"
+import { sleep } from "../../lib/helpers"
+
+export interface Image {
+  base64: string
+}
+
+export interface Factoid {
+  title: string
+  value: string
+}
 
 export interface Guess {
   correct: boolean
   buttonIdx: number
+}
+
+export enum IsViewing {
+  Question = "Question",
+  Read = "Read"
 }
 
 interface Props {
@@ -26,20 +44,21 @@ interface Props {
 }
 
 interface State {
-  idx: number
   question?: Question
-  questions: string[]
+  questions: Question[]
   guess?: Guess
   guessedCorrectly: string[]
   isViewing: IsViewing
-  redirect?: string
   promptIsOverflowing: boolean
+  displayAnswerSpace: boolean
+  isBetweenQuestions: boolean
+  questionLog: QuestionLog[]
+  gameElements: Array<Question | Image | Factoid>
+  onCorrectElement?: Image | Factoid
   isInteractive: boolean
-}
-
-export enum IsViewing {
-  Question = "Question",
-  Read = "Read"
+  correct: boolean
+  userId?: string
+  type?: string
 }
 
 class QuestionComponent extends React.Component<Props, State> {
@@ -47,78 +66,129 @@ class QuestionComponent extends React.Component<Props, State> {
     super(props)
 
     this.state = {
-      idx: this.props.playNowIdx || 0,
       guessedCorrectly: [],
       isViewing: IsViewing.Question,
       questions: [],
       promptIsOverflowing: false,
-      isInteractive: false
+      isInteractive: false,
+      gameElements: [],
+      displayAnswerSpace: false,
+      userId: "",
+      correct: true,
+      questionLog: [],
+      isBetweenQuestions: false
     }
   }
 
-  public async componentWillMount() {
-    const questions = await fetchQuestions("SENTENCE_TO_TRUTH")
-    if (!(questions instanceof Error)) {
-      const ids = questions.map(q => q.id)
-      this.setState({ questions: ids }, () => this.loadQuestion(0))
+  public componentWillMount() {
+    const userId = window.location.search.split("?id=")[1]
+    const type = window.location.search.split("?type=")[1]
+    this.setState({ userId, type }, () =>
+      this.loadQuestions(() => this.nextQuestion(0))
+    )
+  }
+
+  public async loadQuestions(cb?: () => void) {
+    const { userId, gameElements, type } = this.state
+    const newElements = await (type
+      ? questionsForType(type)
+      : questionsForUser(userId!)) // TODO: - remove !
+    if (!(newElements instanceof Error)) {
+      const parsed = JSON.parse(newElements)
+      console.log(parsed)
+      console.log(`Fetched ${parsed.length} new game elements.`)
+      gameElements.push(...parsed)
+      this.setState({ gameElements }, cb)
     }
   }
 
-  public async loadQuestion(idx: number) {
-    const id = this.state.questions[idx]
-    if (id) {
-      const question = await fetchQuestion(id)
-      if (!(question instanceof Error)) {
-        const isInteractive = question.interactive.length > 0
-        this.setState({
-          question,
-          guess: undefined,
-          idx,
-          guessedCorrectly: [],
-          isInteractive
-        })
-      }
+  public record(question: Question) {
+    const { correct, userId, questionLog } = this.state
+    const { sources } = question
+    const type = question.passageOrWord
+    const { id, value } = type === "word" ? sources.word! : sources.passage!
+    questionLog.push({ correct, type, id, value })
+    if (questionLog.length === 1 && userId) {
+      saveQuestionsForUser(userId, questionLog) // TODO: - what to do with error?
+      this.setState({ questionLog: [] })
+    } else {
+      this.setState({ questionLog })
     }
   }
 
-  public interactiveGuessed(count: number) {
-    const { question, idx } = this.state
+  public async nextQuestion(sleepDuration: number = 2) {
+    console.log("\n* nextQuestion *")
+    const { gameElements, question } = this.state
+    this.setState({ isBetweenQuestions: true })
+    await sleep(sleepDuration)
 
+    if (question) {
+      this.record(question)
+    }
+
+    const element = gameElements.shift()
+
+    if ((element as Question).TYPE) {
+      this.setQuestion(element as Question)
+    } else if ((element as Image).base64) {
+      this.setState({ onCorrectElement: element as Image })
+    } else if ((element as Factoid).title) {
+      this.setState({ onCorrectElement: element as Factoid })
+    }
+
+    if (gameElements.length === 1) {
+      this.loadQuestions()
+    }
+
+    this.setState({ gameElements })
+  }
+
+  public setQuestion(question: Question) {
+    this.setState({
+      question,
+      onCorrectElement: undefined,
+      isInteractive: question.interactive.length > 0,
+      displayAnswerSpace: ["Roots", "Chars"].some(
+        s => question.TYPE.indexOf(s) > -1
+      ),
+      isBetweenQuestions: false,
+      guess: undefined,
+      correct: true,
+      guessedCorrectly: []
+    })
+  }
+
+  public interactiveGuessed(correct: boolean, count: number) {
+    const { question } = this.state
     if (count === question!.answerCount) {
-      setTimeout(() => this.loadQuestion(idx + 1), 1500)
+      this.nextQuestion()
+    }
+    if (!correct) {
+      this.setState({ correct: false })
     }
   }
 
   public guessed(choice: string, buttonIdx: number, answerValues: string[]) {
     const { guessedCorrectly } = this.state
 
-    const correctValue = _.find(
-      _.without(answerValues, ...guessedCorrectly),
-      value => value === choice
-    )
+    const answers = without(answerValues, ...guessedCorrectly)
+    const correctValue = find(answers, value => value === choice)
+    const correct = correctValue !== undefined && this.state.correct
+    const guess = { correct: correctValue !== undefined, buttonIdx }
 
     if (correctValue) {
       guessedCorrectly.push(correctValue)
     }
 
-    const guess = { correct: correctValue !== undefined, buttonIdx }
-    this.setState({ guess, guessedCorrectly })
-
-    setTimeout(() => {
-      let { idx } = this.state
-
-      if (correctValue) {
-        guessedCorrectly.push(correctValue)
-        // const done = this.props.questions.length === idx + 1
-        idx += 1
+    this.setState({ guess, guessedCorrectly, correct }, async () => {
+      const done = uniq(answerValues).length === guessedCorrectly.length
+      if (done) {
+        this.nextQuestion()
+      } else {
+        await sleep(correct ? 0.5 : 1)
+        this.setState({ guess: undefined })
       }
-
-      this.loadQuestion(idx)
-    }, 1500)
-  }
-
-  public promptIsOverflowing(bool: boolean) {
-    this.setState({ promptIsOverflowing: bool })
+    })
   }
 
   public render() {
@@ -126,14 +196,25 @@ class QuestionComponent extends React.Component<Props, State> {
       guess,
       question,
       isViewing,
-      redirect,
       promptIsOverflowing,
-      isInteractive
+      guessedCorrectly,
+      isBetweenQuestions,
+      displayAnswerSpace,
+      isInteractive,
+      correct,
+      onCorrectElement
     } = this.state
 
-    if (redirect) {
-      return <Redirect to={redirect} />
-    } else if (!question) {
+    if (onCorrectElement) {
+      return (
+        <OnCorrect
+          nextQuestion={this.nextQuestion.bind(this)}
+          element={onCorrectElement}
+        />
+      )
+    }
+
+    if (!question) {
       return null
     }
 
@@ -144,24 +225,29 @@ class QuestionComponent extends React.Component<Props, State> {
     const noPrompt = prompt.length === 0
 
     const showReadMoreTab = !isReadMode && promptIsOverflowing
-    // <ProgressBar completion={idx / questions.length} />
+
+    const flexes = isInteractive
+      ? FLEXES.interactive
+      : FLEXES[displayAnswerSpace ? "withAnswer" : "withoutAnswer"]
 
     return (
       <Box isReadMode={isReadMode}>
-        <TopInfo>
-          {!isReadMode && (
-            <Icon
-              onClick={() => this.setState({ redirect: "/home" })}
-              pointer={true}
-              src={DeleteIcon}
-            />
-          )}
-        </TopInfo>
+        <Information
+          correct={correct}
+          isBetweenQuestions={isBetweenQuestions}
+          question={question}
+          isReadMode={isReadMode}
+          flex={flexes.top}
+        />
 
         {!noPrompt && (
           <Prompt
+            questionType={question.passageOrWord}
+            flex={flexes.prompt}
             isInteractive={isInteractive}
-            isOverflowing={this.promptIsOverflowing.bind(this)}
+            isOverflowing={(bool: boolean) =>
+              this.setState({ promptIsOverflowing: bool })
+            }
             isReadMode={isReadMode}
             type={TYPE}
             prompt={prompt}
@@ -186,8 +272,20 @@ class QuestionComponent extends React.Component<Props, State> {
           </ExitReadMode>
         )}
 
+        {displayAnswerSpace && (
+          <Answer
+            isBetweenQuestions={isBetweenQuestions}
+            type={TYPE}
+            flex={flexes.answer}
+            height={noPrompt ? "45%" : "20%"}
+            guessedCorrectly={guessedCorrectly}
+            answer={answer}
+          />
+        )}
+
         {isInteractive && (
           <Interactive
+            flex={flexes.interactive}
             guessed={this.interactiveGuessed.bind(this)}
             data={interactive}
           />
@@ -195,6 +293,7 @@ class QuestionComponent extends React.Component<Props, State> {
 
         {redHerrings.length > 0 && (
           <Choices
+            flex={flexes.choices}
             answer={answer}
             guess={guess}
             guessed={this.guessed.bind(this)}
@@ -206,14 +305,5 @@ class QuestionComponent extends React.Component<Props, State> {
     )
   }
 }
-
-// {answer.length > 0 && (
-//   <Answer
-//     type={TYPE}
-//     height={noPrompt ? "45%" : "20%"}
-//     guessedCorrectly={guessedCorrectly}
-//     answer={answer}
-//   />
-// )}
 
 export default QuestionComponent

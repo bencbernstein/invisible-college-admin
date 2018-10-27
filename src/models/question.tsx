@@ -1,4 +1,5 @@
 import { query } from "./query"
+import { User } from "./user"
 
 export interface Source {
   value: string
@@ -7,7 +8,7 @@ export interface Source {
 
 export interface Sources {
   word?: Source
-  text?: Source
+  passage?: Source
 }
 
 export interface PromptPart {
@@ -34,14 +35,23 @@ export interface Question {
   prompt: PromptPart[]
   answer: AnswerPart[]
   redHerrings: string[]
+  passageOrWord: string
   interactive: InteractivePart[]
   sources: Sources
   answerCount: number
+  experience?: number
+}
+
+export interface QuestionLog {
+  type: string
+  value: string
+  id: string
+  correct: boolean
 }
 
 const sources = `
   sources {
-    text {
+    passage {
       id
       value
     }
@@ -55,6 +65,7 @@ const sources = `
 export const questionFragment = `
   id
   TYPE
+  passageOrWord
   prompt {
     value
     highlight
@@ -71,6 +82,7 @@ export const questionFragment = `
   answerCount
   redHerrings
   ${sources}
+  experience
 `
 
 const slim = `
@@ -87,6 +99,9 @@ export const fetchQuestion = async (id: string): Promise<Question | Error> => {
   }`
   return query(gqlQuery, "question")
 }
+
+export const questionsForUser = async (id: string): Promise<string | Error> =>
+  query(`query { questionsForUser(id: "${id}") }`, "questionsForUser")
 
 export const fetchQuestions = async (
   questionType?: string,
@@ -129,3 +144,36 @@ export const fetchQuestionsForWord = async (
   }`
   return query(gqlQuery, "questionsForWord")
 }
+
+export const saveQuestionsForUser = async (
+  id: string,
+  questions: QuestionLog[]
+): Promise<User | Error> => {
+  const encoded = encodeURIComponent(JSON.stringify(questions))
+  const gqlQuery = `mutation {
+    saveQuestionsForUser(id: "${id}", questions: "${encoded}") {
+      id
+    }
+  }`
+  return query(gqlQuery, "saveQuestionsForUser")
+}
+
+export interface QuestionTypeCount {
+  type: string
+  count: number
+}
+
+export const fetchQuestionTypeCounts = async (): Promise<
+  QuestionTypeCount[] | Error
+> => {
+  const gqlQuery = `query {
+    questionTypeCounts {
+      type
+      count
+    }
+  }`
+  return query(gqlQuery, "questionTypeCounts")
+}
+
+export const questionsForType = async (type: string): Promise<string | Error> =>
+  query(`query { questionsForType(type: "${type}") }`, "questionsForType")

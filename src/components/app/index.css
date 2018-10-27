@@ -33,6 +33,16 @@
   src: url("../../lib/fonts/GeorgiaRegular.ttf");
 }
 
+@font-face {
+  font-family: Averia;
+  src: url("../../lib/fonts/AveriaSerif-Regular.ttf");
+}
+
+@font-face {
+  font-family: AveriaLight;
+  src: url("../../lib/fonts/AveriaSerif-Light.ttf");
+}
+
 .disabled-link {
   pointer-events: none;
 }

@@ -1,23 +1,56 @@
 import * as React from "react"
 import * as _ from "underscore"
 
-import Text from "../common/text"
-import { AnswerBox, AnswerSpace, AnswerUnderline } from "./components"
+import {
+  AnswerBox,
+  AnswerText,
+  AnswerPartBox,
+  AnswerUnderline
+} from "./components"
 
 import { AnswerPart } from "../../models/question"
 
 import { isPunc } from "../../lib/helpers"
+import { colors } from "../../lib/colors"
 
 interface Props {
   answer: AnswerPart[]
   type: string
   height: string
   guessedCorrectly: string[]
+  isBetweenQuestions: boolean
+  flex: number
 }
 
-export default class Answer extends React.Component<Props, any> {
+interface State {
+  margin: number
+}
+
+export default class Answer extends React.Component<Props, State> {
+  constructor(props: Props) {
+    super(props)
+    this.state = {
+      margin: 10
+    }
+  }
+
+  public componentWillReceiveProps(nextProps: Props) {
+    const { isBetweenQuestions } = nextProps
+    if (isBetweenQuestions !== this.props.isBetweenQuestions) {
+      const margin = isBetweenQuestions ? -2 : 10
+      this.setState({ margin })
+    }
+  }
+
   public render() {
-    const { answer, type, guessedCorrectly, height } = this.props
+    const {
+      answer,
+      type,
+      guessedCorrectly,
+      height,
+      flex,
+      isBetweenQuestions
+    } = this.props
 
     const displayImage =
       type === "WORD_TO_IMG" &&
@@ -25,37 +58,36 @@ export default class Answer extends React.Component<Props, any> {
       answer[0].value!.startsWith("data:image") &&
       guessedCorrectly.length
 
-    const withUnderline = (value: string) => (
-      <span
-        style={{ display: "flex", flexDirection: "column", margin: "0px 10px" }}
-      >
-        {value}
-        <AnswerUnderline />
-      </span>
-    )
-
     const answerSpace = (part: AnswerPart, i: number) => {
-      const hide = !part.prefill && !_.includes(guessedCorrectly, part.value)
-
       if (!part.value) {
         return null
       }
 
+      const hide = !part.prefill && !_.includes(guessedCorrectly, part.value)
       const formattedValue = isPunc(part.value) ? part.value : ` ${part.value}`
 
       return (
-        <AnswerSpace hide={hide} key={i}>
-          {hide ? withUnderline(formattedValue) : formattedValue}
-        </AnswerSpace>
+        <AnswerPartBox margin={this.state.margin} key={i} hide={hide}>
+          {formattedValue}
+          <AnswerUnderline
+            color={isBetweenQuestions ? colors.warmYellow : "black"}
+          />
+        </AnswerPartBox>
       )
     }
 
     const answerComponent = displayImage ? (
       <img style={{ maxHeight: "65%" }} src={answer[0].value} />
     ) : (
-      <Text.xl color="black">{answer.map((a, i) => answerSpace(a, i))}</Text.xl>
+      <AnswerText color="black">
+        {answer.map((a, i) => answerSpace(a, i))}
+      </AnswerText>
     )
 
-    return <AnswerBox height={height}>{answerComponent}</AnswerBox>
+    return (
+      <AnswerBox flex={flex} height={height}>
+        {answerComponent}
+      </AnswerBox>
+    )
   }
 }
