@@ -61,3 +61,35 @@ export const Centered = styled.div`
   margin: 0 auto;
   text-align: center;
 `
+
+export const LeaderboardContainer = styled.div`
+  width: 75%;
+  margin: 0 auto;
+  text-align: center;
+`
+
+interface ContentProps {
+  height?: string
+}
+
+export const Content = styled.div`
+  height: ${(p: ContentProps) => p.height};
+  overflow: scroll;
+  border: 1px solid ${colors.blue};
+  border-radius: 5px;
+  padding: 10px;
+  margin: 0 auto;
+  width: 80%;
+`
+
+export const AvatarImg = styled.img`
+  height: 50px;
+  width: 50px;
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  -ms-border-radius: 50%;
+  -o-border-radius: 50%;
+  border-radius: 50%;
+  border: 1px solid ${colors.gray};
+  cursor: pointer;
+`

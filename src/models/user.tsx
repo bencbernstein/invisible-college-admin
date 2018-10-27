@@ -19,6 +19,18 @@ export interface User {
   bookmarks: Bookmark[]
 }
 
+export interface Rank {
+  no: number
+  questionsAnswered: number
+  id: string
+  initials: string
+}
+
+export interface StatsResult {
+  user: User
+  ranks: Rank[]
+}
+
 const attrs =
   "id email firstName lastName questionsAnswered wordsLearned passagesRead rank level"
 
@@ -61,3 +73,21 @@ export const fetchUserFromStorage = (): User | undefined => {
 
 export const saveUserToStorage = (user: User) =>
   localStorage.setItem("user", JSON.stringify(user))
+
+export const getStats = async (id: string): Promise<StatsResult | Error> => {
+  const gqlQuery = `mutation { getStats(id: "${id}") { 
+    user {
+      id
+      wordsLearned
+      passagesRead
+      questionsAnswered  
+    }
+    ranks {
+      id
+      no
+      questionsAnswered
+      initials
+    }
+  } }`
+  return query(gqlQuery, "getStats")
+}

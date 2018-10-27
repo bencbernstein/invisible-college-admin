@@ -8,12 +8,12 @@ import FlexedDiv from "../common/flexedDiv"
 import Text from "../common/text"
 
 import DeleteIcon from "../../lib/images/icon-delete.png"
-import Binoculars from "../../lib/images/icon-binoculars.png"
+import Binoculars from "../../lib/images/gameplay/icon-binoculars.png"
 
 import { Question } from "../../models/question"
 
-import grayStar from "../../lib/images/icon-star-gray.png"
-import yellowStar from "../../lib/images/icon-star-yellow.png"
+import grayStar from "../../lib/images/gameplay/icon-star-gray.png"
+import yellowStar from "../../lib/images/gameplay/icon-star-yellow.png"
 
 import { sleep } from "../../lib/helpers"
 
@@ -86,7 +86,14 @@ export default class Prompt extends React.Component<Props, State> {
       <InformationBox flex={flex}>
         {!isReadMode && (
           <Icon
-            onClick={() => this.setState({ redirect: "/home" })}
+            onClick={() =>
+              this.setState({
+                redirect:
+                  window.location.search.indexOf("type") > -1
+                    ? "/admin-home"
+                    : "/home"
+              })
+            }
             pointer={true}
             src={DeleteIcon}
           />
@@ -100,7 +107,7 @@ export default class Prompt extends React.Component<Props, State> {
         {starCount && (
           <FlexedDiv>
             {range(1, 11).map(n => (
-              <Icon src={n <= starCount ? yellowStar : grayStar} />
+              <Icon key={n} src={n <= starCount ? yellowStar : grayStar} />
             ))}
           </FlexedDiv>
         )}

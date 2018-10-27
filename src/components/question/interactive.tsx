@@ -1,5 +1,5 @@
 import * as React from "react"
-import { includes } from "lodash"
+import { includes, isEqual } from "lodash"
 
 import { InteractiveBox, Span } from "./components"
 
@@ -22,6 +22,12 @@ export default class Prompt extends React.Component<Props, State> {
     super(props)
     this.state = {
       guessedCorrectly: []
+    }
+  }
+
+  public componentWillReceiveProps(nextProps: Props) {
+    if (!isEqual(this.props.data, nextProps.data)) {
+      this.setState({ guessedCorrectly: [] })
     }
   }
 

@@ -1,23 +1,32 @@
 import * as React from "react"
-import { find, without, includes } from "lodash"
+import { find, without, uniq } from "lodash"
 
 import { FLEXES, Box, ReadMoreTab, ExitReadMode } from "./components"
 import Information from "./information"
 import Answer from "./answer"
 import Choices from "./choices"
 import Interactive from "./interactive"
-// import ProgressBar from "./progressBar"
+import OnCorrect from "./onCorrect"
 import Prompt from "./prompt"
 
 import {
   Question,
   QuestionLog,
   questionsForUser,
-  QuestionType,
-  saveQuestionsForUser
+  saveQuestionsForUser,
+  questionsForType
 } from "../../models/question"
 
 import { sleep } from "../../lib/helpers"
+
+export interface Image {
+  base64: string
+}
+
+export interface Factoid {
+  title: string
+  value: string
+}
 
 export interface Guess {
   correct: boolean
@@ -44,9 +53,12 @@ interface State {
   displayAnswerSpace: boolean
   isBetweenQuestions: boolean
   questionLog: QuestionLog[]
+  gameElements: Array<Question | Image | Factoid>
+  onCorrectElement?: Image | Factoid
   isInteractive: boolean
   correct: boolean
-  userId: string
+  userId?: string
+  type?: string
 }
 
 class QuestionComponent extends React.Component<Props, State> {
@@ -59,6 +71,7 @@ class QuestionComponent extends React.Component<Props, State> {
       questions: [],
       promptIsOverflowing: false,
       isInteractive: false,
+      gameElements: [],
       displayAnswerSpace: false,
       userId: "",
       correct: true,
@@ -69,28 +82,33 @@ class QuestionComponent extends React.Component<Props, State> {
 
   public componentWillMount() {
     const userId = window.location.search.split("?id=")[1]
-    this.setState({ userId }, () =>
-      this.loadQuestions(() => this.nextQuestion())
+    const type = window.location.search.split("?type=")[1]
+    this.setState({ userId, type }, () =>
+      this.loadQuestions(() => this.nextQuestion(0))
     )
   }
 
   public async loadQuestions(cb?: () => void) {
-    const { userId, questions } = this.state
-    const newQuestions = await questionsForUser(userId)
-    if (!(newQuestions instanceof Error)) {
-      questions.push(...newQuestions)
-      this.setState({ questions }, cb)
+    const { userId, gameElements, type } = this.state
+    const newElements = await (type
+      ? questionsForType(type)
+      : questionsForUser(userId!)) // TODO: - remove !
+    if (!(newElements instanceof Error)) {
+      const parsed = JSON.parse(newElements)
+      console.log(parsed)
+      console.log(`Fetched ${parsed.length} new game elements.`)
+      gameElements.push(...parsed)
+      this.setState({ gameElements }, cb)
     }
   }
 
   public record(question: Question) {
     const { correct, userId, questionLog } = this.state
     const { sources } = question
-    const type = sources.word ? QuestionType.word : QuestionType.passage
-    const { id, value } =
-      type === QuestionType.word ? sources.word! : sources.text!
+    const type = question.passageOrWord
+    const { id, value } = type === "word" ? sources.word! : sources.passage!
     questionLog.push({ correct, type, id, value })
-    if (questionLog.length === 1) {
+    if (questionLog.length === 1 && userId) {
       saveQuestionsForUser(userId, questionLog) // TODO: - what to do with error?
       this.setState({ questionLog: [] })
     } else {
@@ -98,34 +116,41 @@ class QuestionComponent extends React.Component<Props, State> {
     }
   }
 
-  public async nextQuestion() {
+  public async nextQuestion(sleepDuration: number = 2) {
+    console.log("\n* nextQuestion *")
+    const { gameElements, question } = this.state
     this.setState({ isBetweenQuestions: true })
-    await sleep(2)
+    await sleep(sleepDuration)
 
-    const { questions } = this.state
-
-    if (this.state.question) {
-      this.record(this.state.question)
-      questions.shift()
+    if (question) {
+      this.record(question)
     }
 
-    if (questions.length === 1) {
+    const element = gameElements.shift()
+
+    if ((element as Question).TYPE) {
+      this.setQuestion(element as Question)
+    } else if ((element as Image).base64) {
+      this.setState({ onCorrectElement: element as Image })
+    } else if ((element as Factoid).title) {
+      this.setState({ onCorrectElement: element as Factoid })
+    }
+
+    if (gameElements.length === 1) {
       this.loadQuestions()
     }
 
-    const question = questions[0]
+    this.setState({ gameElements })
+  }
 
-    const isInteractive = question.interactive.length > 0
-    const displayAnswerSpace = includes(
-      ["WORD_TO_ROOTS", "WORD_TO_CHARS"],
-      question.TYPE
-    )
-
+  public setQuestion(question: Question) {
     this.setState({
-      questions,
       question,
-      isInteractive,
-      displayAnswerSpace,
+      onCorrectElement: undefined,
+      isInteractive: question.interactive.length > 0,
+      displayAnswerSpace: ["Roots", "Chars"].some(
+        s => question.TYPE.indexOf(s) > -1
+      ),
       isBetweenQuestions: false,
       guess: undefined,
       correct: true,
@@ -146,22 +171,21 @@ class QuestionComponent extends React.Component<Props, State> {
   public guessed(choice: string, buttonIdx: number, answerValues: string[]) {
     const { guessedCorrectly } = this.state
 
-    const correctValue = find(
-      without(answerValues, ...guessedCorrectly),
-      value => value === choice
-    )
+    const answers = without(answerValues, ...guessedCorrectly)
+    const correctValue = find(answers, value => value === choice)
     const correct = correctValue !== undefined && this.state.correct
-    const guess = { correct, buttonIdx }
+    const guess = { correct: correctValue !== undefined, buttonIdx }
 
     if (correctValue) {
       guessedCorrectly.push(correctValue)
     }
 
     this.setState({ guess, guessedCorrectly, correct }, async () => {
-      if (correctValue) {
+      const done = uniq(answerValues).length === guessedCorrectly.length
+      if (done) {
         this.nextQuestion()
       } else {
-        await sleep(1)
+        await sleep(correct ? 0.5 : 1)
         this.setState({ guess: undefined })
       }
     })
@@ -177,8 +201,18 @@ class QuestionComponent extends React.Component<Props, State> {
       isBetweenQuestions,
       displayAnswerSpace,
       isInteractive,
-      correct
+      correct,
+      onCorrectElement
     } = this.state
+
+    if (onCorrectElement) {
+      return (
+        <OnCorrect
+          nextQuestion={this.nextQuestion.bind(this)}
+          element={onCorrectElement}
+        />
+      )
+    }
 
     if (!question) {
       return null
@@ -191,7 +225,6 @@ class QuestionComponent extends React.Component<Props, State> {
     const noPrompt = prompt.length === 0
 
     const showReadMoreTab = !isReadMode && promptIsOverflowing
-    // <ProgressBar completion={idx / questions.length} />
 
     const flexes = isInteractive
       ? FLEXES.interactive
@@ -209,9 +242,7 @@ class QuestionComponent extends React.Component<Props, State> {
 
         {!noPrompt && (
           <Prompt
-            questionType={
-              question.sources.word ? QuestionType.word : QuestionType.passage
-            }
+            questionType={question.passageOrWord}
             flex={flexes.prompt}
             isInteractive={isInteractive}
             isOverflowing={(bool: boolean) =>

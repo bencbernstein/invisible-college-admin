@@ -2,12 +2,14 @@ import * as React from "react"
 import { Redirect } from "react-router"
 
 import Text from "../common/text"
+import FlexedDiv from "../common/flexedDiv"
 import Button from "../common/button"
-
 import { Background, Box, MainHeader, Stats, Centered } from "./components"
+import Leaderboard from "./leaderboard"
 
-import { User } from "../../models/user"
+import { User, getStats, Rank } from "../../models/user"
 import { formatName } from "../../lib/helpers"
+import { colors } from "../../lib/colors"
 
 interface Props {
   user: User
@@ -15,12 +17,27 @@ interface Props {
 
 interface State {
   redirect?: string
+  questionsAnswered?: number
+  wordsLearned?: number
+  passagesRead?: number
+  ranks: Rank[]
 }
 
 class Home extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
-    this.state = {}
+    this.state = {
+      ranks: []
+    }
+  }
+
+  public async componentDidMount() {
+    const stats = await getStats(this.props.user.id)
+    if (!(stats instanceof Error)) {
+      const { wordsLearned, questionsAnswered, passagesRead } = stats.user
+      const { ranks } = stats
+      this.setState({ wordsLearned, questionsAnswered, passagesRead, ranks })
+    }
   }
 
   public logout() {
@@ -29,17 +46,15 @@ class Home extends React.Component<Props, State> {
   }
 
   public render() {
-    const { redirect } = this.state
-    const { user } = this.props
     const {
-      firstName,
-      lastName,
-      level,
-      questionsAnswered,
+      redirect,
       wordsLearned,
+      questionsAnswered,
       passagesRead,
-      id
-    } = user
+      ranks
+    } = this.state
+
+    const { firstName, lastName, level, id } = this.props.user
 
     if (redirect) {
       return <Redirect to={redirect} />
@@ -48,9 +63,18 @@ class Home extends React.Component<Props, State> {
     return (
       <Background>
         <Box>
-          <Text.regular pointer={true} onClick={this.logout.bind(this)}>
-            Logout
-          </Text.regular>
+          <FlexedDiv justifyContent="space-between">
+            <Text.regular pointer={true} onClick={this.logout.bind(this)}>
+              Logout
+            </Text.regular>
+            <Text.regular
+              color={colors.red}
+              pointer={true}
+              onClick={() => this.setState({ redirect: "/admin-home" })}
+            >
+              Admin
+            </Text.regular>
+          </FlexedDiv>
 
           <Centered>
             <MainHeader margin="0 0 5px 0">
@@ -86,6 +110,8 @@ class Home extends React.Component<Props, State> {
               </Text.regular>
             </Centered>
           </Stats>
+
+          <Leaderboard ranks={ranks} />
 
           <Button.regularWc
             margin="0 auto"

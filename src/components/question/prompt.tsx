@@ -1,9 +1,9 @@
 import { isString, isEqual, findIndex } from "underscore"
 import * as React from "react"
 
-import { PromptBox, Span, PromptText } from "./components"
+import { PromptBox, Span, PromptText, PromptImage } from "./components"
 
-import { PromptPart, QuestionType } from "../../models/question"
+import { PromptPart } from "../../models/question"
 
 import { isPunc } from "../../lib/helpers"
 
@@ -15,7 +15,7 @@ interface Props {
   bottom?: number
   isInteractive: boolean
   flex: number
-  questionType: QuestionType
+  questionType: string
 }
 
 interface State {
@@ -82,14 +82,14 @@ export default class Prompt extends React.Component<Props, State> {
     )
 
     const isImage =
-      type === "WORD_TO_IMG" &&
+      type === "Word to Image (reverse)" &&
       isString(prompt[0].value) &&
       prompt[0].value!.startsWith("data:image")
 
     const length = prompt.map(p => p.value).join("").length
 
     const promptComponent = isImage ? (
-      <img style={{ maxHeight: "100%" }} src={prompt[0].value} />
+      <PromptImage src={prompt[0].value} />
     ) : (
       <PromptText
         bottom={this.state.bottom}
@@ -109,7 +109,7 @@ export default class Prompt extends React.Component<Props, State> {
 
     return (
       <PromptBox
-        isShort={questionType === QuestionType.word}
+        isShort={questionType === "word"}
         isInteractive={isInteractive}
         id="prompt"
         isReadMode={isReadMode}

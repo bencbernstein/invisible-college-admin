@@ -10,14 +10,19 @@ export const query = (gqlQuery: string, name: string): any | Error =>
   })
     .then(res => res.json())
     .then(json => {
-      console.log(json)
+      if (json.data) {
+        console.log(`query - ${Object.keys(json.data)[0]}`)
+      }
+
       if (json.errors && json.errors.length) {
         console.error("ERR: " + json.errors[0].message)
         return Error(json.errors[0].message)
       }
+
       if (!json.data[name]) {
         console.error("Null result from: " + gqlQuery)
         return Error("Null result.")
       }
+
       return json.data[name]
     })

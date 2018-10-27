@@ -12,7 +12,7 @@ export const FLEXES: any = {
   interactive: {
     top: 1,
     prompt: 2,
-    passage: 12
+    interactive: 12
   },
   withAnswer: {
     top: 1,
@@ -90,6 +90,13 @@ export const Progress = styled.div`
 
 // Prompt
 
+export const PromptImage = styled.img`
+  max-height: 80%;
+  max-width: 80%;
+  height: auto;
+  width: auto;
+`
+
 interface PromptBoxProps {
   isReadMode: boolean
   flex: any
@@ -107,13 +114,16 @@ export const PromptBox = styled.div`
   height: ${(p: PromptBoxProps) => (p.isReadMode ? "100vh" : "")};
   box-sizing: border-box;
   overflow: ${(p: PromptBoxProps) => (p.isReadMode ? "scroll" : "hidden")};
+  position: ${(p: PromptBoxProps) => p.isReadMode && "absolute"};
+  top: 0;
+  left: 0;
   background-color: ${(p: PromptBoxProps) =>
-    !p.isReadMode && !p.isShort && "#f9f9f9"};
+    !p.isReadMode && !p.isShort ? "#f9f9f9" : "white"};
   border-radius: ${(p: PromptBoxProps) =>
     p.isReadMode ? "" : "5px 5px 0 5px"};
   border: ${(p: PromptBoxProps) =>
     !p.isReadMode && !p.isShort && `1px solid ${colors.lightestGray}`};
-  padding: ${(p: PromptBoxProps) => (p.isReadMode ? "" : "0 5px")};
+  padding: 10px 15px;
   ::-webkit-scrollbar {
     display: none;
   }
@@ -228,6 +238,7 @@ interface ChoiceProps {
 const templateForCount = (count: number) =>
   ({
     2: "1fr 1fr",
+    4: "1fr 1fr",
     6: "1fr 1fr"
   }[count] || "1fr 1fr 1fr")
 
@@ -250,8 +261,10 @@ export const Button = styled.p`
 export const Image = styled.img`
   pointer-events: ${(p: ChoiceProps) => (p.disabled ? "none" : "auto")};
   border: 3px solid ${(p: ChoiceProps) => p.backgroundColor};
-  max-height: 150px;
-  max-width: 150px;
+  max-height: 80%;
+  max-width: 80%;
+  width: auto;
+  height: auto;
   margin: 10px;
   cursor: pointer;
 `

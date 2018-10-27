@@ -29,7 +29,7 @@ export default class Choices extends React.Component<Props, any> {
     const { answer, guess, redHerrings, type, flex } = this.props
 
     const isImage =
-      type === "WORD_TO_IMG" && redHerrings[0].startsWith("data:image")
+      type === "Word to Image" && redHerrings[0].startsWith("data:image")
 
     const answerValues = _.compact(
       answer.filter(a => !a.prefill).map(a => a.value)

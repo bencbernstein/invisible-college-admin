@@ -5,6 +5,7 @@ import { Router } from "react-router-dom"
 import Container from "./container"
 import Login from "../login"
 import Home from "../home"
+import AdminHome from "../home/admin"
 
 import history from "../../history"
 
@@ -91,6 +92,11 @@ class App extends React.Component<any, State> {
             {...defaultProtectedRouteProps}
             path="/home"
             render={() => <Home user={user!} />}
+          />
+          <ProtectedRoute
+            {...defaultProtectedRouteProps}
+            path="/admin-home"
+            render={() => <AdminHome user={user!} />}
           />
           <ProtectedRoute
             {...defaultProtectedRouteProps}

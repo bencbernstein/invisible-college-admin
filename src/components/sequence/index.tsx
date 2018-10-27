@@ -147,7 +147,7 @@ class Sequence extends React.Component<any, State> {
       >
         {icons(q.id)}
 
-        <Text.l>{get(q.sources.word || q.sources.text, "value")}</Text.l>
+        <Text.l>{get(q.sources.word || q.sources.passage, "value")}</Text.l>
 
         <Text.regular>{q.TYPE}</Text.regular>
 
