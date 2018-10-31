@@ -1,6 +1,5 @@
 import * as React from "react"
 import { Redirect } from "react-router"
-import * as _ from "underscore"
 
 import Subnav from "../nav/subnav"
 import List from "./list"
@@ -20,19 +19,13 @@ import {
   removeChoice,
   removeChoiceSet
 } from "../../models/choiceSet"
-import { fetchTexts, removeText } from "../../models/text"
 import { Word, fetchWords, removeWord } from "../../models/word"
-import {
-  PassageSequence,
-  fetchPassageSequences
-} from "../../models/passageSequence"
 
 interface State {
   selectedView: SelectedView
   selectedSortBy: SelectedSortBy
   selectedFilterBy: string
   redirect?: string
-  passageSequences: PassageSequence[]
   words: Word[]
   texts: any[]
   choiceSets: any[]
@@ -48,7 +41,6 @@ class Library extends React.Component<any, State> {
       selectedView: viewForSearch(window.location.search),
       selectedSortBy: SelectedSortBy.Name,
       selectedFilterBy: ALPHABET[0],
-      passageSequences: [],
       words: [],
       texts: [],
       choiceSets: []
@@ -57,28 +49,12 @@ class Library extends React.Component<any, State> {
 
   public componentDidMount() {
     this.loadWords()
-    this.loadTexts()
     this.loadChoiceSets()
-    this.loadPassageSequence()
   }
 
   public async loadChoiceSets() {
     const choiceSets = await fetchChoiceSets(["id", "name", "choices"])
     this.setState({ choiceSets })
-  }
-
-  public async loadPassageSequence() {
-    const passageSequences = await fetchPassageSequences()
-    if (!(passageSequences instanceof Error)) {
-      this.setState({ passageSequences })
-    }
-  }
-
-  public async loadTexts() {
-    const texts = await fetchTexts()
-    if (!(texts instanceof Error)) {
-      this.setState({ texts })
-    }
   }
 
   public async loadWords(didChangeSort: boolean = false) {
@@ -110,7 +86,6 @@ class Library extends React.Component<any, State> {
 
     const [data, fn] = {
       Words: [words, removeWord],
-      Texts: [texts, removeText],
       "Choice Sets": [choiceSets, removeChoiceSet]
     }[selectedView]
 
@@ -127,23 +102,16 @@ class Library extends React.Component<any, State> {
   }
 
   public didSelectView(selectedView: any) {
-    this.setState({ selectedView })
+    if (selectedView === SelectedView.Passages) {
+      this.setState({ redirect: "/passages" })
+    } else {
+      this.setState({ selectedView })
+    }
   }
 
   public didSelectSortBy(selectedSortBy: any) {
-    const { texts, selectedView } = this.state
-    if (selectedView === "Texts") {
-      const sorted =
-        selectedSortBy === SelectedSortBy.Name
-          ? _.sortBy(texts, "name")
-          : _.sortBy(
-              texts,
-              selectedSortBy === SelectedSortBy.Passages
-                ? "passagesCount"
-                : "unenrichedPassagesCount"
-            ).reverse()
-      this.setState({ texts: sorted, selectedSortBy })
-    } else if (selectedView === "Words") {
+    const { selectedView } = this.state
+    if (selectedView === "Words") {
       this.setState({ selectedSortBy }, () => this.loadWords(true))
     }
   }
@@ -159,8 +127,6 @@ class Library extends React.Component<any, State> {
       selectedSortBy,
       selectedFilterBy,
       redirect,
-      texts,
-      passageSequences,
       words
     } = this.state
 
@@ -170,19 +136,12 @@ class Library extends React.Component<any, State> {
 
     const data = {
       Words: words,
-      Texts: texts,
-      "Choice Sets": choiceSets,
-      "Passage Sequences": passageSequences
+      "Choice Sets": choiceSets
     }[selectedView]
 
     return (
       <div>
-        <Subnav
-          minimized={false}
-          subtitle={"gameplay"}
-          subtitleLink={"/gameplay"}
-          title={"library"}
-        />
+        <Subnav minimized={false} title={"library"} />
 
         <div style={{ display: "flex" }}>
           <Menus
@@ -191,31 +150,22 @@ class Library extends React.Component<any, State> {
             chosen={selectedView}
             options={[
               SelectedView.ChoiceSets,
-              SelectedView.PassageSequences,
-              SelectedView.Texts,
+              SelectedView.Passages,
               SelectedView.Words
             ]}
           />
 
-          {_.include(["Words", "Texts"], selectedView) && (
+          {selectedView === "Words" && (
             <Menus
               title={"Sort By"}
               didSelect={this.didSelectSortBy.bind(this)}
               chosen={selectedSortBy}
-              options={
-                selectedView === "Texts"
-                  ? [
-                      SelectedSortBy.Name,
-                      SelectedSortBy.Passages,
-                      SelectedSortBy.UnenrichedPassages
-                    ]
-                  : [
-                      SelectedSortBy.Name,
-                      SelectedSortBy.EnrichedPassages,
-                      SelectedSortBy.UnenrichedPassages,
-                      SelectedSortBy.UnfilteredPassages
-                    ]
-              }
+              options={[
+                SelectedSortBy.Name,
+                SelectedSortBy.EnrichedPassages,
+                SelectedSortBy.UnenrichedPassages,
+                SelectedSortBy.UnfilteredPassages
+              ]}
             />
           )}
 

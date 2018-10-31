@@ -25,6 +25,7 @@ export const Choices = Text.regular.extend`
 `
 
 export const DescriptionText = styled.div`
+  text-align: center;
   position: absolute;
   bottom: 10px;
   left: 0;

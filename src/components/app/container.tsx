@@ -1,12 +1,12 @@
 import * as React from "react"
 import * as _ from "underscore"
 
-import Gameplay from "../gameplay"
 import Play from "../question"
 import Library from "../library"
 import Nav from "../nav"
 import Discover from "../discover"
 import Passage from "../passage"
+import Passages from "../passages"
 import Sequence from "../sequence"
 import PassageSequence from "../passageSequence"
 import Text from "../text"
@@ -97,8 +97,8 @@ class Container extends React.Component<ContainerProps, ContainerState> {
           {
             library: <Library />,
             play: <Play />,
+            passages: <Passages />,
             discover: <Discover keywords={keywords} />,
-            gameplay: <Gameplay />,
             text: (
               <Text
                 displayNav={(b: boolean) => this.setState({ displayNav: b })}

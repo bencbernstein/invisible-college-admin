@@ -8,6 +8,7 @@ export interface Passage {
   filteredSentences: number[]
   factoidOnCorrect: boolean
   matchIdx: number
+  difficulty: number
   source: string
   title: string
   value: string
@@ -27,6 +28,18 @@ export const fetchPassage = async (id: string): Promise<Passage | Error> => {
     } 
   } }`
   return query(gqlQuery, "passage")
+}
+
+export const fetchEnrichedPassages = async (): Promise<Passage[] | Error> => {
+  const gqlQuery = `query { enrichedPassages {
+    id
+    tagged {
+      id value tag isFocusWord isPunctuation isConnector isSentenceConnector wordId choiceSetId isUnfocused
+    }
+    difficulty
+    filteredSentences
+  } }`
+  return query(gqlQuery, "enrichedPassages")
 }
 
 export const savePassages = async (passages: string): Promise<any | Error> => {

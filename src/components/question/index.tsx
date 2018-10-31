@@ -1,5 +1,5 @@
 import * as React from "react"
-import { find, without, uniq } from "lodash"
+import { find, without, uniq, get } from "lodash"
 
 import { FLEXES, Box, ReadMoreTab, ExitReadMode } from "./components"
 import Information from "./information"
@@ -14,6 +14,7 @@ import {
   QuestionLog,
   questionsForUser,
   saveQuestionsForUser,
+  userSawFactoid,
   questionsForType
 } from "../../models/question"
 
@@ -26,6 +27,7 @@ export interface Image {
 export interface Factoid {
   title: string
   value: string
+  id: string
 }
 
 export interface Guess {
@@ -81,6 +83,7 @@ class QuestionComponent extends React.Component<Props, State> {
   }
 
   public componentWillMount() {
+    console.log("componentWillMount")
     const userId = window.location.search.split("?id=")[1]
     const type = window.location.search.split("?type=")[1]
     this.setState({ userId, type }, () =>
@@ -118,12 +121,15 @@ class QuestionComponent extends React.Component<Props, State> {
 
   public async nextQuestion(sleepDuration: number = 2) {
     console.log("\n* nextQuestion *")
-    const { gameElements, question } = this.state
+    const { gameElements, question, onCorrectElement, userId } = this.state
     this.setState({ isBetweenQuestions: true })
     await sleep(sleepDuration)
 
     if (question) {
       this.record(question)
+    } else if (get(onCorrectElement as Factoid, "title") && userId) {
+      const factoid = onCorrectElement as Factoid
+      userSawFactoid(userId, factoid.id)
     }
 
     const element = gameElements.shift()
@@ -131,9 +137,12 @@ class QuestionComponent extends React.Component<Props, State> {
     if ((element as Question).TYPE) {
       this.setQuestion(element as Question)
     } else if ((element as Image).base64) {
-      this.setState({ onCorrectElement: element as Image })
+      this.setState({ onCorrectElement: element as Image, question: undefined })
     } else if ((element as Factoid).title) {
-      this.setState({ onCorrectElement: element as Factoid })
+      this.setState({
+        onCorrectElement: element as Factoid,
+        question: undefined
+      })
     }
 
     if (gameElements.length === 1) {
