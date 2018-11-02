@@ -10,10 +10,10 @@ import { isPunc } from "../../lib/helpers"
 interface Props {
   prompt: PromptPart[]
   type: string
-  isReadMode: boolean
+  isReadMode?: boolean
   isOverflowing: (bool: boolean) => void
   bottom?: number
-  isInteractive: boolean
+  isInteractive?: boolean
   flex: number
   questionType: string
 }

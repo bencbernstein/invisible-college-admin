@@ -7,11 +7,13 @@ interface Props {
   width?: string
   bColor?: string
   padding?: string
+  flex?: number
 }
 
 export default styled.div`
   background-color: ${(p: Props) => p.bColor};
   padding: ${(p: Props) => p.padding};
+  flex: ${(p: Props) => p.flex};
   border-radius 10px;
   display: flex;
   align-items: ${(p: Props) => p.alignItems || "center"};

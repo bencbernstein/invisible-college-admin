@@ -18,7 +18,7 @@ interface Props {
   type: string
   height: string
   guessedCorrectly: string[]
-  isBetweenQuestions: boolean
+  isBetweenQuestions?: boolean
   flex: number
 }
 
@@ -30,14 +30,14 @@ export default class Answer extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
     this.state = {
-      margin: 10
+      margin: 3
     }
   }
 
   public componentWillReceiveProps(nextProps: Props) {
     const { isBetweenQuestions } = nextProps
     if (isBetweenQuestions !== this.props.isBetweenQuestions) {
-      const margin = isBetweenQuestions ? -2 : 10
+      const margin = isBetweenQuestions ? -2 : 3
       this.setState({ margin })
     }
   }

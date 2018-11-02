@@ -1,6 +1,6 @@
 import * as React from "react"
 import { find, without, uniq, get, extend } from "lodash"
-import * as screenfull from "screenfull"
+import * as moment from "moment"
 
 import { FLEXES, Box, ReadMoreTab, ExitReadMode } from "./components"
 import Information from "./information"
@@ -40,37 +40,30 @@ export interface Guess {
   buttonIdx: number
 }
 
-export enum IsViewing {
-  Question = "Question",
-  Read = "Read"
-}
-
 interface Props {
-  questions?: string[]
-  playNowIdx?: number
   user: User
 }
 
 interface State {
-  question?: Question
-  questions: Question[]
+  correct: boolean
+  displayAnswerSpace?: boolean
+  displayIntermission?: boolean
   guess?: Guess
   guessedCorrectly: string[]
-  isViewing: IsViewing
-  promptIsOverflowing: boolean
-  displayAnswerSpace: boolean
-  isBetweenQuestions: boolean
-  questionLog: QuestionLog[]
   gameElements: Array<Question | Image | Factoid>
+  isBetweenQuestions?: boolean
+  isInteractive?: boolean
+  isReadMode?: boolean
+  level: number
   onCorrectElement?: Image | Factoid
-  isInteractive: boolean
-  displayIntermission: boolean
-  correct: boolean
+  promptIsOverflowing?: boolean
+  qCounter: number
   qsForLevel: number
   qsAnsweredForLevel: number
-  qCounter: number
-  level: number
-  userId: string
+  qStartTime: moment.Moment
+  question?: Question
+  questions: Question[]
+  questionLog: QuestionLog[]
   type?: string
 }
 
@@ -79,63 +72,51 @@ class QuestionComponent extends React.Component<Props, State> {
     super(props)
 
     this.state = {
-      guessedCorrectly: [],
-      isViewing: IsViewing.Question,
-      questions: [],
-      promptIsOverflowing: false,
-      isInteractive: false,
-      gameElements: [],
-      displayAnswerSpace: false,
-      userId: "",
       correct: true,
+      gameElements: [],
+      guessedCorrectly: [],
       questionLog: [],
-      isBetweenQuestions: false,
-      displayIntermission: false,
-      qsForLevel: 0,
+      questions: [],
       qsAnsweredForLevel: 0,
       qCounter: 0,
+      qsForLevel: 0,
+      qStartTime: moment(),
       level: 0
     }
   }
 
   public componentWillMount() {
-    const element = document.getElementById("game")
-    if (screenfull && screenfull.enabled && element) {
-      screenfull.request(element)
-    }
+    const { questionsAnswered } = this.props.user
 
-    const { id, questionsAnswered } = this.props.user
     const { qsForLevel, qsAnsweredForLevel, level } = calcProgress(
       questionsAnswered
     )
     const type = window.location.search.split("?type=")[1]
-    const state = { userId: id, type, qsForLevel, qsAnsweredForLevel, level }
+    const state = { type, qsForLevel, qsAnsweredForLevel, level }
     this.setState(state, () => this.loadQuestions(() => this.nextQuestion(0)))
   }
 
   public async loadQuestions(cb?: () => void) {
-    const { userId, gameElements, type } = this.state
+    const { gameElements, type } = this.state
     const newElements = await (type
       ? questionsForType(type)
-      : questionsForUser(userId))
+      : questionsForUser(this.props.user.id))
     if (!(newElements instanceof Error)) {
       const parsed = JSON.parse(newElements)
-      console.log(`Fetched ${parsed.length} new game elements.`)
-      console.log(parsed)
       gameElements.push(...parsed)
       this.setState({ gameElements }, cb)
     }
   }
 
   public record(question: Question) {
-    const { correct, userId, questionLog } = this.state
+    const { correct, questionLog } = this.state
 
     const { sources } = question
     const type = question.passageOrWord
     const { id, value } = type === "word" ? sources.word! : sources.passage!
     questionLog.push({ correct, type, id, value })
     if (questionLog.length === 1) {
-      saveQuestionsForUser(userId, questionLog) // TODO: - what to do with error?
+      saveQuestionsForUser(this.props.user.id, questionLog) // TODO: - what to do with error?
       this.setState({ questionLog: [] })
     } else {
       this.setState({ questionLog })
@@ -147,7 +128,6 @@ class QuestionComponent extends React.Component<Props, State> {
       gameElements,
       question,
       onCorrectElement,
-      userId,
       qsAnsweredForLevel,
       qsForLevel,
       qCounter
@@ -160,7 +140,7 @@ class QuestionComponent extends React.Component<Props, State> {
       this.record(question)
     } else if (get(onCorrectElement as Factoid, "title")) {
       const factoid = onCorrectElement as Factoid
-      userSawFactoid(userId, factoid.id)
+      userSawFactoid(this.props.user.id, factoid.id)
     }
 
     const element = gameElements.shift()
@@ -191,15 +171,16 @@ class QuestionComponent extends React.Component<Props, State> {
 
   public setQuestion(question: Question) {
     this.setState({
-      question,
-      isInteractive: question.interactive.length > 0,
+      correct: true,
       displayAnswerSpace: ["Roots", "Chars"].some(
         s => question.TYPE.indexOf(s) > -1
       ),
       isBetweenQuestions: false,
+      isInteractive: question.interactive.length > 0,
       guess: undefined,
-      correct: true,
-      guessedCorrectly: []
+      guessedCorrectly: [],
+      qStartTime: moment(),
+      question
     })
   }
 
@@ -249,25 +230,25 @@ class QuestionComponent extends React.Component<Props, State> {
 
   public render() {
     const {
+      correct,
+      displayAnswerSpace,
+      displayIntermission,
       guess,
-      isViewing,
-      promptIsOverflowing,
       guessedCorrectly,
       isBetweenQuestions,
-      displayAnswerSpace,
+      isReadMode,
       isInteractive,
+      level,
+      onCorrectElement,
+      promptIsOverflowing,
       qsAnsweredForLevel,
       qsForLevel,
-      displayIntermission,
-      correct,
-      level,
-      onCorrectElement
+      qStartTime
     } = this.state
 
     const questionComponents = (question: Question) => {
       const { prompt, answer, redHerrings, TYPE, interactive } = question
 
-      const isReadMode = isViewing === IsViewing.Read
       const noPrompt = prompt.length === 0
       const showReadMoreTab = !isReadMode && promptIsOverflowing
       const flexes = isInteractive
@@ -278,11 +259,12 @@ class QuestionComponent extends React.Component<Props, State> {
         <Box isReadMode={isReadMode}>
           <Information
             correct={correct}
+            qStartTime={qStartTime}
             isBetweenQuestions={isBetweenQuestions}
             question={question}
             completion={qsAnsweredForLevel / qsForLevel}
-            isReadMode={isReadMode}
             flex={flexes.top}
+            isWordQType={question.passageOrWord === "word"}
           />
 
           {!noPrompt && (
@@ -301,18 +283,14 @@ class QuestionComponent extends React.Component<Props, State> {
 
           {showReadMoreTab && (
             <div>
-              <ReadMoreTab
-                onClick={() => this.setState({ isViewing: IsViewing.Read })}
-              >
+              <ReadMoreTab onClick={() => this.setState({ isReadMode: true })}>
                 Read
               </ReadMoreTab>
             </div>
           )}
 
           {isReadMode && (
-            <ExitReadMode
-              onClick={() => this.setState({ isViewing: IsViewing.Question })}
-            >
+            <ExitReadMode onClick={() => this.setState({ isReadMode: false })}>
               Back
             </ExitReadMode>
           )}

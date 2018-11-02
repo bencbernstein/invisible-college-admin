@@ -9,6 +9,7 @@ import Leaderboard from "./leaderboard"
 
 import { User, getStats, Rank } from "../../models/user"
 import { formatName } from "../../lib/helpers"
+import { calcProgress } from "../question/helpers"
 import { colors } from "../../lib/colors"
 
 interface Props {
@@ -54,7 +55,7 @@ class Home extends React.Component<Props, State> {
       ranks
     } = this.state
 
-    const { firstName, lastName, level, id } = this.props.user
+    const { firstName, lastName, id } = this.props.user
 
     if (redirect) {
       return <Redirect to={redirect} />
@@ -81,7 +82,7 @@ class Home extends React.Component<Props, State> {
               {formatName(firstName, lastName)}
             </MainHeader>
             <MainHeader margin="0" small={true}>
-              Level {level}
+              Level {calcProgress(questionsAnswered || 0).level}
             </MainHeader>
           </Centered>
 

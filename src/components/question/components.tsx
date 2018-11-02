@@ -6,7 +6,7 @@ import FlexedDiv from "../common/flexedDiv"
 import { colors } from "../../lib/colors"
 
 interface BoxProps {
-  isReadMode: boolean
+  isReadMode?: boolean
 }
 
 export const FLEXES: any = {
@@ -56,7 +56,7 @@ export const StarContainer = FlexedDiv.extend`
 // Progress Bar
 
 export const ProgressBarBox = styled.div`
-  width: 75%;
+  flex: 5;
   position: relative;
 `
 
@@ -91,9 +91,9 @@ export const PromptImage = styled.img`
 `
 
 interface PromptBoxProps {
-  isReadMode: boolean
+  isReadMode?: boolean
   flex: any
-  isInteractive: boolean
+  isInteractive?: boolean
   isShort: boolean
 }
 
@@ -125,7 +125,7 @@ export const PromptBox = styled.div`
 interface PromptTextProps {
   bottom?: number
   large: boolean
-  isReadMode: boolean
+  isReadMode?: boolean
   textAlign: boolean
 }
 
@@ -226,14 +226,17 @@ export const ChoicesGridBox = styled.div`
 interface ChoiceProps {
   disabled: boolean
   backgroundColor: string
+  isSpell?: boolean
 }
 
-const templateForCount = (count: number) =>
-  ({
-    2: "1fr 1fr",
-    4: "1fr 1fr",
-    6: "1fr 1fr"
-  }[count] || "1fr 1fr 1fr")
+const templateForCount = (count: number) => {
+  if (count < 7) {
+    return "1fr 1fr"
+  } else if (count < 10) {
+    return "1fr 1fr 1fr"
+  }
+  return "1fr 1fr 1fr 1fr"
+}
 
 export const Button = styled.p`
   pointer-events: ${(p: ChoiceProps) => (p.disabled ? "none" : "auto")};
@@ -245,13 +248,14 @@ export const Button = styled.p`
   max-height: 90%;
   max-width: 90%;
   box-sizing: border-box;
-  min-height: 30%;
+  min-height: 45px;
+  min-width: ${(p: ChoiceProps) => (p.isSpell ? "45px" : "120px")};
   box-shadow: 0 0 10px rgba(0,0,0,0.25);
-  min-width: 120px;
   padding: 10px;
   align-items: center;
   justify-content: center;
   display: flex;
+  margin: 0;
   font-size: 0.95em;
 `
 
