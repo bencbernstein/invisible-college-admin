@@ -4,12 +4,8 @@ import Text from "../../common/text"
 import { colors } from "../../../lib/colors"
 
 export const Box = styled.div`
-  height: 100vh;
-  width: 100vw;
-  background-color: white;
-  top: 0;
-  left: 0;
-  position: fixed;
+  height: 100%;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
