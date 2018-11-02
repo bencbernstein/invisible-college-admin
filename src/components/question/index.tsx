@@ -23,6 +23,7 @@ import {
 import { User } from "../../models/user"
 
 import { sleep } from "../../lib/helpers"
+import { calcProgress } from "./helpers"
 
 export interface Image {
   base64: string
@@ -73,23 +74,6 @@ interface State {
   type?: string
 }
 
-const calcProgress = (questionsAnswered: number): any => {
-  let level = 1
-  let counter = 0
-  let qsForLevel = 0
-  let qsAnsweredForLevel = 0
-  while (true) {
-    qsForLevel = Math.min(100, 10 + level * 2)
-    if (counter + qsForLevel > questionsAnswered) {
-      qsAnsweredForLevel = questionsAnswered - counter
-      break
-    }
-    counter += qsForLevel
-    level += 1
-  }
-  return { qsForLevel, qsAnsweredForLevel, level }
-}
-
 class QuestionComponent extends React.Component<Props, State> {
   constructor(props: any) {
     super(props)
@@ -115,8 +99,9 @@ class QuestionComponent extends React.Component<Props, State> {
   }
 
   public componentWillMount() {
-    if (screenfull && screenfull.enabled) {
-      screenfull.request()
+    const element = document.getElementById("game")
+    if (screenfull && screenfull.enabled && element) {
+      screenfull.request(element)
     }
 
     const { id, questionsAnswered } = this.props.user
@@ -265,7 +250,6 @@ class QuestionComponent extends React.Component<Props, State> {
   public render() {
     const {
       guess,
-      question,
       isViewing,
       promptIsOverflowing,
       guessedCorrectly,
@@ -280,112 +264,109 @@ class QuestionComponent extends React.Component<Props, State> {
       onCorrectElement
     } = this.state
 
-    if (onCorrectElement) {
+    const questionComponents = (question: Question) => {
+      const { prompt, answer, redHerrings, TYPE, interactive } = question
+
+      const isReadMode = isViewing === IsViewing.Read
+      const noPrompt = prompt.length === 0
+      const showReadMoreTab = !isReadMode && promptIsOverflowing
+      const flexes = isInteractive
+        ? FLEXES.interactive
+        : FLEXES[displayAnswerSpace ? "withAnswer" : "withoutAnswer"]
+
       return (
-        <OnCorrect
-          nextQuestion={this.onCorrectContinue.bind(this)}
-          element={onCorrectElement}
-        />
-      )
-    } else if (displayIntermission) {
-      return (
-        <Intermission
-          continue={() => this.setState({ displayIntermission: false })}
-          level={level}
-        />
+        <Box isReadMode={isReadMode}>
+          <Information
+            correct={correct}
+            isBetweenQuestions={isBetweenQuestions}
+            question={question}
+            completion={qsAnsweredForLevel / qsForLevel}
+            isReadMode={isReadMode}
+            flex={flexes.top}
+          />
+
+          {!noPrompt && (
+            <Prompt
+              questionType={question.passageOrWord}
+              flex={flexes.prompt}
+              isInteractive={isInteractive}
+              isOverflowing={(bool: boolean) =>
+                this.setState({ promptIsOverflowing: bool })
+              }
+              isReadMode={isReadMode}
+              type={TYPE}
+              prompt={prompt}
+            />
+          )}
+
+          {showReadMoreTab && (
+            <div>
+              <ReadMoreTab
+                onClick={() => this.setState({ isViewing: IsViewing.Read })}
+              >
+                Read
+              </ReadMoreTab>
+            </div>
+          )}
+
+          {isReadMode && (
+            <ExitReadMode
+              onClick={() => this.setState({ isViewing: IsViewing.Question })}
+            >
+              Back
+            </ExitReadMode>
+          )}
+
+          {displayAnswerSpace && (
+            <Answer
+              isBetweenQuestions={isBetweenQuestions}
+              type={TYPE}
+              flex={flexes.answer}
+              height={noPrompt ? "45%" : "20%"}
+              guessedCorrectly={guessedCorrectly}
+              answer={answer}
+            />
+          )}
+
+          {isInteractive && (
+            <Interactive
+              flex={flexes.interactive}
+              guessed={this.interactiveGuessed.bind(this)}
+              data={interactive}
+            />
+          )}
+
+          {redHerrings.length > 0 && (
+            <Choices
+              flex={flexes.choices}
+              answer={answer}
+              isBetweenQuestions={isBetweenQuestions}
+              guess={guess}
+              guessed={this.guessed.bind(this)}
+              redHerrings={redHerrings}
+              type={TYPE}
+            />
+          )}
+        </Box>
       )
     }
-
-    if (!question) {
-      return null
-    }
-
-    const { prompt, answer, redHerrings, TYPE, interactive } = question
-
-    const isReadMode = isViewing === IsViewing.Read
-
-    const noPrompt = prompt.length === 0
-
-    const showReadMoreTab = !isReadMode && promptIsOverflowing
-
-    const flexes = isInteractive
-      ? FLEXES.interactive
-      : FLEXES[displayAnswerSpace ? "withAnswer" : "withoutAnswer"]
 
     return (
-      <Box isReadMode={isReadMode}>
-        <Information
-          correct={correct}
-          isBetweenQuestions={isBetweenQuestions}
-          question={question}
-          completion={qsAnsweredForLevel / qsForLevel}
-          isReadMode={isReadMode}
-          flex={flexes.top}
-        />
-
-        {!noPrompt && (
-          <Prompt
-            questionType={question.passageOrWord}
-            flex={flexes.prompt}
-            isInteractive={isInteractive}
-            isOverflowing={(bool: boolean) =>
-              this.setState({ promptIsOverflowing: bool })
-            }
-            isReadMode={isReadMode}
-            type={TYPE}
-            prompt={prompt}
+      <div id="game" style={{ width: "100%", height: "100%" }}>
+        {onCorrectElement && (
+          <OnCorrect
+            nextQuestion={this.onCorrectContinue.bind(this)}
+            element={onCorrectElement}
           />
         )}
-
-        {showReadMoreTab && (
-          <div>
-            <ReadMoreTab
-              onClick={() => this.setState({ isViewing: IsViewing.Read })}
-            >
-              Read
-            </ReadMoreTab>
-          </div>
-        )}
-
-        {isReadMode && (
-          <ExitReadMode
-            onClick={() => this.setState({ isViewing: IsViewing.Question })}
-          >
-            Back
-          </ExitReadMode>
-        )}
-
-        {displayAnswerSpace && (
-          <Answer
-            isBetweenQuestions={isBetweenQuestions}
-            type={TYPE}
-            flex={flexes.answer}
-            height={noPrompt ? "45%" : "20%"}
-            guessedCorrectly={guessedCorrectly}
-            answer={answer}
+        {displayIntermission && (
+          <Intermission
+            continue={() => this.setState({ displayIntermission: false })}
+            level={level}
           />
         )}
-
-        {isInteractive && (
-          <Interactive
-            flex={flexes.interactive}
-            guessed={this.interactiveGuessed.bind(this)}
-            data={interactive}
-          />
-        )}
-
-        {redHerrings.length > 0 && (
-          <Choices
-            flex={flexes.choices}
-            answer={answer}
-            isBetweenQuestions={isBetweenQuestions}
-            guess={guess}
-            guessed={this.guessed.bind(this)}
-            redHerrings={redHerrings}
-            type={TYPE}
-          />
-        )}
-      </Box>
+        {this.state.question && questionComponents(this.state.question)}
+      </div>
     )
   }
 }

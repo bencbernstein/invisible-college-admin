@@ -74,9 +74,7 @@ class Login extends React.Component<Props, State> {
     const response = await loginUser(email, password)
     response instanceof Error
       ? this.setState({ error: response.message })
-      : this.props.login(response, () =>
-          this.setState({ redirect: "/library" })
-        )
+      : this.props.login(response, () => this.setState({ redirect: "/home" }))
   }
 
   public async signUp(
@@ -88,9 +86,7 @@ class Login extends React.Component<Props, State> {
     const response = await createUser(email, password, firstName, lastName)
     response instanceof Error
       ? this.setState({ error: response.message })
-      : this.props.login(response, () =>
-          this.setState({ redirect: "/library" })
-        )
+      : this.props.login(response, () => this.setState({ redirect: "/home" }))
   }
 
   public render() {
