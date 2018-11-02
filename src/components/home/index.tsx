@@ -111,7 +111,7 @@ class Home extends React.Component<Props, State> {
             </Centered>
           </Stats>
 
-          <Leaderboard ranks={ranks} />
+          <Leaderboard userId={id} ranks={ranks} />
 
           <Button.regularWc
             margin="0 auto"

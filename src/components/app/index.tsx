@@ -6,6 +6,7 @@ import Container from "./container"
 import Login from "../login"
 import Home from "../home"
 import AdminHome from "../home/admin"
+import Play from "../question"
 
 import history from "../../history"
 
@@ -150,7 +151,7 @@ class App extends React.Component<any, State> {
             {...defaultProtectedRouteProps}
             exact={true}
             path="/play"
-            component={contained("play", user)}
+            component={() => <Play user={user!} />}
           />
         </Switch>
       </Router>

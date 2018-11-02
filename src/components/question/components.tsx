@@ -1,6 +1,7 @@
 import styled from "styled-components"
 
 import Text from "../common/text"
+import FlexedDiv from "../common/flexedDiv"
 
 import { colors } from "../../lib/colors"
 
@@ -10,20 +11,20 @@ interface BoxProps {
 
 export const FLEXES: any = {
   interactive: {
-    top: 1,
-    prompt: 2,
-    interactive: 12
+    top: 2,
+    prompt: 3,
+    interactive: 18
   },
   withAnswer: {
-    top: 1,
-    answer: 2,
-    prompt: 7,
-    choices: 5
+    top: 2,
+    answer: 3,
+    prompt: 10,
+    choices: 8
   },
   withoutAnswer: {
-    top: 1,
-    prompt: 8,
-    choices: 6
+    top: 2,
+    prompt: 12,
+    choices: 9
   }
 }
 
@@ -48,6 +49,14 @@ export const IconContainer = styled.div`
   align-items: center;
   justify-content: center;
   width: 10%;
+`
+
+// Information
+
+export const StarContainer = FlexedDiv.extend`
+  position: absolute;
+  left: 0;
+  right: 0;
 `
 
 // Progress Bar
@@ -207,14 +216,12 @@ export const ChoicesFlexBox = styled.div`
   flex-wrap: wrap;
   justify-content: ${(p: ContainerProps) => "center"};
   align-items: center;
-  height: 40%;
   flex: ${(p: ContainerProps) => p.flex};
 `
 
 export const ChoicesGridBox = styled.div`
   display: grid;
   grid-template-columns: ${(p: ContainerProps) => templateForCount(p.count)};
-  height: 40%;
   justify-items: center;
   align-items: center;
   flex: ${(p: ContainerProps) => p.flex};
@@ -235,13 +242,16 @@ const templateForCount = (count: number) =>
 export const Button = styled.p`
   pointer-events: ${(p: ChoiceProps) => (p.disabled ? "none" : "auto")};
   background-color: ${(p: ChoiceProps) => p.backgroundColor};
-  font-size: 1.1em;
   color: white;
   border-radius: 5px;
   text-align: center
   cursor: pointer;
-  height: 65%;
-  width: 90%;
+  max-height: 90%;
+  max-width: 90%;
+  box-sizing: border-box;
+  min-height: 30%;
+  min-width: 120px;
+  padding: 10px;
   align-items: center;
   justify-content: center;
   display: flex;
@@ -305,6 +315,7 @@ export const AnswerUnderline = styled.span`
   border-radius: 5px;
   background-color: ${(p: AnswerUnderlineProps) => p.color};
   width: 100%;
+  transition: color 100ms;
   padding: 0 2px;
 `
 

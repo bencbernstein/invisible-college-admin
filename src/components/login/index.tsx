@@ -113,7 +113,7 @@ class Login extends React.Component<Props, State> {
     return (
       <Form onSubmit={this.handleSubmit.bind(this)}>
         <MainHeader isGameTitle={isLoggingIn}>
-          {isLoggingIn ? "invisible college" : "sign up"}
+          {isLoggingIn ? "Invisible College" : "Sign Up"}
         </MainHeader>
 
         <br />

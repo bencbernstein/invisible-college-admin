@@ -5,9 +5,14 @@ interface Props {
   alignItems?: string
   direction?: string
   width?: string
+  bColor?: string
+  padding?: string
 }
 
 export default styled.div`
+  background-color: ${(p: Props) => p.bColor};
+  padding: ${(p: Props) => p.padding};
+  border-radius 10px;
   display: flex;
   align-items: ${(p: Props) => p.alignItems || "center"};
   flex-direction: ${(p: Props) => p.direction};

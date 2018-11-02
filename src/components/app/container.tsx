@@ -1,7 +1,6 @@
 import * as React from "react"
 import * as _ from "underscore"
 
-import Play from "../question"
 import Library from "../library"
 import Nav from "../nav"
 import Discover from "../discover"
@@ -89,14 +88,13 @@ class Container extends React.Component<ContainerProps, ContainerState> {
     return (
       <OuterContainer
         isPlaying={questions.length > 0}
-        onMouseMove={this.handleMouseMove.bind(this)}
+        /* TODO onMouseMove={this.handleMouseMove.bind(this}*/
       >
         {displayNav && <Nav holdingShift={holdingShift} user={user!} />}
 
         {
           {
             library: <Library />,
-            play: <Play user={user!} />,
             passages: <Passages />,
             discover: <Discover keywords={keywords} />,
             text: (

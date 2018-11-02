@@ -3,8 +3,9 @@ import { Redirect } from "react-router"
 import { range } from "lodash"
 
 import Icon from "../common/icon"
-import ProgressBar from "./progressBar"
+import { StarContainer } from "./components"
 import FlexedDiv from "../common/flexedDiv"
+import ProgressBar from "./progressBar"
 
 import DeleteIcon from "../../lib/images/icon-delete.png"
 import Binoculars from "../../lib/images/gameplay/icon-binoculars.png"
@@ -82,8 +83,6 @@ export default class Prompt extends React.Component<Props, State> {
       return <Redirect to={redirect} />
     }
 
-    console.log()
-
     return (
       <div style={{ flex }}>
         <FlexedDiv justifyContent="space-between">
@@ -107,17 +106,17 @@ export default class Prompt extends React.Component<Props, State> {
           {notification ? <Icon src={notification.img} /> : <div />}
         </FlexedDiv>
 
-        <FlexedDiv justifyContent="center">
+        <StarContainer justifyContent="center">
           {starCount !== undefined &&
             range(1, 11).map(n => (
               <Icon
                 margin="2px 1px"
                 small={true}
                 key={n}
-                src={n <= starCount ? yellowStar : grayStar}
+                src={n <= 5 ? yellowStar : grayStar}
               />
             ))}
-        </FlexedDiv>
+        </StarContainer>
       </div>
     )
   }
