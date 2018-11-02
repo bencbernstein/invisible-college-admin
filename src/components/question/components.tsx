@@ -157,6 +157,7 @@ export const Span = styled.span`
   border-bottom: ${(p: SpanProps) => p.hide && "1px solid black"};
   border-radius: ${(p: SpanProps) => !p.hide && "3px"};
   box-sizing: border-box;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
   cursor: ${(p: SpanProps) => p.isInteractive && "pointer"};
 `
 
