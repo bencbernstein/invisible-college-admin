@@ -71,7 +71,7 @@ export default class Prompt extends React.Component<Props, State> {
     if (speedy) {
       notifications.push(flame)
     }
-    if (question.experience === null) {
+    if (question.experience === undefined) {
       notifications.push(binoculars)
     }
     if (correct) {
@@ -129,7 +129,7 @@ export default class Prompt extends React.Component<Props, State> {
                 margin="2px 1px"
                 small={true}
                 key={n}
-                src={n <= 5 ? yellowStar : grayStar}
+                src={n <= starCount ? yellowStar : grayStar}
               />
             ))}
         </StarContainer>
