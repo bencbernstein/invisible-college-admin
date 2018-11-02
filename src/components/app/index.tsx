@@ -153,6 +153,7 @@ class App extends React.Component<any, State> {
             path="/play"
             component={() => <Play user={user!} />}
           />
+          <Route render={() => <Login login={this.login.bind(this)} />} />
         </Switch>
       </Router>
     )
