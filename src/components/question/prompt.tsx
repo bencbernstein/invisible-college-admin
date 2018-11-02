@@ -89,7 +89,7 @@ export default class Prompt extends React.Component<Props, State> {
     const length = prompt.map(p => p.value).join("").length
 
     const promptValue =
-      type.indexOf("Word") > -1
+      questionType === "word"
         ? prompt.map(promptPart)
         : prompt
             .map(promptPart)
@@ -103,6 +103,7 @@ export default class Prompt extends React.Component<Props, State> {
       <PromptImage src={prompt[0].value} />
     ) : (
       <PromptText
+        textAlign={questionType === "word"}
         bottom={this.state.bottom}
         isReadMode={isReadMode}
         large={length < 50}

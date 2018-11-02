@@ -29,16 +29,10 @@ export const FLEXES: any = {
 }
 
 export const Box = styled.div`
-  height: 100vh;
-  width: 100vw;
-  background-color: white;
-  bottom: 0;
-  left: 0;
-  position: fixed;
-  top: 0;
-  right: 0;
+  height: 100%;
+  width: 100%;
   box-sizing: border-box;
-  padding: ${(p: BoxProps) => (p.isReadMode ? "0px" : "10px")} 25px;
+  padding: ${(p: BoxProps) => (p.isReadMode ? "0px" : "10px")} 15px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -132,9 +126,11 @@ interface PromptTextProps {
   bottom?: number
   large: boolean
   isReadMode: boolean
+  textAlign: boolean
 }
 
 export const PromptText = Text.l.extend`
+  text-align: ${(p: PromptTextProps) => p.textAlign && "center"};
   position: relative;
   font-size: ${(p: PromptTextProps) => p.large && "1.2em"};
   bottom: ${(p: PromptTextProps) =>
@@ -250,6 +246,7 @@ export const Button = styled.p`
   max-width: 90%;
   box-sizing: border-box;
   min-height: 30%;
+  box-shadow: 0 0 10px rgba(0,0,0,0.25);
   min-width: 120px;
   padding: 10px;
   align-items: center;
@@ -311,7 +308,7 @@ interface AnswerUnderlineProps {
 }
 
 export const AnswerUnderline = styled.span`
-  height: 4px;
+  height: 6px;
   border-radius: 5px;
   background-color: ${(p: AnswerUnderlineProps) => p.color};
   width: 100%;

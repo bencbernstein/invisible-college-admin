@@ -1,5 +1,6 @@
 import * as React from "react"
 import { find, without, uniq, get, extend } from "lodash"
+import * as screenfull from "screenfull"
 
 import { FLEXES, Box, ReadMoreTab, ExitReadMode } from "./components"
 import Information from "./information"
@@ -114,6 +115,9 @@ class QuestionComponent extends React.Component<Props, State> {
   }
 
   public componentWillMount() {
+    if (screenfull && /Mobi/.test(navigator.userAgent)) {
+      screenfull.request()
+    }
     const { id, questionsAnswered } = this.props.user
     const { qsForLevel, qsAnsweredForLevel, level } = calcProgress(
       questionsAnswered

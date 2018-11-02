@@ -23,7 +23,7 @@ export const Background = styled.div`
   background-repeat: no-repeat;
   background-size: cover;
   background-image: url(${backgroundImg});
-  @media (max-width: 400px) {
+  @media (max-width: 500px) {
     background-image: url(${backgroundImgOpaque});
   }
 `
@@ -44,7 +44,7 @@ export const Box = styled.div`
   padding: 20px;
   box-sizing: border-box;
   background-color: rgba(255, 255, 255, 0.95);
-  @media (max-width: 400px) {
+  @media (max-width: 500px) {
     background-color: rgba(255, 255, 255, 0);
     top: 0px;
     bottom: 0px;

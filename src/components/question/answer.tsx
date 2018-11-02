@@ -65,13 +65,16 @@ export default class Answer extends React.Component<Props, State> {
 
       const hide = !part.prefill && !_.includes(guessedCorrectly, part.value)
       const formattedValue = isPunc(part.value) ? part.value : ` ${part.value}`
+      const color = isBetweenQuestions
+        ? colors.warmYellow
+        : hide
+          ? "black"
+          : colors.green
 
       return (
         <AnswerPartBox margin={this.state.margin} key={i} hide={hide}>
           {formattedValue}
-          <AnswerUnderline
-            color={isBetweenQuestions ? colors.warmYellow : "black"}
-          />
+          <AnswerUnderline color={color} />
         </AnswerPartBox>
       )
     }
