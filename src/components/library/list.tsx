@@ -147,7 +147,7 @@ class List extends React.Component<Props, State> {
           style={{ textDecoration: "none" }}
           to={`/word/${d.id}`}
         >
-          <Text.l>{d.value}</Text.l>
+          <Text.l color="black">{d.value}</Text.l>
         </Link>
         <DescriptionText>
           <Text.s center={true}>
@@ -211,25 +211,10 @@ class List extends React.Component<Props, State> {
       </Box.regular>
     )
 
-    const passageSequencesBox = (d: any, i: number) => (
-      <Box.regular key={i}>
-        {icons(i, false)}
-        <Link
-          key={d.id}
-          style={{ textDecoration: "none" }}
-          to={`/passage-sequence/${d.id}`}
-        >
-          <Text.l center={true}>{d.name}</Text.l>
-          <Text.s center={true}>{d.count} passages</Text.s>
-        </Link>
-      </Box.regular>
-    )
-
     const constructor = {
       Texts: textBox,
       Words: wordBox,
-      "Choice Sets": choiceSetBox,
-      "Passage Sequences": passageSequencesBox
+      "Choice Sets": choiceSetBox
     }[selectedView]
 
     return <ListContainer>{data.map(constructor)}</ListContainer>

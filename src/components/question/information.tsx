@@ -3,9 +3,8 @@ import { Redirect } from "react-router"
 import { range } from "lodash"
 
 import Icon from "../common/icon"
-import { InformationBox } from "./components"
+import ProgressBar from "./progressBar"
 import FlexedDiv from "../common/flexedDiv"
-import Text from "../common/text"
 
 import DeleteIcon from "../../lib/images/icon-delete.png"
 import Binoculars from "../../lib/images/gameplay/icon-binoculars.png"
@@ -20,6 +19,7 @@ import { sleep } from "../../lib/helpers"
 interface Props {
   isReadMode: boolean
   flex: number
+  completion: number
   isBetweenQuestions: boolean
   question: Question
   correct: boolean
@@ -75,44 +75,50 @@ export default class Prompt extends React.Component<Props, State> {
   }
 
   public render() {
-    const { flex, isReadMode } = this.props
+    const { flex, isReadMode, completion } = this.props
     const { notification, redirect, starCount } = this.state
 
     if (redirect) {
       return <Redirect to={redirect} />
     }
 
+    console.log()
+
     return (
-      <InformationBox flex={flex}>
-        {!isReadMode && (
-          <Icon
-            onClick={() =>
-              this.setState({
-                redirect:
-                  window.location.search.indexOf("type") > -1
-                    ? "/admin-home"
-                    : "/home"
-              })
-            }
-            pointer={true}
-            src={DeleteIcon}
-          />
-        )}
-        {notification && (
-          <FlexedDiv>
-            <Icon margin="0 5px 0 0" src={notification.img} />
-            <Text.s>{notification.title}</Text.s>
-          </FlexedDiv>
-        )}
-        {starCount && (
-          <FlexedDiv>
-            {range(1, 11).map(n => (
-              <Icon key={n} src={n <= starCount ? yellowStar : grayStar} />
+      <div style={{ flex }}>
+        <FlexedDiv justifyContent="space-between">
+          {!isReadMode && (
+            <Icon
+              onClick={() =>
+                this.setState({
+                  redirect:
+                    window.location.search.indexOf("type") > -1
+                      ? "/admin-home"
+                      : "/home"
+                })
+              }
+              pointer={true}
+              src={DeleteIcon}
+            />
+          )}
+
+          <ProgressBar completion={completion} />
+
+          {notification ? <Icon src={notification.img} /> : <div />}
+        </FlexedDiv>
+
+        <FlexedDiv justifyContent="center">
+          {starCount !== undefined &&
+            range(1, 11).map(n => (
+              <Icon
+                margin="2px 1px"
+                small={true}
+                key={n}
+                src={n <= starCount ? yellowStar : grayStar}
+              />
             ))}
-          </FlexedDiv>
-        )}
-        <div />
-      </InformationBox>
+        </FlexedDiv>
+      </div>
     )
   }
 }

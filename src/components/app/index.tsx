@@ -71,7 +71,7 @@ class App extends React.Component<any, State> {
   public render() {
     const { keywords, user, checkedAuth } = this.state
 
-    if (!checkedAuth || !keywords) {
+    if (!checkedAuth /*|| !keywords*/) {
       return null
     }
 
@@ -122,6 +122,11 @@ class App extends React.Component<any, State> {
             {...defaultProtectedRouteProps}
             path="/passage-sequence"
             component={contained("passageSequence", user)}
+          />
+          <ProtectedRoute
+            {...defaultProtectedRouteProps}
+            path="/passages"
+            component={contained("passages", user)}
           />
           <ProtectedRoute
             {...defaultProtectedRouteProps}

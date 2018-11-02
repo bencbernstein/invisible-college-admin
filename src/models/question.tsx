@@ -177,3 +177,14 @@ export const fetchQuestionTypeCounts = async (): Promise<
 
 export const questionsForType = async (type: string): Promise<string | Error> =>
   query(`query { questionsForType(type: "${type}") }`, "questionsForType")
+
+export const userSawFactoid = async (
+  userId: string,
+  id: string
+): Promise<boolean | Error> =>
+  query(
+    `mutation {
+    userSawFactoid(userId: "${userId}", id: "${id}")
+  }`,
+    "userSawFactoid"
+  )

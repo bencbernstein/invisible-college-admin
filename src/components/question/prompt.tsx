@@ -75,7 +75,7 @@ export default class Prompt extends React.Component<Props, State> {
     } = this.props
 
     // TODO - use punctuation as in ./interactive
-    const span = (p: PromptPart, i: number): any => (
+    const promptPart = (p: PromptPart, i: number): any => (
       <Span hide={p.hide} key={i} highlight={p.highlight}>
         {p.value}
       </Span>
@@ -88,6 +88,17 @@ export default class Prompt extends React.Component<Props, State> {
 
     const length = prompt.map(p => p.value).join("").length
 
+    const promptValue =
+      type.indexOf("Word") > -1
+        ? prompt.map(promptPart)
+        : prompt
+            .map(promptPart)
+            .reduce((prev: any[], curr: any, i: number) => [
+              prev,
+              isPunc(prompt[i].value) ? "" : " ",
+              curr
+            ])
+
     const promptComponent = isImage ? (
       <PromptImage src={prompt[0].value} />
     ) : (
@@ -97,13 +108,7 @@ export default class Prompt extends React.Component<Props, State> {
         large={length < 50}
         margin={isReadMode ? "20px 0" : "0"}
       >
-        {prompt
-          .map(span)
-          .reduce((prev: any[], curr: any, i: number) => [
-            prev,
-            isPunc(prompt[i].value) ? "" : " ",
-            curr
-          ])}
+        {promptValue}
       </PromptText>
     )
 

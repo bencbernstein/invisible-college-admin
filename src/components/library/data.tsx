@@ -1,7 +1,6 @@
 export enum SelectedView {
   ChoiceSets = "Choice Sets",
-  Texts = "Texts",
-  PassageSequences = "Passage Sequences",
+  Passages = "Passages",
   Words = "Words"
 }
 
@@ -16,10 +15,6 @@ export enum SelectedSortBy {
 export const viewForSearch = (search: string): SelectedView => {
   if (search.includes("choice-sets")) {
     return SelectedView.ChoiceSets
-  } else if (search.includes("texts")) {
-    return SelectedView.Texts
-  } else if (search.includes("passage-sequences")) {
-    return SelectedView.PassageSequences
   }
   return SelectedView.Words
 }
