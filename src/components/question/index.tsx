@@ -115,9 +115,10 @@ class QuestionComponent extends React.Component<Props, State> {
   }
 
   public componentWillMount() {
-    if (screenfull) {
+    if (screenfull && screenfull.enabled) {
       screenfull.request()
     }
+
     const { id, questionsAnswered } = this.props.user
     const { qsForLevel, qsAnsweredForLevel, level } = calcProgress(
       questionsAnswered
