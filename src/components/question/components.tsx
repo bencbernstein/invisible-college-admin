@@ -43,17 +43,6 @@ export const Box = styled.div`
   justify-content: space-between;
 `
 
-interface InformationBoxProps {
-  flex: number
-}
-
-export const InformationBox = styled.div`
-  flex: ${(p: InformationBoxProps) => p.flex};
-  align-items: center;
-  justify-content: space-between;
-  display: flex;
-`
-
 export const IconContainer = styled.div`
   display: flex;
   align-items: center;
@@ -64,7 +53,7 @@ export const IconContainer = styled.div`
 // Progress Bar
 
 export const ProgressBarBox = styled.div`
-  width: 80%;
+  width: 75%;
   position: relative;
 `
 
@@ -83,7 +72,8 @@ export const Progress = styled.div`
   height: 10px;
   width: ${(p: ProgressProps) => p.completion * 100}%;
   border-radius: 5px;
-  background-color: ${colors.yellow};
+  transition: width 400ms;
+  background-color: ${colors.mainBlue};
   position: absolute;
   top: 0;
 `

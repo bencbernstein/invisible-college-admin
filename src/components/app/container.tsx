@@ -96,7 +96,7 @@ class Container extends React.Component<ContainerProps, ContainerState> {
         {
           {
             library: <Library />,
-            play: <Play />,
+            play: <Play user={user!} />,
             passages: <Passages />,
             discover: <Discover keywords={keywords} />,
             text: (
