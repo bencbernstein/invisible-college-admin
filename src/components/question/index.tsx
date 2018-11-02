@@ -115,7 +115,7 @@ class QuestionComponent extends React.Component<Props, State> {
   }
 
   public componentWillMount() {
-    if (screenfull && /Mobi/.test(navigator.userAgent)) {
+    if (screenfull) {
       screenfull.request()
     }
     const { id, questionsAnswered } = this.props.user
