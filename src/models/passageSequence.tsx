@@ -1,6 +1,6 @@
 import { query } from "./query"
 
-import { Passage, passageData } from "./text"
+import { Passage, passageData } from "./passage"
 
 export interface PassageSequence {
   id: string

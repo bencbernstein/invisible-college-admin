@@ -37,8 +37,7 @@ export default class Choices extends React.Component<Props, any> {
     } = this.props
 
     const isSpell = type.indexOf("Chars") > -1
-    console.log(type)
-    console.log(isSpell)
+
     const isImage =
       type === "Word to Image" && redHerrings[0].startsWith("data:image")
 

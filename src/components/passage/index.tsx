@@ -9,14 +9,9 @@ import FilterComponent from "./filter"
 
 import CONFIG from "../../lib/config"
 
-import { Tag } from "../../models/text"
+import { Tag } from "../../models/passage"
 import { passagesForWord } from "../../models/word"
-import {
-  Passage,
-  filterPassage,
-  updatePassage,
-  fetchPassage
-} from "../../models/passage"
+import { Passage, filterPassage, fetchPassage } from "../../models/passage"
 import {
   addPassageToPassageSequence,
   removePassageFromPassageSequence
@@ -63,8 +58,8 @@ class PassageContainer extends React.Component<any, State> {
     const queueType = s.includes("filter")
       ? QueueType.filter
       : s.includes("enrich")
-        ? QueueType.enrich
-        : undefined
+      ? QueueType.enrich
+      : undefined
     const word = s.split("word=")[1]
     let passages = await passagesForWord(word)
     if (passages instanceof Error) {
@@ -100,7 +95,7 @@ class PassageContainer extends React.Component<any, State> {
     const { idx, passages } = this.state
     if (next > idx) {
       flatten(passage.tagged).forEach((tag: Tag) => cleanObj(tag))
-      await updatePassage(passage, remove ? "rejected" : "enriched")
+      /* await updatePassage(passage, remove ? "rejected" : "enriched") */
       if (remove) {
         passages.splice(idx, 1)
       }

@@ -6,7 +6,7 @@ import "rc-slider/assets/index.css"
 import Header from "../common/header"
 import { Span, Sentence, PassageContainer, Icons, Icon } from "./components"
 
-import { Tag } from "../../models/text"
+import { Tag } from "../../models/passage"
 import { Passage } from "../../models/passage"
 
 import nextImg from "../../lib/images/icon-next.png"

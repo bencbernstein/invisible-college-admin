@@ -1,6 +1,31 @@
 import { query } from "./query"
 
-import { Tag } from "./text"
+const taggedData =
+  "id value tag isFocusWord isPunctuation isConnector isSentenceConnector wordId choiceSetId isUnfocused"
+export const passageData = `id filteredSentences startIdx endIdx value isEnriched metadata { date author name source } tagged { ${taggedData} }`
+
+export interface Passage {
+  id: string
+  startIdx: number
+  endIdx: number
+  value: string
+  tagged: Tag[]
+  sentences: Tag[][]
+  filteredSentences: number[]
+  isEnriched?: boolean
+}
+
+export interface Tag {
+  value?: string
+  tag?: string
+  isFocusWord?: boolean
+  isPunctuation?: boolean
+  isSentenceConnector?: boolean
+  isConnector?: boolean
+  wordId?: string
+  choiceSetId?: string
+  isUnfocused?: boolean
+}
 
 export interface Passage {
   id: string

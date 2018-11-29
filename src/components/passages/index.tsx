@@ -10,7 +10,7 @@ import ListContainer from "../common/listContainer"
 import Subnav from "../nav/subnav"
 
 import { Passage, fetchEnrichedPassages } from "../../models/passage"
-import { Tag } from "../../models/text"
+import { Tag } from "../../models/passage"
 
 import { highlight, toSentences } from "../../lib/helpers"
 
@@ -31,8 +31,8 @@ const Span = styled.span`
     p.tag.isUnfocused
       ? "line-through"
       : p.tag.isFocusWord
-        ? "underline"
-        : "none"};
+      ? "underline"
+      : "none"};
 `
 
 class PassagesComponent extends React.Component<any, State> {

@@ -18,11 +18,9 @@ import {
 } from "./components"
 
 import { PassageSequence } from "../../models/passageSequence"
-import { Tag } from "../../models/text"
+import { Tag } from "../../models/passage"
 import { Passage } from "../../models/passage"
 import { Keywords } from "../../models/word"
-
-import connectors from "../text/passages/data/connectors"
 
 import { highlight, tagsToSentence, flattenSentences } from "../../lib/helpers"
 
@@ -30,7 +28,7 @@ import nextImg from "../../lib/images/icon-next.png"
 import addIcon from "../../lib/images/icon-add.png"
 import deleteIcon from "../../lib/images/icon-delete.png"
 
-const connectorValues = _.flatten(connectors.map(c => c.elements))
+const connectorValues: any[] = []
 
 interface Props {
   keywords?: Keywords

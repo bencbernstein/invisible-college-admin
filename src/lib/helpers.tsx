@@ -1,8 +1,9 @@
 /* tslint:disable */
 
+import { mergeWith, groupBy, transform, sortBy } from "lodash"
+
 import * as _ from "underscore"
 import { colors } from "./colors"
-import { Tag } from "../models/text"
 
 export const cleanObj = (obj: any) =>
   Object.keys(obj).forEach(k => {
@@ -11,9 +12,9 @@ export const cleanObj = (obj: any) =>
     }
   })
 
-export const tagsToSentence = (tags: Tag[]) => {
+export const tagsToSentence = (tags: any[]) => {
   let sentence = ""
-  tags.forEach((tag: Tag) => {
+  tags.forEach((tag: any) => {
     const addSpace = !tag.isPunctuation && sentence.length !== 0
     sentence += addSpace ? ` ${tag.value}` : tag.value
   })
@@ -128,10 +129,10 @@ export const move = (arr: any[], old_index: number, new_index: number) => {
 export const isPunc = (char?: string): boolean =>
   char !== undefined && [".", ",", ")", "'"].indexOf(char) > -1
 
-export const toSentences = (tags: Tag[]): Tag[][] => {
-  const sentences: Tag[][] = [[]]
+export const toSentences = (tags: any[]): any[][] => {
+  const sentences: any[][] = [[]]
   let senIdx = 0
-  tags.forEach((tag: Tag) => {
+  tags.forEach((tag: any) => {
     if (tag.isSentenceConnector) {
       senIdx += 1
       sentences.push([])
@@ -142,7 +143,7 @@ export const toSentences = (tags: Tag[]): Tag[][] => {
   return sentences
 }
 
-export const flattenSentences = (sentences: Tag[][]): any =>
+export const flattenSentences = (sentences: any[][]): any =>
   _.flatten(
     sentences
       .reduce((a, v) => [...a, v, { isSentenceConnector: true }], [])
@@ -185,3 +186,30 @@ export const formatName = (first: string, last: string): string =>
 
 export const sleep = (s: number) =>
   new Promise(resolve => setTimeout(resolve, s * 1000))
+
+// lodash/merge would not replace a non-empty list with an empty list
+export const _mergeWith = (state: any, response: any) =>
+  mergeWith(
+    {},
+    state,
+    response,
+    (srcValue: any, objValue: any, key: string): any => {
+      if (Array.isArray(objValue)) {
+        return objValue
+      }
+    }
+  )
+
+export const alphabetize = (data: any[], attr: string): any[] => {
+  const sorted = sortBy(data, d => d[attr].toUpperCase())
+  const grouped = groupBy(sorted, x =>
+    parseInt(x[attr][0], 10) ? "0-9" : x[attr][0].toUpperCase()
+  )
+  return transform(
+    grouped,
+    (res: any[], v: any[], divider: string) => {
+      res.push(...[{ divider }].concat(...v))
+    },
+    []
+  )
+}

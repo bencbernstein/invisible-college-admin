@@ -60,7 +60,7 @@ class Subnav extends React.Component<Props, any> {
 
     return (
       <SubnavBox minimized={minimized}>
-        {!minimized && <Header.l uppercase={true}>
+        {!minimized && <Header.l>
           {headerComponents()}
         </Header.l>}
         <ButtonsBox>

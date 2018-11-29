@@ -66,14 +66,6 @@ export const saveBookmark = async (
   return query(gqlQuery, "saveBookmark")
 }
 
-export const fetchUserFromStorage = (): User | undefined => {
-  const user = localStorage.getItem("user")
-  return user ? JSON.parse(user) : undefined
-}
-
-export const saveUserToStorage = (user: User) =>
-  localStorage.setItem("user", JSON.stringify(user))
-
 export const getStats = async (id: string): Promise<StatsResult | Error> => {
   const gqlQuery = `mutation { getStats(id: "${id}") { 
     user {

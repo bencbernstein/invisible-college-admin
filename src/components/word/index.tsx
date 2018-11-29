@@ -23,10 +23,6 @@ import { parseQueryString } from "../../lib/helpers"
 
 import { Redirect } from "react-router"
 
-interface Props {
-  keywordValues: string[]
-}
-
 interface Enriching {
   isEnriching: string
   next: string
@@ -41,7 +37,7 @@ interface State {
   enriching?: Enriching
 }
 
-class WordComponent extends React.Component<Props, State> {
+class WordComponent extends React.Component<any, State> {
   constructor(props: any) {
     super(props)
 
@@ -179,7 +175,7 @@ class WordComponent extends React.Component<Props, State> {
     const synonyms = (
       <SynonymsComponent
         key={4}
-        keywordValues={this.props.keywordValues}
+        keywordValues={[]}
         update={updated => this.setState({ word: updated })}
         word={word}
       />
@@ -187,7 +183,7 @@ class WordComponent extends React.Component<Props, State> {
     const tags = (
       <TagsComponent
         key={5}
-        keywordValues={this.props.keywordValues}
+        keywordValues={[]}
         update={updated => this.setState({ word: updated })}
         word={word}
       />

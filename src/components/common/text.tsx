@@ -19,8 +19,8 @@ font-family: ${(p: Props) =>
   p.fontFamily
     ? p.fontFamily
     : p.bold
-      ? "BrandonGrotesqueBold"
-      : "BrandonGrotesque"};
+    ? "BrandonGrotesqueBold"
+    : "BrandonGrotesque"};
 margin: ${(p: Props) => p.margin || "2.5px 0px"};
 cursor: ${(p: Props) => (p.pointer ? "pointer" : "")};
 `
@@ -41,12 +41,17 @@ const ExtraLarge = Regular.extend`
   font-size: 2em;
 `
 
+const ExtraExtraLarge = Regular.extend`
+  font-size: 2.5em;
+`
+
 const Garamond = Regular.extend`
   font-family: EBGaramond;
   line-height: 24px;
 `
 
 export default {
+  xxl: ExtraExtraLarge,
   xl: ExtraLarge,
   l: Large,
   regular: Regular,

@@ -5,7 +5,6 @@ interface Props {
   margin?: string
   textDecoration?: string
   flex?: number
-  uppercase?: boolean
   color?: string
 }
 
@@ -13,11 +12,12 @@ const Large = styled.p`
   font-size: 2.3em;
   color: ${(p: Props) => p.color};
   letter-spacing: 1px;
+  font-family: BrandonGrotesque;
   margin: ${(p: Props) => p.margin};
   text-align: ${(p: Props) => p.textAlign};
   text-decoration: ${(p: Props) => p.textDecoration};
   flex: ${(p: Props) => p.flex};
-  text-transform: ${(p: Props) => p.uppercase && "uppercase"};
+  text-transform: capitalize;
 `
 
 const ExtraLarge = Large.extend`
@@ -25,7 +25,7 @@ const ExtraLarge = Large.extend`
 `
 
 const MediumL = styled.h2`
-  text-transform: ${(p: Props) => p.uppercase && "uppercase"};
+  text-transform: capitalize;
   font-family: BrandonGrotesqueBold;
   letter-spacing: 1px;
   color: ${(p: Props) => p.color};
@@ -36,7 +36,7 @@ const MediumL = styled.h2`
 `
 
 const Medium = styled.h3`
-  text-transform: ${(p: Props) => p.uppercase && "uppercase"};
+  text-transform: capitalize;
   font-family: BrandonGrotesqueBold;
   letter-spacing: 1px;
   margin: ${(p: Props) => p.margin};
@@ -47,7 +47,7 @@ const Medium = styled.h3`
 `
 
 const Small = styled.h5`
-  text-transform: ${(p: Props) => p.uppercase && "uppercase"};
+  text-transform: capitalize;
   font-family: BrandonGrotesqueBold;
   margin: 15px 0px;
   color: ${(p: Props) => p.color};

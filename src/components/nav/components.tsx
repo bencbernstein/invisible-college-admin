@@ -7,12 +7,15 @@ export const InvisibleCollege = styled.p`
   text-transform: uppercase;
   font-family: BrandonGrotesqueBold;
   letter-spacing: 1px;
+  margin: 0;
+  text-align: left;
   color: ${colors.gray};
 `
 
 export const NavBox = styled.div`
   text-align: center;
   display: flex;
+  margin-bottom: 10px;
   justify-content: space-between;
   align-items: center;
 `
@@ -44,7 +47,7 @@ export const Modal = styled.div`
   box-sizing: border-box;
   position: absolute;
   right: 0px;
-  top: 50px;
+  top: 30px;
   background-color: white;
 `
 

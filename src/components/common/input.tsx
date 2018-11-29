@@ -56,13 +56,11 @@ const FileLabel = styled.label`
 `
 
 const Medium = Basic.extend`
-  border-bottom: 1px solid ${colors.gray};
   font-size: 1.1em;
   padding: 5px;
 `
 
 const Large = Basic.extend`
-  border-bottom: 1px solid black;
   font-size: 1.3em;
   padding: 5px;
 `
@@ -76,7 +74,6 @@ const Circular = Basic.extend`
 `
 
 const Small = Basic.extend`
-  border-bottom: 1px solid ${colors.gray};
   color: ${colors.gray};
   font-size: 0.8em;
   padding: 0px;

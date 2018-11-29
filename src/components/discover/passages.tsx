@@ -1,31 +1,26 @@
+/* tslint:disable:variable-name */
 import * as React from "react"
-import * as _ from "underscore"
-import { chunk } from "lodash"
+import { connect } from "react-redux"
+import { chunk, sortBy } from "lodash"
 
 import Text from "../common/text"
 import Header from "../common/header"
 
-import { PassageResult } from "../../models/discover"
-import { PassageContainer, Image, Sentence, PassageHeader } from "./components"
+import { PassageContainer, Image, PassageHeader } from "./components"
 import FlexedDiv from "../common/flexedDiv"
 import { colors } from "../../lib/colors"
 
 import arrowLeft from "../../lib/images/arrow-left.png"
 import arrowRight from "../../lib/images/arrow-right.png"
 
-import { Keywords } from "../../models/word"
-
 interface Props {
-  passages: PassageResult[]
-  context: number
-  keywords?: Keywords
+  hits: any[]
 }
 
 enum SortBy {
   length_asc = "Length (asc)",
   length_desc = "Length (desc)",
-  density_asc = "Density (asc)",
-  density_desc = "Density (desc)"
+  score = "Score"
 }
 
 interface State {
@@ -34,21 +29,18 @@ interface State {
   currentPage: number
 }
 
-const sort = (
-  passages: PassageResult[],
-  comparator: SortBy
-): PassageResult[] => {
+const sort = (hits: any[], comparator: SortBy): any[] => {
   const isAscending = comparator.includes("asc")
-  let sorted: PassageResult[] = []
+  let sorted: any[] = []
   if (comparator.includes("Length")) {
-    sorted = _.sortBy(passages, p => p.context.join("").length)
+    sorted = sortBy(hits, h => h._source.content.join("").length)
   } else {
-    sorted = _.sortBy(passages, p => p.matches.length)
+    sorted = sortBy(hits, "_score")
   }
   return isAscending ? sorted : sorted.reverse()
 }
 
-const MAX_PER_PAGE = 50
+const MAX_PER_PAGE = 20
 
 class PassagesList extends React.Component<Props, State> {
   constructor(props: Props) {
@@ -56,7 +48,7 @@ class PassagesList extends React.Component<Props, State> {
     this.state = {
       currentPage: 0,
       maxResults: MAX_PER_PAGE,
-      selectedSortBy: SortBy.length_asc
+      selectedSortBy: SortBy.score
     }
   }
 
@@ -69,14 +61,12 @@ class PassagesList extends React.Component<Props, State> {
   }
 
   public render() {
-    const { context, passages, keywords } = this.props
+    const { hits } = this.props
+
     const { selectedSortBy, maxResults, currentPage } = this.state
 
-    const listLength = passages.length
-
-    if (listLength === 0) {
-      return null
-    }
+    const listLength = hits.length
+    if (listLength === 0) return null
 
     const option = (sortBy: SortBy) => (
       <option key={sortBy} value={sortBy}>
@@ -94,70 +84,34 @@ class PassagesList extends React.Component<Props, State> {
         }
         value={selectedSortBy}
       >
-        {[
-          SortBy.length_asc,
-          SortBy.length_desc,
-          SortBy.density_asc,
-          SortBy.density_desc
-        ].map(option)}
+        {[SortBy.score, SortBy.length_asc, SortBy.length_desc].map(option)}
       </select>
     )
 
-    const words = keywords ? keywords.words : {}
-
-    const span = (word: string, idx: number): any => {
-      const highlight =
-        words[word.toLowerCase().replace(/[^a-z]/gi, "")] !== undefined
-      return (
-        <span key={idx} style={{ color: highlight ? colors.yellow : "" }}>
-          {word}
-        </span>
-      )
-    }
-
-    const sliced = (sentences: string[], matchIdx: number) =>
-      sentences
-        .map((str: string, idx: number) => {
-          const isHeader = str.includes("== ")
-          const value = isHeader ? str.replace(/=/g, "").trim() : str
-          return (
-            <Sentence isHeader={isHeader} isMatch={idx === matchIdx} key={idx}>
-              {isHeader
-                ? value
-                : value
-                    .split(" ")
-                    .map(span)
-                    .reduce((prev: any, curr: any, i: number) => [
-                      prev,
-                      " ",
-                      curr
-                    ])}
-            </Sentence>
-          )
-        })
-        .slice(Math.max(matchIdx - context, 0), matchIdx + context + 1)
-
-    const passageComponent = (passage: PassageResult, i: number) => (
+    const passageComponent = (hit: any, i: number) => (
       <PassageContainer key={i}>
         <PassageHeader>
           <Header.s margin={"0"}>
             <a
               style={{ color: colors.blue, textDecoration: "none" }}
-              href={`https://en.wikipedia.org/wiki/${passage.title}`}
+              href={`https://en.wikipedia.org/wiki/${hit._source.title}`}
               target={"_blank"}
             >
-              {passage.title}
-            </a>
+              {hit._source.title}
+            </a>{" "}
+            <span style={{ color: colors.gray }}>
+              / Section {hit._source.section + 1}
+            </span>
           </Header.s>
-          <Text.regular>found {passage.matches.join(", ")}</Text.regular>
+          <Text.s>{Number(hit._score.toFixed(2))}</Text.s>
         </PassageHeader>
-        <Text.garamond>
-          {sliced(passage.context, passage.matchIdx)}
-        </Text.garamond>
+        {hit.highlight.sentences.map((__html: string, i: number) => (
+          <Text.garamond key={i} dangerouslySetInnerHTML={{ __html }} />
+        ))}
       </PassageContainer>
     )
 
-    const sorted = sort(passages, selectedSortBy)
+    const sorted = sort(hits, selectedSortBy)
     const chunked = chunk(sorted, maxResults)
     const toDisplay = chunked[currentPage]
 
@@ -183,7 +137,7 @@ class PassagesList extends React.Component<Props, State> {
 
     if (chunked.length > 1) {
       const startIdx = currentPage * maxResults + 1
-      const endIdx = Math.min(startIdx + 49, passages.length)
+      const endIdx = Math.min(startIdx + 49, hits.length)
       informationText += ` (showing ${startIdx} - ${endIdx})`
     }
 
@@ -205,4 +159,8 @@ class PassagesList extends React.Component<Props, State> {
   }
 }
 
-export default PassagesList
+const mapStateToProps = (state: any, ownProps: any) => ({
+  hits: state.entities.hits || []
+})
+
+export default connect(mapStateToProps)(PassagesList)

@@ -6,7 +6,7 @@ import {
   fetchPassageSequence,
   updatePassageSequence
 } from "../../models/passageSequence"
-import { Passage, Tag } from "../../models/text"
+import { Passage, Tag } from "../../models/passage"
 
 import Subnav from "../nav/subnav"
 
@@ -38,8 +38,8 @@ const Span = styled.span`
     p.tag.isUnfocused
       ? "line-through"
       : p.tag.isFocusWord
-        ? "underline"
-        : "none"};
+      ? "underline"
+      : "none"};
 `
 
 const BottomText = Text.s.extend`

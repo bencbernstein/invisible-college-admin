@@ -5,7 +5,10 @@
     "jsx-no-lambda": false,
     "jsx-no-bind": false,
     "object-literal-sort-keys": false,
-    "ordered-imports": false
+    "ordered-imports": false,
+    "curly": [true, "ignore-same-line"],
+    "member-ordering": [false, "public-before-private"],
+    "no-shadowed-variable": [false, "function"]
   },
   "extends": ["tslint:recommended", "tslint-react", "tslint-config-prettier"],
   "linterOptions": {
