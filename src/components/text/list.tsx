@@ -11,7 +11,7 @@ import StyledText from "../common/text"
 import blankLinkStyle from "../common/blankLinkStyle"
 
 import { parseTexts } from "../../models/text"
-import { fetchTextsAction, setIsLoading } from "../../actions"
+import { fetchTextsAction, setEntity } from "../../actions"
 import { alphabetize } from "../../lib/helpers"
 
 interface State {
@@ -53,7 +53,7 @@ class TextListComponent extends React.Component<Props, State> {
 
   public async loadData(collection: string) {
     const index = collection.replace(/ /g, "_")
-    this.props.dispatch(setIsLoading(true))
+    this.props.dispatch(setEntity({ isLoading: true }))
     this.props.dispatch(fetchTextsAction(index))
     this.setState({ index })
   }

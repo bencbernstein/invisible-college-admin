@@ -213,3 +213,11 @@ export const alphabetize = (data: any[], attr: string): any[] => {
     []
   )
 }
+
+export const objectId = (
+  h: number = 16,
+  s: any = (s: any) => Math.floor(s).toString(h)
+) =>
+  s(Date.now() / 1000) + " ".repeat(h).replace(/./g, () => s(Math.random() * h))
+
+export const encodeUri = (data: any) => encodeURIComponent(JSON.stringify(data))

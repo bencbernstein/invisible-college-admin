@@ -72,13 +72,14 @@ class Discover extends React.Component<Props, State> {
   public async exportPassages() {
     const findMatches = (sentences: string[]) =>
       (sentences.join(" ").match(/>([^<]*)<\/span/g) || []).map((s: any) =>
-        s.replace(/>|<\/span/gi, "")
+        s.replace(/>|<\/span/gi, "").toLowerCase()
       )
     const items = this.props.hits.map(({ _id, highlight }) => ({
       id: _id,
-      matches: uniq(findMatches(highlight.sentences))
+      tags: uniq(findMatches(highlight.sentences))
     }))
-    const params = { type: "filter", entity: "passage", items }
+    const createdOn = Date.now()
+    const params = { type: "filter", entity: "passage", items, createdOn }
     this.props.dispatch(createQueueAction(params))
   }
 

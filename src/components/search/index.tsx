@@ -8,12 +8,7 @@ import Icon from "../common/icon"
 import magnifyingGlass from "../../lib/images/icon-magnifying-glass.png"
 import { colors } from "../../lib/colors"
 
-import {
-  fetchTextsAction,
-  setIsLoading,
-  setSearchQuery,
-  fetchImagesAction
-} from "../../actions"
+import { fetchTextsAction, setEntity, fetchImagesAction } from "../../actions"
 
 interface State {
   timeout?: any
@@ -42,12 +37,12 @@ class Search extends React.Component<Props, State> {
     let timeout
 
     if (this.requiresNetworkingFor()) {
-      this.props.dispatch(setIsLoading(true))
+      this.props.dispatch(setEntity({ isLoading: true }))
       clearTimeout(this.state.timeout)
       timeout = setTimeout(this.search.bind(this), 1000)
     }
 
-    this.props.dispatch(setSearchQuery(value))
+    this.props.dispatch(setEntity({ searchQuery: value }))
     this.setState({ timeout })
   }
 

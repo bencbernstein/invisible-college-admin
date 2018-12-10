@@ -1,6 +1,6 @@
 import * as React from "react"
 import styled from "styled-components"
-import { Route, Switch } from "react-router"
+import { Route, Redirect, Switch } from "react-router"
 import { Router } from "react-router-dom"
 import { connect } from "react-redux"
 
@@ -10,6 +10,8 @@ import "./index.css"
 import Login from "../login"
 import Concepts from "../concept/list"
 import Queues from "../queue/list"
+import FilterPassage from "../passage2/filter"
+import EnrichPassage from "../passage2/enrich"
 import Images from "../image/list"
 import Discover from "../discover"
 import Nav from "../nav"
@@ -18,7 +20,7 @@ import TextList from "../text/list"
 import ProtectedRoute, { ProtectedRouteProps } from "./protectedRoute"
 
 import { User } from "../../models/user"
-import { setUserAction } from "../../actions"
+import { setEntity } from "../../actions"
 
 export const Container = styled.div`
   text-align: left;
@@ -28,9 +30,9 @@ export const Container = styled.div`
   position: relative;
 `
 
-const contained = (Component: any) => (
+const contained = (Component: any, noSearch: boolean = false) => (
   <Container>
-    <Nav />
+    <Nav noSearch={noSearch} />
     <Component />
   </Container>
 )
@@ -69,7 +71,7 @@ class App extends React.Component<Props, State> {
     const json = localStorage.getItem("user")
     const user = json ? JSON.parse(json) : undefined
     if (user) {
-      this.props.dispatch(setUserAction(user))
+      this.props.dispatch(setEntity({ user }))
     }
     this.setState({ checkedAuth: true, isAuthenticated: user !== undefined })
   }
@@ -86,9 +88,11 @@ class App extends React.Component<Props, State> {
     const ROUTES = [
       { path: "/concepts", Component: Concepts, exact: true },
       { path: "/images", Component: Images, exact: true },
-      { path: "/queues", Component: Queues, exact: true },
-      { path: "/discover", Component: Discover, exact: true },
+      { path: "/queues", Component: Queues, exact: true, noSearch: true },
+      { path: "/discover", Component: Discover, exact: true, noSearch: true },
       { path: "/library", Component: TextList },
+      { path: "/passage/filter/:id", Component: FilterPassage, noSearch: true },
+      { path: "/passage/enrich/:id", Component: EnrichPassage, noSearch: true },
       {
         path: "/login",
         Component: Login,
@@ -99,7 +103,7 @@ class App extends React.Component<Props, State> {
     ]
 
     const routes = ROUTES.map(
-      ({ path, Component, noNav, publicRoute, exact }) => {
+      ({ path, Component, noNav, publicRoute, exact, noSearch }) => {
         const PublicOrPrivateRoute = publicRoute ? Route : ProtectedRoute
         return (
           <PublicOrPrivateRoute
@@ -107,11 +111,13 @@ class App extends React.Component<Props, State> {
             key={path}
             {...defaultProtectedRouteProps}
             path={path}
-            render={() => (noNav ? <Component /> : contained(Component))}
+            render={() =>
+              noNav ? <Component /> : contained(Component, noSearch)
+            }
           />
         )
       }
-    )
+    ).concat(<Route key="0" render={() => <Redirect to="/login" />} />)
 
     return (
       <Router history={history}>
@@ -126,81 +132,3 @@ const mapStateToProps = (state: any, ownProps: any) => ({
 })
 
 export default connect(mapStateToProps)(App)
-
-/*
-<Route
-              exact={true}
-              path="/login"
-              render={() => <Login login={this.login.bind(this)} />}
-            />
-            <ProtectedRoute
-              {...defaultProtectedRouteProps}
-              path="/home"
-              render={() => <Home user={user!} />}
-            />
-            <ProtectedRoute
-              {...defaultProtectedRouteProps}
-              path="/admin-home"
-              render={() => <AdminHome user={user!} />}
-            />
-            <ProtectedRoute
-              {...defaultProtectedRouteProps}
-              exact={true}
-              path="/library"
-              component={contained("collections", user)}
-            />
-            <ProtectedRoute
-              {...defaultProtectedRouteProps}
-              path="/library/:id"
-              component={contained("textList", user)}
-            />
-            <ProtectedRoute
-              {...defaultProtectedRouteProps}
-              path="/text/:id"
-              component={contained("text", user)}
-            />
-            <ProtectedRoute
-              {...defaultProtectedRouteProps}
-              path="/word"
-              component={contained("word", user)}
-            />
-            <ProtectedRoute
-              {...defaultProtectedRouteProps}
-              path="/passage"
-              component={contained("passage", user)}
-            />
-            <ProtectedRoute
-              {...defaultProtectedRouteProps}
-              path="/sequence"
-              component={contained("sequence", user)}
-            />
-            <ProtectedRoute
-              {...defaultProtectedRouteProps}
-              path="/passage-sequence"
-              component={contained("passageSequence", user)}
-            />
-            <ProtectedRoute
-              {...defaultProtectedRouteProps}
-              path="/passages"
-              component={contained("passages", user)}
-            />
-            <ProtectedRoute
-              {...defaultProtectedRouteProps}
-              exact={true}
-              path="/discover"
-              component={contained("discover", user)}
-            />
-            <ProtectedRoute
-              {...defaultProtectedRouteProps}
-              exact={true}
-              path="/gameplay"
-              component={contained("gameplay", user)}
-            />
-            <ProtectedRoute
-              {...defaultProtectedRouteProps}
-              exact={true}
-              path="/play"
-              component={() => <Play user={user!} />}
-            />
-            <Route render={() => <Login login={this.login.bind(this)} />} />
-            */

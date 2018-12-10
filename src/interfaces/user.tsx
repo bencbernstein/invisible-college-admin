@@ -10,6 +10,7 @@ export interface User {
   firstName: string
   lastName: string
   questionsAnswered: number
+  accessLevel: number
   wordsLearned: number
   passagesRead: number
   rank: number

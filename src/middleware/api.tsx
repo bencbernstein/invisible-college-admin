@@ -4,7 +4,12 @@ const GQL_URL = CONFIG.API_URL + "/graphql"
 
 export const CALL_API = "Call API"
 
-const callApi = (query: string, schema: string, route: string) => {
+const callApi = (
+  query: string,
+  schema: string,
+  route: string,
+  parseJson: boolean = false
+) => {
   const body = JSON.stringify({ query })
   const headers = { "Content-Type": "application/json" }
   const method = "POST"
@@ -13,16 +18,17 @@ const callApi = (query: string, schema: string, route: string) => {
     res
       .json()
       .then(json => {
+        const { data, errors } = json
         const result: any = { isLoading: false }
-        console.log(json)
-        if (json.errors && json.errors.length) {
-          const { message } = json.errors[0]
+
+        if (errors && errors.length) {
+          const { message } = errors[0]
           console.log("ERR: " + message)
           return Promise.reject(message)
         }
 
-        if (json.data[route]) {
-          result[schema] = json.data[route]
+        if (data[route]) {
+          result[schema] = parseJson ? JSON.parse(data[route]) : data[route]
         }
 
         return result
@@ -38,7 +44,7 @@ export default (store: any) => (next: any) => (action: any) => {
     return next(action)
   }
 
-  const { query, schema, types, route } = callAPI
+  const { query, schema, types, route, parseJson } = callAPI
 
   if (!Array.isArray(types) || types.length !== 3) {
     throw new Error("Expected an array of three action types.")
@@ -56,7 +62,7 @@ export default (store: any) => (next: any) => (action: any) => {
   const [requestType, successType, failureType] = types
   next(actionWith({ type: requestType }))
 
-  return callApi(query, schema, route).then(
+  return callApi(query, schema, route, parseJson).then(
     (response: any) =>
       next(
         actionWith({

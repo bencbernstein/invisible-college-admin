@@ -5,7 +5,7 @@ import Spinner from "../common/spinner"
 import Text from "../common/text"
 import Grid from "../common/grid"
 
-import { fetchImagesAction, setIsLoading } from "../../actions"
+import { fetchImagesAction, setEntity } from "../../actions"
 
 import { alphabetize } from "../../lib/helpers"
 
@@ -32,7 +32,7 @@ class ImageListComponent extends React.Component<Props, State> {
   }
 
   public loadData() {
-    this.props.dispatch(setIsLoading(true))
+    this.props.dispatch(setEntity({ isLoading: true }))
     this.props.dispatch(fetchImagesAction(this.state.index!))
   }
 

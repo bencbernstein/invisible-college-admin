@@ -11,18 +11,16 @@ interface Props {
 }
 
 const Regular = styled.p`
-text-transform: ${(p: Props) => p.uppercase && "uppercase"}
-text-align: ${(p: Props) => p.center && "center"};
-color: ${(p: Props) => p.color};
-
-font-family: ${(p: Props) =>
-  p.fontFamily
-    ? p.fontFamily
-    : p.bold
-    ? "BrandonGrotesqueBold"
-    : "BrandonGrotesque"};
-margin: ${(p: Props) => p.margin || "2.5px 0px"};
-cursor: ${(p: Props) => (p.pointer ? "pointer" : "")};
+  text-align: ${(p: Props) => p.center && "center"};
+  color: ${(p: Props) => p.color};
+  font-family: ${(p: Props) =>
+    p.fontFamily
+      ? p.fontFamily
+      : p.bold
+      ? "BrandonGrotesqueBold"
+      : "BrandonGrotesque"};
+  margin: ${(p: Props) => p.margin || "2.5px 0px"};
+  cursor: ${(p: Props) => (p.pointer ? "pointer" : "")};
 `
 
 const Large = Regular.extend`

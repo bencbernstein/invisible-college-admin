@@ -17,7 +17,7 @@ import {
   FlexBox
 } from "./components"
 
-import { setCollectionAction } from "../../actions"
+import { setEntity } from "../../actions"
 import { User } from "../../interfaces/user"
 
 import { formatName } from "../../lib/helpers"
@@ -28,6 +28,7 @@ import FlexedDiv from "../common/flexedDiv"
 interface Props {
   user?: User
   collection?: string
+  noSearch: boolean
   dispatch: any
 }
 
@@ -51,7 +52,7 @@ class Nav extends React.Component<Props, State> {
   }
 
   private setCollection(collection: string) {
-    this.props.dispatch(setCollectionAction(collection))
+    this.props.dispatch(setEntity({ collection }))
   }
 
   public logout() {
@@ -93,14 +94,11 @@ class Nav extends React.Component<Props, State> {
       "Discover",
       "Images",
       "Library",
-      "Ontology",
       "Passages",
       "Queues"
     ]
       .map(link)
       .reduce((prev: any, curr: any, i: number) => [prev, "/", curr])
-
-    const displaySearch = window.location.pathname.split("/")[1] !== "discover"
 
     return (
       <div>
@@ -152,7 +150,7 @@ class Nav extends React.Component<Props, State> {
           {menuItems}
         </div>
 
-        {displaySearch && <Search />}
+        {!this.props.noSearch && <Search />}
         <br />
       </div>
     )

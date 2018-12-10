@@ -7,7 +7,7 @@ import Grid from "../common/grid"
 import StyledText from "../common/text"
 import blankLinkStyle from "../common/blankLinkStyle"
 
-import { fetchWordsAction, setIsLoading } from "../../actions"
+import { fetchWordsAction, setEntity } from "../../actions"
 
 import { alphabetize } from "../../lib/helpers"
 
@@ -34,7 +34,7 @@ class ConceptListComponent extends React.Component<Props, State> {
   }
 
   public loadData() {
-    this.props.dispatch(setIsLoading(true))
+    this.props.dispatch(setEntity({ isLoading: true }))
     this.props.dispatch(fetchWordsAction(this.state.index!))
   }
 

@@ -1,6 +1,17 @@
 import { CALL_API } from "../middleware/api"
 
-import { User, userAttrs } from "../interfaces/user"
+import { userAttrs } from "../interfaces/user"
+
+import { encodeUri } from "../lib/helpers"
+
+const queueAttrs =
+  "id entity type createdOn accessLevel items { id tags decisions { indexes accepted id userId userAccessLevel } }"
+
+const esPassageAttrs = "_id _source { sentences source title section }"
+
+const taggedAttrs =
+  "tagged { value pos isFocusWord isPunctuation isSentenceConnector isConnector isUnfocused wordId choiceSetId }"
+const passageAttrs = `id factoidOnCorrect source title ${taggedAttrs}`
 
 const camelCaseToUpperCase = (str: string) =>
   str.replace(/([A-Z])/g, $1 => "_" + $1).toUpperCase()
@@ -25,28 +36,10 @@ export const loginUserAction = (
     }
   })
 
-export const setUserAction = (user: User) => (dispatch: any) =>
+export const setEntity = (response: any) => (dispatch: any) =>
   dispatch({
-    type: "SET_USER",
-    response: { user }
-  })
-
-export const setIsLoading = (isLoading: boolean) => (dispatch: any) =>
-  dispatch({
-    type: "SET_IS_LOADING",
-    response: { isLoading }
-  })
-
-export const setSearchQuery = (searchQuery: string) => (dispatch: any) =>
-  dispatch({
-    type: "SET_SEARCH_QUERY",
-    response: { searchQuery }
-  })
-
-export const setCollectionAction = (collection: string) => (dispatch: any) =>
-  dispatch({
-    type: "SET_COLLECTION",
-    response: { collection }
+    type: `SET_${camelCaseToUpperCase(Object.keys(response)[0])}`,
+    response
   })
 
 export const fetchTextsAction = (
@@ -112,9 +105,50 @@ export const findPassagesAction = (
     [CALL_API]: {
       query: `query { ${route}(lcds: "${lcds.join(
         ","
-      )}") { _id _score _source { sentences source title section } highlight { sentences } } }`,
+      )}") { _score highlight { sentences } ${passageAttrs} } }`,
       types: types(camelCaseToUpperCase(route)),
       schema: "hits",
+      route
+    }
+  })
+
+export const fetchPassageAction = (
+  id: string,
+  route: string = "getPassage"
+) => (dispatch: any) =>
+  dispatch({
+    [CALL_API]: {
+      query: `query { ${route}(id: "${id}") { ${passageAttrs} } }`,
+      types: types(camelCaseToUpperCase(route)),
+      schema: "passage",
+      route
+    }
+  })
+
+export const updatePassageAction = (
+  id: string,
+  update: string,
+  route: string = "updatePassage"
+) => (dispatch: any) =>
+  dispatch({
+    [CALL_API]: {
+      query: `mutation { ${route}(id: "${id}", update: "${encodeUri(
+        update
+      )}") { ${passageAttrs} } }`,
+      types: types(camelCaseToUpperCase(route)),
+      route
+    }
+  })
+
+export const fetchEsPassageAction = (
+  id: string,
+  route: string = "getEsPassage"
+) => (dispatch: any) =>
+  dispatch({
+    [CALL_API]: {
+      query: `query { ${route}(id: "${id}") { ${esPassageAttrs} } }`,
+      types: types(camelCaseToUpperCase(route)),
+      schema: "passage",
       route
     }
   })
@@ -125,10 +159,25 @@ export const createQueueAction = (
 ) => (dispatch: any) =>
   dispatch({
     [CALL_API]: {
-      query: `mutation { ${route}(data: "${encodeURIComponent(
-        JSON.stringify(params)
-      )}") }`,
+      query: `mutation { ${route}(data: "${encodeUri(params)}") }`,
       types: types(camelCaseToUpperCase(route)),
+      route
+    }
+  })
+
+export const updateQueueItemAction = (
+  id: string,
+  index: number,
+  update: any,
+  route: string = "updateQueueItem"
+) => (dispatch: any) =>
+  dispatch({
+    [CALL_API]: {
+      query: `mutation { ${route}(id: "${id}", index: "${index}", update: "${encodeUri(
+        update
+      )}") { ${queueAttrs} } }`,
+      types: types(camelCaseToUpperCase(route)),
+      schema: "queue",
       route
     }
   })
@@ -138,9 +187,43 @@ export const fetchQueuesAction = (route: string = "queues") => (
 ) =>
   dispatch({
     [CALL_API]: {
-      query: `query { ${route} { entity type items { id matches } } }`,
+      query: `query { ${route} { ${queueAttrs} } }`,
       types: types(camelCaseToUpperCase(route)),
       schema: "queues",
       route
+    }
+  })
+
+export const deleteQueueAction = (
+  id: string,
+  route: string = "deleteQueue"
+) => (dispatch: any) =>
+  dispatch({
+    [CALL_API]: {
+      query: `mutation { ${route}(id: "${id}") }`,
+      types: types(camelCaseToUpperCase(route)),
+      route
+    }
+  })
+
+export const finishedQueue = (id: string, route: string = "finishedQueue") => (
+  dispatch: any
+) =>
+  dispatch({
+    [CALL_API]: {
+      query: `mutation { ${route}(id: "${id}") }`,
+      types: types(camelCaseToUpperCase(route)),
+      route
+    }
+  })
+
+export const fetchKeywords = (route: string = "keywords") => (dispatch: any) =>
+  dispatch({
+    [CALL_API]: {
+      query: `query { ${route} }`,
+      types: types(camelCaseToUpperCase(route)),
+      schema: "keywords",
+      route,
+      parseJson: true
     }
   })

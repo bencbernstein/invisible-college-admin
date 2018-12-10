@@ -4,9 +4,9 @@ import { connect } from "react-redux"
 import { chunk, sortBy } from "lodash"
 
 import Text from "../common/text"
-import Header from "../common/header"
+import HitHeader from "../hit/header"
 
-import { PassageContainer, Image, PassageHeader } from "./components"
+import { PassageContainer, Image } from "./components"
 import FlexedDiv from "../common/flexedDiv"
 import { colors } from "../../lib/colors"
 
@@ -90,21 +90,10 @@ class PassagesList extends React.Component<Props, State> {
 
     const passageComponent = (hit: any, i: number) => (
       <PassageContainer key={i}>
-        <PassageHeader>
-          <Header.s margin={"0"}>
-            <a
-              style={{ color: colors.blue, textDecoration: "none" }}
-              href={`https://en.wikipedia.org/wiki/${hit._source.title}`}
-              target={"_blank"}
-            >
-              {hit._source.title}
-            </a>{" "}
-            <span style={{ color: colors.gray }}>
-              / Section {hit._source.section + 1}
-            </span>
-          </Header.s>
+        <div style={{ textAlign: "center", margin: " 10px 0" }}>
+          <HitHeader passage={hit} />
           <Text.s>{Number(hit._score.toFixed(2))}</Text.s>
-        </PassageHeader>
+        </div>
         {hit.highlight.sentences.map((__html: string, i: number) => (
           <Text.garamond key={i} dangerouslySetInnerHTML={{ __html }} />
         ))}
