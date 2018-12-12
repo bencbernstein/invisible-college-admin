@@ -3,7 +3,7 @@ import { includes, isEqual } from "lodash"
 
 import { InteractiveBox, Span } from "./components"
 
-import { InteractivePart } from "../../models/question"
+import { InteractivePart } from "../../interfaces/question"
 
 import { isPunc } from "../../lib/helpers"
 

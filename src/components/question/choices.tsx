@@ -4,7 +4,7 @@ import * as React from "react"
 import { Button, Image, ChoicesGridBox, ChoicesFlexBox } from "./components"
 import { Guess } from "./"
 
-import { AnswerPart } from "../../models/question"
+import { AnswerPart } from "../../interfaces/question"
 
 import { colors } from "../../lib/colors"
 
@@ -12,7 +12,7 @@ interface Props {
   answer: AnswerPart[]
   redHerrings: string[]
   guess?: Guess
-  isBetweenQuestions: boolean
+  isBetweenQuestions?: boolean
   guessed: (choice: string, buttonIdx: number, answerValues: string[]) => void
   type: string
   flex: number
@@ -36,6 +36,8 @@ export default class Choices extends React.Component<Props, any> {
       isBetweenQuestions
     } = this.props
 
+    const isSpell = type.indexOf("Chars") > -1
+
     const isImage =
       type === "Word to Image" && redHerrings[0].startsWith("data:image")
 
@@ -55,7 +57,7 @@ export default class Choices extends React.Component<Props, any> {
         const bColor = disable ? disabledColor(i, guess!) : colors.blue
         return isImage ? (
           <Image
-            disabled={disable || isBetweenQuestions}
+            disabled={disable || isBetweenQuestions === true}
             backgroundColor={bColor}
             onClick={() => this.props.guessed(c, i, answerValues)}
             src={c}
@@ -63,7 +65,8 @@ export default class Choices extends React.Component<Props, any> {
           />
         ) : (
           <Button
-            disabled={disable || isBetweenQuestions}
+            isSpell={isSpell}
+            disabled={disable || isBetweenQuestions === true}
             backgroundColor={bColor}
             onClick={() => this.props.guessed(c, i, answerValues)}
             key={i}

@@ -1,197 +1,206 @@
 import * as React from "react"
-import { Redirect } from "react-router"
-import * as _ from "underscore"
+import { connect } from "react-redux"
+import styled from "styled-components"
+import { pickBy, isEqual } from "lodash"
 
-import history from "../../history"
+import Header from "../common/header"
+import StyledText from "../common/text"
+import Spinner from "../common/spinner"
+import Icon from "../common/icon"
 
-import Information from "./information"
-import Menu from "./menu"
+import {
+  fetchTextAction,
+  setEntity,
+  fetchEsPassageBySectionAction
+} from "../../actions"
+import { User } from "../../interfaces/user"
+import { colors } from "../../lib/colors"
+import { lastPath } from "../../lib/helpers"
 
-import { addPassages, fetchText, removePassage } from "../../models/text"
-import { Keywords } from "../../models/word"
-import { Text } from "../../models/text"
-import { Bookmark, fetchUser, saveBookmark, User } from "../../models/user"
-
-import Passages from "./passages"
-import Read from "./read"
+import nextImg from "../../lib/images/icon-next.png"
 
 interface State {
-  text?: Text
   redirect?: string
-  isNew: boolean
-  isDisplaying: Screen
-  bookmark?: Bookmark
-  isEnriching: boolean
+  text?: any
+  isHovering: boolean
+  title?: string
+  author?: string
+  isFocused: boolean
 }
 
 interface Props {
+  text: any
+  esPassage: any
   user: User
-  keywords?: Keywords
-  displayNav: (displayNav: boolean) => void
-}
-
-export enum Screen {
-  Information = "Information",
-  Read = "Read",
-  Passages = "Passages"
+  isLoading: boolean
+  dispatch: any
 }
 
 class TextComponent extends React.Component<Props, State> {
   constructor(props: any) {
     super(props)
 
-    const isNew = _.last(window.location.pathname.split("/")) === "new"
-
     this.state = {
-      isNew,
-      isEnriching: false,
-      isDisplaying: Screen.Information
+      isHovering: false,
+      isFocused: false
     }
   }
 
   public componentDidMount() {
-    const pathname = window.location.pathname
-    const textId = pathname.split("/")[2]
+    this.loadData()
+  }
 
-    const isEnriching = window.location.search.indexOf("enriching") > -1
-
-    if (!this.state.isNew) {
-      this.loadData(textId)
-    }
-
-    if (pathname.includes("passage") || isEnriching) {
-      this.setState({ isEnriching }, () => this.displayScreen(Screen.Passages))
-    } else if (pathname.includes("read")) {
-      this.displayScreen(Screen.Read)
+  public componentWillReceiveProps(nextProps: Props) {
+    const { text } = nextProps
+    if (text && !isEqual(text, !this.props.text)) {
+      this.setState({ title: text._source.title })
     }
   }
 
-  public async updatePassages(ranges: number[][]) {
-    const text = await addPassages(this.state.text!.id, ranges)
-    if (!(text instanceof Error)) {
-      this.setState({ text: _.extend({}, this.state.text!, text) })
-    }
+  private async handleSubmit(e: any) {
+    this.setState({ isFocused: false })
+    const { author, title, text } = this.state
+    if (!text) return
+    const doc = pickBy({
+      author,
+      title
+    })
+    console.log(doc)
+    // TODO: - update text + passages
+    // await updateText(text.id, { doc })
   }
 
-  public async loadData(id: string) {
-    const text = await fetchText(id)
-    if (!(text instanceof Error)) {
-      text.tokenized = JSON.parse(text.tokenized)
-      this.setState({ text })
-      this.fetchBookmark(id)
-    }
+  private async loadData() {
+    this.props.dispatch(setEntity({ isLoading: true }))
+    this.props.dispatch(fetchTextAction(lastPath(window)))
   }
 
-  public async fetchBookmark(textId: string) {
-    const user = await fetchUser(this.props.user.id)
-    const bookmark = _.find(
-      user.bookmarks,
-      (b: Bookmark) => b.textId === textId
+  private loadPassage(section: number) {
+    this.props.dispatch(setEntity({ isLoading: true }))
+    this.props.dispatch(
+      fetchEsPassageBySectionAction(
+        "simple_english_wikipedia",
+        this.props.text._id,
+        section
+      )
     )
-    this.setState({ bookmark })
-  }
-
-  public saveBookmark(sentenceIdx: number) {
-    const bookmark = { textId: this.state.text!.id, sentenceIdx }
-    this.setState({ bookmark })
-    saveBookmark(this.props.user.id, bookmark.textId, sentenceIdx)
-  }
-
-  public displayScreen(isDisplaying: Screen) {
-    const text = this.state.text
-    if (window.location.pathname.includes("/passage") && text) {
-      history.push("/text/" + text.id)
-    }
-    this.setState({ isDisplaying })
-    this.props.displayNav(true)
-  }
-
-  public async removePassage(textId: string, passageId: string) {
-    const text = this.state.text!
-    text.passages = text.passages.filter(p => p.id !== passageId)
-    await removePassage(textId, passageId)
-  }
-
-  public next() {
-    const passageId = window.location.pathname.split("/passage/")[1]
-    const text = this.state.text!
-    const idx = _.findIndex(text.passages, p => p.id === passageId)
-    text.passages[idx].isEnriched = true
-    this.setState({ text })
   }
 
   public render() {
-    const {
-      bookmark,
-      redirect,
-      isDisplaying,
-      text,
-      isNew,
-      isEnriching
-    } = this.state
+    const { isHovering, isFocused, title } = this.state
+    const { esPassage, isLoading, text } = this.props
 
-    const { keywords } = this.props
+    if (isLoading || !esPassage) return <Spinner />
+    if (!title) return null
 
-    if (redirect) {
-      return <Redirect to={redirect} />
-    }
-
-    const screen = (() => {
-      switch (isDisplaying) {
-        case Screen.Read:
-          return (
-            <Read
-              saveBookmark={(sentenceIdx: number) =>
-                this.saveBookmark(sentenceIdx)
-              }
-              bookmark={bookmark}
-              updatePassages={this.updatePassages.bind(this)}
-              keywords={keywords}
-              text={text!}
-            />
-          )
-        case Screen.Passages:
-          return (
-            <Passages
-              isEnriching={isEnriching}
-              removePassage={this.removePassage.bind(this)}
-              keywords={keywords}
-              text={text!}
-            />
-          )
-        default:
-          return (
-            <Information
-              text={text}
-              isNew={isNew}
-              displayScreen={this.displayScreen.bind(this)}
-            />
-          )
-      }
-    })()
-
-    const dataLoaded = !isNew && text
+    const current = parseInt(esPassage._source.section, 10)
+    const totalPages = text._source.sections_count
+    const displayInputs = isHovering || isFocused
 
     return (
-      <div>
-        {isNew && screen}
-
-        {dataLoaded && (
-          <div>
-            <Menu
-              displayNav={this.props.displayNav.bind(this)}
-              displayScreen={this.displayScreen.bind(this)}
-              isDisplaying={isDisplaying}
-              name={text!.name}
-              next={this.next.bind(this)}
-              isEnriching={isEnriching}
+      <div style={{ margin: "0", textAlign: "center" }}>
+        <form
+          onMouseEnter={() => this.setState({ isHovering: true })}
+          onMouseLeave={() => this.setState({ isHovering: false })}
+          onFocus={() => this.setState({ isFocused: true })}
+          onBlur={this.handleSubmit.bind(this)}
+          style={{
+            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center"
+          }}
+        >
+          {displayInputs || !title ? (
+            <InputHeader
+              onChange={e => this.setState({ title: e.target.value })}
+              placeholder="Title"
+              spellCheck={false}
+              value={title || ""}
             />
-            {screen}
-          </div>
-        )}
+          ) : (
+            <Header.l margin="0" style={{ height: "60px" }}>
+              {title}
+            </Header.l>
+          )}
+
+          {/* {displayInputs || !author ? (
+            <InputSubHeader
+              onChange={e => this.setState({ author: e.target.value })}
+              type="text"
+              spellCheck={false}
+              placeholder="by ..."
+              value={author || ""}
+            />
+          ) : (
+            <StyledText.regular>{author}</StyledText.regular>
+          )} */}
+        </form>
+
+        <StyledText.s margin="0 0 15px 0" color={colors.gray}>
+          Page {current + 1} of {totalPages}
+        </StyledText.s>
+
+        <div style={{ textAlign: "left" }}>
+          {esPassage._source.sentences.map((s: string, i: number) => (
+            <StyledText.garamond key={i}>{s}</StyledText.garamond>
+          ))}
+        </div>
+
+        <div style={{ margin: "40px 0" }}>
+          <Icon
+            margin="0 50px"
+            pointer={true}
+            large={true}
+            disable={current === 0}
+            onClick={() => this.loadPassage(current - 1)}
+            flipHorizontal={true}
+            src={nextImg}
+          />
+          <Icon
+            margin="0 50px"
+            pointer={true}
+            large={true}
+            disable={current + 1 === totalPages}
+            onClick={() => this.loadPassage(current + 1)}
+            src={nextImg}
+          />
+        </div>
       </div>
     )
   }
 }
 
-export default TextComponent
+const InputHeader = styled.textarea`
+  font-size: 2.3em;
+  outline: none;
+  color: ${colors.darkGray};
+  font-family: BrandonGrotesque;
+  text-align: center;
+  height: 60px;
+  padding: 0;
+  letter-spacing: 1px;
+  margin: 0;
+  border-radius: 0;
+  border: none;
+`
+
+// const InputSubHeader = styled.input`
+//   outline: none;
+//   font-size: 1em;
+//   font-family: BrandonGrotesque;
+//   color: ${colors.darkGray};
+//   text-align: center;
+//   padding: 0;
+//   margin: 2.5px 0px;
+//   border: none;
+//   box-sizing: border-box;
+// `
+
+const mapStateToProps = (state: any, ownProps: any) => ({
+  text: state.entities.text,
+  isLoading: state.entities.isLoading === true,
+  esPassage: state.entities.esPassage
+})
+
+export default connect(mapStateToProps)(TextComponent)

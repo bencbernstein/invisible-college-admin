@@ -11,18 +11,16 @@ interface Props {
 }
 
 const Regular = styled.p`
-text-transform: ${(p: Props) => p.uppercase && "uppercase"}
-text-align: ${(p: Props) => p.center && "center"};
-color: ${(p: Props) => p.color};
-
-font-family: ${(p: Props) =>
-  p.fontFamily
-    ? p.fontFamily
-    : p.bold
+  text-align: ${(p: Props) => p.center && "center"};
+  color: ${(p: Props) => p.color};
+  font-family: ${(p: Props) =>
+    p.fontFamily
+      ? p.fontFamily
+      : p.bold
       ? "BrandonGrotesqueBold"
       : "BrandonGrotesque"};
-margin: ${(p: Props) => p.margin || "2.5px 0px"};
-cursor: ${(p: Props) => (p.pointer ? "pointer" : "")};
+  margin: ${(p: Props) => p.margin || "2.5px 0px"};
+  cursor: ${(p: Props) => (p.pointer ? "pointer" : "")};
 `
 
 const Large = Regular.extend`
@@ -30,7 +28,7 @@ const Large = Regular.extend`
 `
 
 const Small = Regular.extend`
-  font-size: 0.9em;
+  font-size: 0.85em;
 `
 
 const ExtraSmall = Regular.extend`
@@ -41,12 +39,17 @@ const ExtraLarge = Regular.extend`
   font-size: 2em;
 `
 
+const ExtraExtraLarge = Regular.extend`
+  font-size: 2.5em;
+`
+
 const Garamond = Regular.extend`
   font-family: EBGaramond;
   line-height: 24px;
 `
 
 export default {
+  xxl: ExtraExtraLarge,
   xl: ExtraLarge,
   l: Large,
   regular: Regular,

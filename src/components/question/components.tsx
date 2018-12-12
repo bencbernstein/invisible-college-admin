@@ -1,43 +1,38 @@
 import styled from "styled-components"
 
 import Text from "../common/text"
+import FlexedDiv from "../common/flexedDiv"
 
 import { colors } from "../../lib/colors"
 
 interface BoxProps {
-  isReadMode: boolean
+  isReadMode?: boolean
 }
 
 export const FLEXES: any = {
   interactive: {
-    top: 1,
-    prompt: 2,
-    interactive: 12
+    top: 2,
+    prompt: 3,
+    interactive: 18
   },
   withAnswer: {
-    top: 1,
-    answer: 2,
-    prompt: 7,
-    choices: 5
+    top: 2,
+    answer: 3,
+    prompt: 10,
+    choices: 8
   },
   withoutAnswer: {
-    top: 1,
-    prompt: 8,
-    choices: 6
+    top: 2,
+    prompt: 12,
+    choices: 9
   }
 }
 
 export const Box = styled.div`
-  height: 100vh;
-  width: 100vw;
-  background-color: white;
-  bottom: 0;
-  left: 0;
-  position: fixed;
-  top: 0;
-  right: 0;
+  height: 100%;
+  width: 100%;
   box-sizing: border-box;
-  padding: ${(p: BoxProps) => (p.isReadMode ? "0px" : "10px")} 25px;
+  padding: ${(p: BoxProps) => (p.isReadMode ? "0px" : "10px")} 15px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -50,10 +45,18 @@ export const IconContainer = styled.div`
   width: 10%;
 `
 
+// Information
+
+export const StarContainer = FlexedDiv.extend`
+  position: absolute;
+  left: 0;
+  right: 0;
+`
+
 // Progress Bar
 
 export const ProgressBarBox = styled.div`
-  width: 75%;
+  flex: 5;
   position: relative;
 `
 
@@ -88,9 +91,9 @@ export const PromptImage = styled.img`
 `
 
 interface PromptBoxProps {
-  isReadMode: boolean
+  isReadMode?: boolean
   flex: any
-  isInteractive: boolean
+  isInteractive?: boolean
   isShort: boolean
 }
 
@@ -122,10 +125,12 @@ export const PromptBox = styled.div`
 interface PromptTextProps {
   bottom?: number
   large: boolean
-  isReadMode: boolean
+  isReadMode?: boolean
+  textAlign: boolean
 }
 
 export const PromptText = Text.l.extend`
+  text-align: ${(p: PromptTextProps) => p.textAlign && "center"};
   position: relative;
   font-size: ${(p: PromptTextProps) => p.large && "1.2em"};
   bottom: ${(p: PromptTextProps) =>
@@ -152,6 +157,7 @@ export const Span = styled.span`
   border-bottom: ${(p: SpanProps) => p.hide && "1px solid black"};
   border-radius: ${(p: SpanProps) => !p.hide && "3px"};
   box-sizing: border-box;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
   cursor: ${(p: SpanProps) => p.isInteractive && "pointer"};
 `
 
@@ -207,14 +213,12 @@ export const ChoicesFlexBox = styled.div`
   flex-wrap: wrap;
   justify-content: ${(p: ContainerProps) => "center"};
   align-items: center;
-  height: 40%;
   flex: ${(p: ContainerProps) => p.flex};
 `
 
 export const ChoicesGridBox = styled.div`
   display: grid;
   grid-template-columns: ${(p: ContainerProps) => templateForCount(p.count)};
-  height: 40%;
   justify-items: center;
   align-items: center;
   flex: ${(p: ContainerProps) => p.flex};
@@ -223,28 +227,36 @@ export const ChoicesGridBox = styled.div`
 interface ChoiceProps {
   disabled: boolean
   backgroundColor: string
+  isSpell?: boolean
 }
 
-const templateForCount = (count: number) =>
-  ({
-    2: "1fr 1fr",
-    4: "1fr 1fr",
-    6: "1fr 1fr"
-  }[count] || "1fr 1fr 1fr")
+const templateForCount = (count: number) => {
+  if (count < 7) {
+    return "1fr 1fr"
+  } else if (count < 10) {
+    return "1fr 1fr 1fr"
+  }
+  return "1fr 1fr 1fr 1fr"
+}
 
 export const Button = styled.p`
   pointer-events: ${(p: ChoiceProps) => (p.disabled ? "none" : "auto")};
   background-color: ${(p: ChoiceProps) => p.backgroundColor};
-  font-size: 1.1em;
   color: white;
   border-radius: 5px;
   text-align: center
   cursor: pointer;
-  height: 65%;
-  width: 90%;
+  max-height: 90%;
+  max-width: 90%;
+  box-sizing: border-box;
+  min-height: 45px;
+  min-width: ${(p: ChoiceProps) => (p.isSpell ? "45px" : "120px")};
+  box-shadow: 0 0 10px rgba(0,0,0,0.25);
+  padding: 10px;
   align-items: center;
   justify-content: center;
   display: flex;
+  margin: 0;
   font-size: 0.95em;
 `
 
@@ -301,10 +313,11 @@ interface AnswerUnderlineProps {
 }
 
 export const AnswerUnderline = styled.span`
-  height: 4px;
+  height: 6px;
   border-radius: 5px;
   background-color: ${(p: AnswerUnderlineProps) => p.color};
   width: 100%;
+  transition: color 100ms;
   padding: 0 2px;
 `
 

@@ -1,6 +1,11 @@
 import * as React from "react"
+import { connect } from "react-redux"
 import { Redirect } from "react-router"
 import { Link } from "react-router-dom"
+
+import Search from "../search"
+import Text from "../common/text"
+import Header from "../common/header"
 
 import {
   Modal,
@@ -11,34 +16,52 @@ import {
   FlexBox
 } from "./components"
 
-import { User } from "../../models/user"
+import { setEntity } from "../../actions"
+import { User } from "../../interfaces/user"
 
+import { formatName, lastPath } from "../../lib/helpers"
 import { colors } from "../../lib/colors"
-import { formatName } from "../../lib/helpers"
+import FlexedDiv from "../common/flexedDiv"
+
+import { Curriculum } from "../../interfaces/curriculum"
 
 interface Props {
-  user: User
-  holdingShift: boolean
+  user?: User
+  curriculum?: Curriculum
+  noSearch: boolean
+  dispatch: any
+  curricula: Curriculum[]
 }
 
 interface State {
   redirect?: string
-  displayModal?: ModalType
-}
-
-enum ModalType {
-  Create = "Create",
-  Profile = "Profile"
+  displayModal: boolean
 }
 
 class Nav extends React.Component<Props, State> {
-  constructor(props: any) {
+  constructor(props: Props) {
     super(props)
-    this.state = {}
+    this.state = {
+      displayModal: false
+    }
   }
 
-  public displayModal(displayModal: ModalType) {
-    this.setState({ displayModal })
+  public componentDidMount() {
+    const { curricula, curriculum } = this.props
+    if (curricula.length && !curriculum) {
+      this.setCurriculum(curricula[0])
+    }
+  }
+
+  public componentWillReceiveProps(nextProps: Props) {
+    const { curricula, curriculum } = nextProps
+    if (curricula.length && !curriculum) {
+      this.setCurriculum(curricula[0])
+    }
+  }
+
+  private setCurriculum(curriculum: Curriculum) {
+    this.props.dispatch(setEntity({ curriculum }))
   }
 
   public logout() {
@@ -46,91 +69,110 @@ class Nav extends React.Component<Props, State> {
     this.setState({ redirect: "/login" })
   }
 
-  public addText() {
-    this.setState({ redirect: "/text/new" })
-  }
-
   public render() {
-    const { user, holdingShift } = this.props
-
-    if (!user) {
-      return null
-    }
+    if (this.state.redirect) return <Redirect to={this.state.redirect} />
+    const { curriculum, user, curricula } = this.props
+    if (!user || !curriculum) return null
+    const { displayModal } = this.state
 
     const { firstName, lastName } = user
 
-    const { redirect, displayModal } = this.state
-
-    if (redirect) {
-      return <Redirect to={redirect} />
+    const link = (item: any): any => {
+      const path = item.toLowerCase().replace(" ", "-")
+      const color = path === lastPath(window) ? colors.blue : colors.darkGray
+      return (
+        <Link
+          style={{
+            margin: "0px 5px",
+            textDecoration: "none",
+            color
+          }}
+          key={item}
+          to={`/${path}`}
+        >
+          <Text.regular>{item}</Text.regular>
+        </Link>
+      )
     }
 
-    const createModal = (
-      <Modal>
-        <ModalButton onClick={this.addText.bind(this)}>Add Text</ModalButton>
-        <ModalButton onClick={() => console.log("TODO")}>
-          Add Word{" "}
-          <span
-            style={{ color: holdingShift ? colors.green : colors.lightGray }}
-          >
-            (Shift)
-          </span>
-        </ModalButton>
-      </Modal>
-    )
-
-    const profileModal = (
-      <Modal>
-        <ModalButton onClick={this.logout.bind(this)}>Logout</ModalButton>
-      </Modal>
-    )
-
-    const modal = (() => {
-      if (holdingShift) {
-        return createModal
-      }
-      switch (displayModal) {
-        case "Create":
-          return createModal
-        case "Profile":
-          return profileModal
-        default:
-          return null
-      }
-    })()
+    const menuItems = [
+      "Curricula",
+      "Library",
+      "Discover",
+      "Concepts",
+      "Images",
+      "Passages",
+      "Queues"
+    ]
+      .map(link)
+      .reduce((prev: any, curr: any, i: number) => [prev, "/", curr])
 
     return (
-      <NavBox>
-        <Link style={{ textDecoration: "none" }} to="/library">
-          <InvisibleCollege>invisible college</InvisibleCollege>
-        </Link>
-
-        <FlexBox onMouseLeave={this.displayModal.bind(this)}>
-          <Link
-            style={{
-              textDecoration: "none",
-              color: colors.gray,
-              visibility:
-                window.location.pathname === "/discover" ? "hidden" : "visible"
-            }}
-            to="/discover"
-          >
-            <Button bold={true}>DISCOVER</Button>
+      <div>
+        <NavBox>
+          <Link style={{ textDecoration: "none", flex: 1 }} to="/library">
+            <InvisibleCollege>Wordcraft</InvisibleCollege>
           </Link>
-          <Button
-            bold={true}
-            onMouseOver={() => this.displayModal(ModalType.Create)}
-          >
-            + CREATE
-          </Button>
-          <Button onMouseOver={() => this.displayModal(ModalType.Profile)}>
-            {formatName(firstName, lastName)}
-          </Button>
-          {modal}
-        </FlexBox>
-      </NavBox>
+
+          <FlexedDiv>
+            <Header.m margin="0 10px 0 0">{curriculum.name}</Header.m>
+            <select
+              onChange={e => {
+                const curriculum = curricula.find(
+                  ({ id }) => id === e.target.value
+                )
+                this.setCurriculum(curriculum!)
+              }}
+              style={{ width: "15px" }}
+              value={curriculum.name}
+            >
+              {curricula.map((curriculum: Curriculum) => (
+                <option key={curriculum.id} value={curriculum.id}>
+                  {curriculum.name}
+                </option>
+              ))}
+            </select>
+          </FlexedDiv>
+
+          <FlexBox style={{ flex: 1, justifyContent: "flex-end" }}>
+            <Button
+              style={{ margin: 0 }}
+              onClick={() => this.setState({ displayModal: !displayModal })}
+            >
+              {formatName(firstName, lastName)}
+            </Button>
+            {displayModal && (
+              <Modal>
+                <ModalButton onClick={this.logout.bind(this)}>
+                  Logout
+                </ModalButton>
+              </Modal>
+            )}
+          </FlexBox>
+        </NavBox>
+
+        <div
+          style={{
+            flex: 4,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center"
+          }}
+        >
+          {menuItems}
+        </div>
+
+        {!this.props.noSearch && <Search />}
+        <br />
+      </div>
     )
   }
 }
 
-export default Nav
+const mapStateToProps = (state: any, ownProps: any) => ({
+  user: state.entities.user,
+  curriculum: state.entities.curriculum,
+  curricula: state.entities.curricula || []
+})
+
+export default connect(mapStateToProps)(Nav)

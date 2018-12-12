@@ -14,6 +14,11 @@
 }
 
 @font-face {
+  font-family: EBGaramondBold;
+  src: url("../../lib/fonts/EBGaramond_bold.ttf");
+}
+
+@font-face {
   font-family: EBGaramondSemiBold;
   src: url("../../lib/fonts/EBGaramond_semibld.ttf");
 }
@@ -55,4 +60,8 @@ body,
   margin: 0;
   font-family: BrandonGrotesque;
   background-color: white;
+}
+
+.highlight {
+  font-family: EBGaramondBold;
 }

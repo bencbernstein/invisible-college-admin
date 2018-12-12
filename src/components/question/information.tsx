@@ -1,15 +1,19 @@
 import * as React from "react"
 import { Redirect } from "react-router"
 import { range } from "lodash"
+import * as moment from "moment"
 
 import Icon from "../common/icon"
-import ProgressBar from "./progressBar"
+import { StarContainer } from "./components"
 import FlexedDiv from "../common/flexedDiv"
+import ProgressBar from "./progressBar"
 
 import DeleteIcon from "../../lib/images/icon-delete.png"
-import Binoculars from "../../lib/images/gameplay/icon-binoculars.png"
 
-import { Question } from "../../models/question"
+import binoculars from "../../lib/images/gameplay/icon-binoculars.png"
+import flame from "../../lib/images/gameplay/icon-speedy.png"
+
+import { Question } from "../../interfaces/question"
 
 import grayStar from "../../lib/images/gameplay/icon-star-gray.png"
 import yellowStar from "../../lib/images/gameplay/icon-star-yellow.png"
@@ -17,77 +21,84 @@ import yellowStar from "../../lib/images/gameplay/icon-star-yellow.png"
 import { sleep } from "../../lib/helpers"
 
 interface Props {
-  isReadMode: boolean
   flex: number
   completion: number
-  isBetweenQuestions: boolean
+  isBetweenQuestions?: boolean
   question: Question
-  correct: boolean
+  correct?: boolean
+  qStartTime: moment.Moment
+  isWordQType: boolean
 }
 
 interface State {
   redirect?: string
-  notification?: Notification
+  notifications: any[]
   starCount?: number
-}
-
-interface Notification {
-  title: string
-  img: any
-}
-
-const NOTIFICATIONS = {
-  wordDiscovered: {
-    title: "Word discovered!",
-    img: Binoculars
-  }
 }
 
 export default class Prompt extends React.Component<Props, State> {
   constructor(props: any) {
     super(props)
-    this.state = {}
+    this.state = {
+      notifications: []
+    }
   }
 
   public componentWillReceiveProps(nextProps: Props) {
-    const { isBetweenQuestions, question, correct } = this.props
+    const {
+      isBetweenQuestions,
+      question,
+      correct,
+      qStartTime,
+      isWordQType
+    } = this.props
+
     if (nextProps.isBetweenQuestions && !isBetweenQuestions) {
-      this.displayNotifications(correct, question)
+      const speedy =
+        Math.ceil(moment.duration(moment().diff(qStartTime)).asSeconds()) < 4 &&
+        isWordQType
+      this.displayNotifications(question, correct, speedy)
     }
   }
 
-  public async displayNotifications(correct: boolean, question: Question) {
-    const { experience } = question
-    let notification: Notification | undefined
-    if (experience === null) {
-      notification = NOTIFICATIONS.wordDiscovered
+  public async displayNotifications(
+    question: Question,
+    correct?: boolean,
+    speedy?: boolean
+  ) {
+    const notifications: any[] = []
+
+    if (speedy) {
+      notifications.push(flame)
+    }
+    if (question.experience === undefined) {
+      notifications.push(binoculars)
+    }
+    if (correct) {
+      notifications.push(yellowStar)
     }
 
-    if (notification) {
-      this.setState({ notification })
-      await sleep(1)
-    }
-
-    const starCount = Math.min((experience || 0) + (correct ? 1 : 0), 10)
-    this.setState({ notification: undefined, starCount })
-    await sleep(notification ? 1 : 2)
-    this.setState({ starCount: undefined })
+    const starCount = Math.min(
+      (question.experience || 0) + (correct === true ? 1 : 0),
+      10
+    )
+    this.setState({ notifications, starCount })
+    await sleep(2)
+    this.setState({ notifications: [], starCount: undefined })
   }
 
   public render() {
-    const { flex, isReadMode, completion } = this.props
-    const { notification, redirect, starCount } = this.state
+    const { flex, completion } = this.props
+    const { notifications, redirect, starCount } = this.state
 
     if (redirect) {
       return <Redirect to={redirect} />
     }
 
-    console.log()
-
     return (
       <div style={{ flex }}>
         <FlexedDiv justifyContent="space-between">
-          {!isReadMode && (
+          <FlexedDiv flex={1} justifyContent="start">
             <Icon
               onClick={() =>
                 this.setState({
@@ -100,14 +111,18 @@ export default class Prompt extends React.Component<Props, State> {
               pointer={true}
               src={DeleteIcon}
             />
-          )}
+          </FlexedDiv>
 
           <ProgressBar completion={completion} />
 
-          {notification ? <Icon src={notification.img} /> : <div />}
+          <FlexedDiv flex={1} justifyContent="center">
+            {notifications.map((n, i) => (
+              <img style={{ width: "18px", height: "18px" }} key={i} src={n} />
+            ))}
+          </FlexedDiv>
         </FlexedDiv>
 
-        <FlexedDiv justifyContent="center">
+        <StarContainer justifyContent="center">
           {starCount !== undefined &&
             range(1, 11).map(n => (
               <Icon
@@ -117,7 +132,7 @@ export default class Prompt extends React.Component<Props, State> {
                 src={n <= starCount ? yellowStar : grayStar}
               />
             ))}
-        </FlexedDiv>
+        </StarContainer>
       </div>
     )
   }

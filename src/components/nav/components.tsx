@@ -7,12 +7,15 @@ export const InvisibleCollege = styled.p`
   text-transform: uppercase;
   font-family: BrandonGrotesqueBold;
   letter-spacing: 1px;
+  margin: 0;
+  text-align: left;
   color: ${colors.gray};
 `
 
 export const NavBox = styled.div`
   text-align: center;
   display: flex;
+  margin-bottom: 10px;
   justify-content: space-between;
   align-items: center;
 `
@@ -44,38 +47,11 @@ export const Modal = styled.div`
   box-sizing: border-box;
   position: absolute;
   right: 0px;
-  top: 50px;
+  top: 30px;
   background-color: white;
 `
 
 export const FlexBox = styled.div`
   display: flex;
   position: relative;
-`
-
-// Subnav
-
-interface SubnavBoxProps {
-  minimized: boolean
-}
-
-export const SubnavBox = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: ${(p: SubnavBoxProps) =>
-    p.minimized ? "flex-end" : "space-between"};
-  width: 100%;
-`
-
-export const ButtonsBox = styled.div`
-  display: flex;
-`
-
-interface SpanProps {
-  color?: string
-}
-
-export const Span = styled.span`
-  text-transform: capitalize;
-  color: ${(p: SpanProps) => p.color};
 `
