@@ -1,6 +1,7 @@
 import * as React from "react"
 import { connect } from "react-redux"
 import { Redirect } from "react-router"
+import { get } from "lodash"
 import { Link } from "react-router-dom"
 
 import Search from "../search"
@@ -72,7 +73,7 @@ class Nav extends React.Component<Props, State> {
   public render() {
     if (this.state.redirect) return <Redirect to={this.state.redirect} />
     const { curriculum, user, curricula } = this.props
-    if (!user || !curriculum) return null
+    if (!user) return null
     const { displayModal } = this.state
 
     const { firstName, lastName } = user
@@ -115,7 +116,7 @@ class Nav extends React.Component<Props, State> {
           </Link>
 
           <FlexedDiv>
-            <Header.m margin="0 10px 0 0">{curriculum.name}</Header.m>
+            <Header.m margin="0 10px 0 0">{get(curriculum, "name")}</Header.m>
             <select
               onChange={e => {
                 const curriculum = curricula.find(
@@ -124,7 +125,7 @@ class Nav extends React.Component<Props, State> {
                 this.setCurriculum(curriculum!)
               }}
               style={{ width: "15px" }}
-              value={curriculum.name}
+              value={get(curriculum, "name")}
             >
               {curricula.map((curriculum: Curriculum) => (
                 <option key={curriculum.id} value={curriculum.id}>
