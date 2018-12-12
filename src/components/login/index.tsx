@@ -12,6 +12,7 @@ import { User } from "../../interfaces/user"
 export interface Props {
   dispatch: any
   user?: User
+  error?: any
 }
 
 interface State {
@@ -32,6 +33,7 @@ enum View {
 class Login extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
+
     this.state = {
       email: "oliver@gmail.com",
       password: "password",
@@ -44,6 +46,9 @@ class Login extends React.Component<Props, State> {
   public componentWillReceiveProps(nextProps: Props) {
     if (nextProps.user) {
       this.setState({ redirect: "/library" })
+    }
+    if (nextProps.error) {
+      this.setState({ error: nextProps.error })
     }
   }
 
@@ -177,7 +182,8 @@ class Login extends React.Component<Props, State> {
 }
 
 const mapStateToProps = (state: any, ownProps: any) => ({
-  user: state.entities.user
+  user: state.entities.user,
+  error: state.errorMessage
 })
 
 export default connect(mapStateToProps)(Login)

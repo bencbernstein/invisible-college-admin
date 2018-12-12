@@ -22,9 +22,9 @@ const callApi = (
         const result: any = { isLoading: false }
 
         if (errors && errors.length) {
-          const { message } = errors[0]
-          console.log("ERR: " + message)
-          return Promise.reject(message)
+          const error = errors[0].message
+          console.log("ERR: " + error)
+          throw new Error(error)
         }
 
         if (data[route] && schema) {
@@ -42,7 +42,9 @@ const callApi = (
 
         return result
       })
-      .catch(error => Promise.reject(error.message))
+      .catch(error => {
+        throw new Error(error.message)
+      })
   )
 }
 
@@ -71,20 +73,21 @@ export default (store: any) => (next: any) => (action: any) => {
   const [requestType, successType, failureType] = types
   next(actionWith({ type: requestType }))
 
-  return callApi(query, schema, route, parseJson).then(
-    (response: any) =>
+  return callApi(query, schema, route, parseJson)
+    .then((response: any) =>
       next(
         actionWith({
           response,
           type: successType
         })
-      ),
-    (error: any) =>
+      )
+    )
+    .catch((error: any) =>
       next(
         actionWith({
           type: failureType,
-          error: error || "Something bad happened."
+          error: error ? error.message : "Something bad happened."
         })
       )
-  )
+    )
 }
