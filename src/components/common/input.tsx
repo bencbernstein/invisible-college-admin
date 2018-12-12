@@ -15,6 +15,7 @@ const Basic = styled.input`
   width: ${(p: Props) => p.width};
   margin: ${(p: Props) => p.margin};
   border: none;
+  border-bottom: 1px solid black;
   box-sizing: border-box;
 `
 

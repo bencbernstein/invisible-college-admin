@@ -28,7 +28,7 @@ const Large = Regular.extend`
 `
 
 const Small = Regular.extend`
-  font-size: 0.9em;
+  font-size: 0.85em;
 `
 
 const ExtraSmall = Regular.extend`

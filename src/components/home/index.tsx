@@ -7,13 +7,13 @@ import Button from "../common/button"
 import { Background, Box, MainHeader, Stats, Centered } from "./components"
 import Leaderboard from "./leaderboard"
 
-import { User, getStats, Rank } from "../../models/user"
+// import { User, getStats, Rank } from "../../models/user"
 import { formatName } from "../../lib/helpers"
 import { calcProgress } from "../question/helpers"
 import { colors } from "../../lib/colors"
 
 interface Props {
-  user: User
+  user: any
 }
 
 interface State {
@@ -21,7 +21,7 @@ interface State {
   questionsAnswered?: number
   wordsLearned?: number
   passagesRead?: number
-  ranks: Rank[]
+  ranks: any[]
 }
 
 class Home extends React.Component<Props, State> {
@@ -33,12 +33,13 @@ class Home extends React.Component<Props, State> {
   }
 
   public async componentDidMount() {
-    const stats = await getStats(this.props.user.id)
-    if (!(stats instanceof Error)) {
-      const { wordsLearned, questionsAnswered, passagesRead } = stats.user
-      const { ranks } = stats
-      this.setState({ wordsLearned, questionsAnswered, passagesRead, ranks })
-    }
+    console.log("TODO")
+    // const stats = await getStats(this.props.user.id)
+    // if (!(stats instanceof Error)) {
+    //   const { wordsLearned, questionsAnswered, passagesRead } = stats.user
+    //   const { ranks } = stats
+    //   this.setState({ wordsLearned, questionsAnswered, passagesRead, ranks })
+    // }
   }
 
   public logout() {

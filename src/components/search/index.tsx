@@ -49,6 +49,7 @@ class Search extends React.Component<Props, State> {
   private search() {
     const networkingOperation = this.requiresNetworkingFor()
 
+    // TODO: - this breaks, remove this.props.collection
     if (networkingOperation === "texts") {
       const index = this.props.collection.replace(/ /g, "_")
       this.props.dispatch(fetchTextsAction(index, this.props.searchQuery))
@@ -70,9 +71,11 @@ class Search extends React.Component<Props, State> {
       >
         <Icon small={true} src={magnifyingGlass} />
         <Input.m
+          spellCheck={false}
           onChange={e => this.handleInputChange(e.target.value)}
           value={this.props.searchQuery || ""}
           type="text"
+          style={{ borderBottom: 0 }}
           placeholder="Search..."
         />
       </FlexedDiv>

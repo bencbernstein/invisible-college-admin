@@ -1,6 +1,6 @@
 /* tslint:disable */
 
-import { mergeWith, groupBy, transform, sortBy } from "lodash"
+import { mergeWith, groupBy, transform, sortBy, last } from "lodash"
 
 import * as _ from "underscore"
 import { colors } from "./colors"
@@ -34,98 +34,6 @@ export const highlight = (word: any): string => {
   return "black"
 }
 
-export const highlightValue = (
-  word: string,
-  words: any,
-  choices: any
-): string => {
-  word = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").toLowerCase()
-  if (words[word]) {
-    return colors.warmYellow
-  } else if (choices[word]) {
-    return colors.blue
-  }
-  return "black"
-}
-
-export const getRanges = (array: number[]): number[][] => {
-  array = array.sort()
-  const ranges = []
-  let rstart
-  let rend
-
-  for (let i = 0; i < array.length; i++) {
-    rstart = array[i]
-    rend = rstart
-    while (array[i + 1] - array[i] === 1) {
-      rend = array[i + 1]
-      i++
-    }
-
-    const result = rstart === rend ? [rstart, rstart + 1] : [rstart, rend + 1]
-    ranges.push(result)
-  }
-
-  return ranges
-}
-
-export const getWordAtPoint = (
-  elem: any,
-  x: number,
-  y: number
-): string | undefined => {
-  if (elem.nodeType === elem.TEXT_NODE) {
-    const range = elem.ownerDocument.createRange()
-    range.selectNodeContents(elem)
-    let currentPos = 0
-    const endPos = range.endOffset
-    while (currentPos + 1 < endPos) {
-      range.setStart(elem, currentPos)
-      range.setEnd(elem, currentPos + 1)
-      if (
-        range.getBoundingClientRect().left <= (x || 0) &&
-        range.getBoundingClientRect().right >= (x || 0) &&
-        range.getBoundingClientRect().top <= (y || 0) &&
-        range.getBoundingClientRect().bottom >= (y || 0)
-      ) {
-        range.expand("word")
-        const ret = range.toString()
-        range.detach()
-        return ret
-      }
-      currentPos += 1
-    }
-  } else {
-    for (let i = 0; i < elem.childNodes.length; i++) {
-      let range = elem.childNodes[i].ownerDocument.createRange()
-      range.selectNodeContents(elem.childNodes[i])
-      if (
-        range.getBoundingClientRect().left <= (x || 0) &&
-        range.getBoundingClientRect().right >= (x || 0) &&
-        range.getBoundingClientRect().top <= (y || 0) &&
-        range.getBoundingClientRect().bottom >= (y || 0)
-      ) {
-        range.detach()
-        return getWordAtPoint(elem.childNodes[i], x, y)
-      } else {
-        range.detach()
-      }
-    }
-  }
-  return undefined
-}
-
-export const move = (arr: any[], old_index: number, new_index: number) => {
-  if (new_index >= arr.length) {
-    var k = new_index - arr.length + 1
-    while (k--) {
-      arr.push(undefined)
-    }
-  }
-  arr.splice(new_index, 0, arr.splice(old_index, 1)[0])
-  return arr
-}
-
 export const isPunc = (char?: string): boolean =>
   char !== undefined && [".", ",", ")", "'"].indexOf(char) > -1
 
@@ -150,13 +58,6 @@ export const flattenSentences = (sentences: any[][]): any =>
       .slice(0, -1)
   )
 
-export const camelize = (str: string) =>
-  str
-    .replace(/(?:^\w|[A-Z]|\b\w)/g, function(letter, index) {
-      return index == 0 ? letter.toLowerCase() : letter.toUpperCase()
-    })
-    .replace(/\s+/g, "")
-
 export const parseQueryString = (queryString: string): any => {
   queryString = queryString.substring(1)
 
@@ -175,8 +76,6 @@ export const parseQueryString = (queryString: string): any => {
 
   return params
 }
-
-export const capitalize = (s: string) => s[0].toUpperCase() + s.slice(1)
 
 export const formatName = (first: string, last: string): string =>
   first.charAt(0).toUpperCase() +
@@ -201,9 +100,14 @@ export const _mergeWith = (state: any, response: any) =>
   )
 
 export const alphabetize = (data: any[], attr: string): any[] => {
-  const sorted = sortBy(data, d => d[attr].toUpperCase())
+  const none = "(none)".toUpperCase()
+  const sorted = sortBy(data, d => (d[attr] || none).toUpperCase())
   const grouped = groupBy(sorted, x =>
-    parseInt(x[attr][0], 10) ? "0-9" : x[attr][0].toUpperCase()
+    x[attr] === none
+      ? none
+      : parseInt(x[attr][0], 10)
+      ? "0-9"
+      : x[attr][0].toUpperCase()
   )
   return transform(
     grouped,
@@ -214,10 +118,7 @@ export const alphabetize = (data: any[], attr: string): any[] => {
   )
 }
 
-export const objectId = (
-  h: number = 16,
-  s: any = (s: any) => Math.floor(s).toString(h)
-) =>
-  s(Date.now() / 1000) + " ".repeat(h).replace(/./g, () => s(Math.random() * h))
-
 export const encodeUri = (data: any) => encodeURIComponent(JSON.stringify(data))
+
+export const lastPath = (window: Window): string =>
+  last(window.location.pathname.split("/")) || ""

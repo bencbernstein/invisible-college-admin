@@ -17,7 +17,6 @@ const Large = styled.p`
   text-align: ${(p: Props) => p.textAlign};
   text-decoration: ${(p: Props) => p.textDecoration};
   flex: ${(p: Props) => p.flex};
-  text-transform: capitalize;
 `
 
 const ExtraLarge = Large.extend`
@@ -25,7 +24,6 @@ const ExtraLarge = Large.extend`
 `
 
 const MediumL = styled.h2`
-  text-transform: capitalize;
   font-family: BrandonGrotesqueBold;
   letter-spacing: 1px;
   color: ${(p: Props) => p.color};
@@ -36,7 +34,6 @@ const MediumL = styled.h2`
 `
 
 const Medium = styled.h3`
-  text-transform: capitalize;
   font-family: BrandonGrotesqueBold;
   letter-spacing: 1px;
   margin: ${(p: Props) => p.margin};
@@ -47,7 +44,6 @@ const Medium = styled.h3`
 `
 
 const Small = styled.h5`
-  text-transform: capitalize;
   font-family: BrandonGrotesqueBold;
   margin: 15px 0px;
   color: ${(p: Props) => p.color};
@@ -62,7 +58,6 @@ const ForInput = Small.extend`
   text-align: center;
   font-family: BrandonGrotesque;
   margin: 0px 0px 5px 0px;
-  text-transform: none;
 `
 
 export default {

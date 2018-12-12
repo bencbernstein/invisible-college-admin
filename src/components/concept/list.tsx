@@ -64,7 +64,11 @@ class ConceptListComponent extends React.Component<Props, State> {
                   {divider}
                 </StyledText.xxl>
               ) : (
-                <Link style={blankLinkStyle} key={i} to={`/concept/${id}`}>
+                <Link
+                  style={blankLinkStyle}
+                  key={i}
+                  to={`/concept/enrich/${id}`}
+                >
                   <StyledText.regular>{value}</StyledText.regular>
                 </Link>
               )

@@ -8,21 +8,26 @@ import history from "../../history"
 import "./index.css"
 
 import Login from "../login"
+import Curriculum from "../curriculum"
 import Concepts from "../concept/list"
+import Concept from "../concept"
+import Passages from "../passage/list"
 import Queues from "../queue/list"
-import FilterPassage from "../passage2/filter"
-import EnrichPassage from "../passage2/enrich"
+import FilterPassage from "../passage/filter"
+import EnrichPassage from "../passage/enrich"
 import Images from "../image/list"
 import Discover from "../discover"
 import Nav from "../nav"
 import TextList from "../text/list"
+import IndexesList from "../text/indexesList"
+import Text from "../text"
 
 import ProtectedRoute, { ProtectedRouteProps } from "./protectedRoute"
 
-import { User } from "../../models/user"
-import { setEntity } from "../../actions"
+import { User } from "../../interfaces/user"
+import { setEntity, fetchCurriculaAction } from "../../actions"
 
-export const Container = styled.div`
+const Container = styled.div`
   text-align: left;
   max-width: 900px;
   padding: 20px;
@@ -59,6 +64,7 @@ class App extends React.Component<Props, State> {
 
   public componentDidMount() {
     this.checkForAuth()
+    this.loadCurricula()
   }
 
   public componentWillReceiveProps(nextProps: Props) {
@@ -67,13 +73,17 @@ class App extends React.Component<Props, State> {
     }
   }
 
-  public async checkForAuth() {
+  private async checkForAuth() {
     const json = localStorage.getItem("user")
     const user = json ? JSON.parse(json) : undefined
     if (user) {
       this.props.dispatch(setEntity({ user }))
     }
     this.setState({ checkedAuth: true, isAuthenticated: user !== undefined })
+  }
+
+  private loadCurricula() {
+    this.props.dispatch(fetchCurriculaAction())
   }
 
   public render() {
@@ -86,11 +96,21 @@ class App extends React.Component<Props, State> {
     }
 
     const ROUTES = [
+      {
+        path: "/curricula",
+        Component: Curriculum,
+        exact: true,
+        noSearch: true
+      },
       { path: "/concepts", Component: Concepts, exact: true },
+      { path: "/concept/enrich/:id", Component: Concept, noSearch: true },
       { path: "/images", Component: Images, exact: true },
       { path: "/queues", Component: Queues, exact: true, noSearch: true },
       { path: "/discover", Component: Discover, exact: true, noSearch: true },
-      { path: "/library", Component: TextList },
+      { path: "/passages", Component: Passages, exact: true, noSearch: true },
+      { path: "/library", Component: IndexesList, exact: true, noSearch: true },
+      { path: "/library/:id", Component: TextList, exact: true },
+      { path: "/library/text/:id", Component: Text, noSearch: true },
       { path: "/passage/filter/:id", Component: FilterPassage, noSearch: true },
       { path: "/passage/enrich/:id", Component: EnrichPassage, noSearch: true },
       {

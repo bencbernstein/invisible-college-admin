@@ -8,13 +8,11 @@ import {
   AnswerUnderline
 } from "./components"
 
-import { AnswerPart } from "../../models/question"
-
 import { isPunc } from "../../lib/helpers"
 import { colors } from "../../lib/colors"
 
 interface Props {
-  answer: AnswerPart[]
+  answer: any[]
   type: string
   height: string
   guessedCorrectly: string[]
@@ -58,7 +56,7 @@ export default class Answer extends React.Component<Props, State> {
       answer[0].value!.startsWith("data:image") &&
       guessedCorrectly.length
 
-    const answerSpace = (part: AnswerPart, i: number) => {
+    const answerSpace = (part: any, i: number) => {
       if (!part.value) {
         return null
       }
@@ -68,8 +66,8 @@ export default class Answer extends React.Component<Props, State> {
       const color = isBetweenQuestions
         ? colors.warmYellow
         : hide
-          ? "black"
-          : colors.green
+        ? "black"
+        : colors.green
 
       return (
         <AnswerPartBox margin={this.state.margin} key={i} hide={hide}>

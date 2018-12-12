@@ -4,8 +4,6 @@ import styled from "styled-components"
 import Header from "../common/header"
 import Text from "../common/text"
 
-import { DefinitionPart, Word } from "../../models/word"
-
 import { colors } from "../../lib/colors"
 
 interface SpanProps {
@@ -30,8 +28,8 @@ const Textarea = styled.textarea`
 `
 
 interface Props {
-  word: Word
-  update: (word: Word) => void
+  word: any
+  update: (word: any) => void
 }
 
 class DefinitionComponent extends React.Component<Props, any> {
@@ -74,7 +72,7 @@ class DefinitionComponent extends React.Component<Props, any> {
         <Textarea
           spellCheck={false}
           onChange={e => this.edit(e.target.value)}
-          value={word.definition.map((d: DefinitionPart) => d.value).join(" ")}
+          value={word.definition.map((d: any) => d.value).join(" ")}
         />
       </div>
     )

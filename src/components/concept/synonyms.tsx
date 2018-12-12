@@ -7,8 +7,6 @@ import Header from "../common/header"
 import Input from "../common/input"
 import Text from "../common/text"
 
-import { Word } from "../../models/word"
-
 import { colors } from "../../lib/colors"
 
 const Form = styled.form`
@@ -27,9 +25,9 @@ const Autocomplete = styled.div`
 `
 
 interface Props {
-  word: Word
+  word: any
   keywordValues: string[]
-  update: (word: Word) => void
+  update: (word: any) => void
 }
 
 interface State {

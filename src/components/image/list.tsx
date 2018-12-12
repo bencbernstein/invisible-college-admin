@@ -38,7 +38,7 @@ class ImageListComponent extends React.Component<Props, State> {
 
   public render() {
     const { images, isLoading } = this.props
-
+    // TODO: - When this route comes after /words - bad things happen
     const alphabetized = alphabetize(images, "firstWordValue")
 
     return (

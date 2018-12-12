@@ -1,7 +1,7 @@
 import * as React from "react"
-import * as _ from "underscore"
-
-import history from "../../history"
+import { Redirect } from "react-router"
+import { connect } from "react-redux"
+import { range, values, isEqual } from "lodash"
 
 import DefinitionComponent from "./definition"
 import Gallery from "./gallery"
@@ -11,39 +11,43 @@ import SynonymsComponent from "./synonyms"
 import TagsComponent from "./tags"
 import UnverifiedComponent from "./unverified"
 
-import Subnav from "../nav/subnav"
-
 import Header from "../common/header"
 import Input from "../common/input"
 
-import { addImage, fetchImages, removeImage } from "../../models/image"
-import { Word, fetchWord, updateWord } from "../../models/word"
+import { Word } from "../../interfaces/concept"
+import {
+  fetchWordAction,
+  removeImageFromWordAction,
+  updateWordAction,
+  setEntity
+} from "../../actions"
 
-import { parseQueryString } from "../../lib/helpers"
-
-import { Redirect } from "react-router"
+import { lastPath } from "../../lib/helpers"
+import CONFIG from "../../lib/config"
+import Spinner from "../common/spinner"
 
 interface Enriching {
   isEnriching: string
   next: string
 }
-const objIsEnriching = (obj: any): obj is Enriching =>
-  "isEnriching" in obj && "next" in obj
 
 interface State {
   word?: Word
   redirect?: string
-  imagesBase64: string[]
   enriching?: Enriching
 }
 
-class WordComponent extends React.Component<any, State> {
+interface Props {
+  word?: Word
+  isLoading: boolean
+  images: any[]
+  dispatch: any
+}
+
+class WordComponent extends React.Component<Props, State> {
   constructor(props: any) {
     super(props)
-
-    this.state = {
-      imagesBase64: []
-    }
+    this.state = {}
   }
 
   public componentDidMount() {
@@ -54,58 +58,48 @@ class WordComponent extends React.Component<any, State> {
     this.updateWord()
   }
 
-  public async loadData() {
-    const query = parseQueryString(window.location.search)
-    const enriching: Enriching | undefined = objIsEnriching(query)
-      ? query
-      : undefined
-
-    const id = _.last(window.location.pathname.split("/"))
-    const word = await fetchWord(id!)
-
-    if (!(word instanceof Error)) {
-      this.setState({ word, enriching }, this.loadImages)
+  public componentWillReceiveProps(nextProps: Props) {
+    const { word } = nextProps
+    if (word && !isEqual(word, this.state.word)) {
+      this.setState({ word })
     }
+  }
+
+  public async loadData() {
+    this.props.dispatch(setEntity({ isLoading: true }))
+    this.props.dispatch(fetchWordAction(lastPath(window)))
   }
 
   public updateWord() {
     if (this.state.word) {
-      updateWord(this.state.word)
-    }
-  }
-
-  public async loadImages() {
-    const { word } = this.state
-    if (word) {
-      const imagesBase64 = word.images.length
-        ? await fetchImages(word.images)
-        : []
-      this.setState({ imagesBase64 })
+      this.props.dispatch(updateWordAction(this.state.word))
     }
   }
 
   public async addImage(file: File) {
-    const response = await addImage(file, this.state.word!.id)
-    if (response.error) {
-      console.log(response.error)
-    } else {
-      // Need to change ID because it's coming from a regular express (not graphql) route
-      response.word.id = response.word._id
-      this.setState({ word: response.word }, this.loadImages)
-    }
+    const form = new FormData()
+    form.append("file", file)
+    const url = CONFIG.API_URL + "/image?action=POST&id=" + this.state.word!.id
+    await fetch(url, {
+      body: form,
+      method: "POST"
+    })
+      .then(res => res.json())
+      .then(json => console.log(json))
+    this.loadData()
   }
 
-  public removeImage(imageId: string) {
-    const word = this.state.word!
-    removeImage(word.id, imageId)
-    word.images = word.images.filter((id: any) => id !== imageId)
-    this.setState({ word }, this.loadImages)
+  public async removeImage(imageId: string) {
+    await this.props.dispatch(
+      removeImageFromWordAction(this.state.word!.id, imageId)
+    )
+    this.loadData()
   }
 
   public editObscurity(value: string, obscurity: number) {
     value = value === "10" ? value : value.replace(obscurity.toString(), "")
     obscurity = parseInt(value, 10)
-    if (_.range(1, 11).indexOf(obscurity) > -1) {
+    if (range(1, 11).indexOf(obscurity) > -1) {
       const word = this.state.word!
       word.obscurity = obscurity
       this.setState({ word })
@@ -131,31 +125,13 @@ class WordComponent extends React.Component<any, State> {
     this.setState({ word })
   }
 
-  public next() {
-    this.updateWord()
-
-    const { isEnriching, next } = this.state.enriching!
-    const split = next.split(",")
-    const [id, ids] = [split.shift(), split.join(",")]
-
-    if (id) {
-      const path = `/word/${id}?isEnriching=${isEnriching}&next=${ids}`
-      history.push(path)
-      this.loadData()
-    } else {
-      const redirect = "/library?view=words"
-      this.setState({ redirect })
-    }
-  }
-
   public render() {
-    const { word, imagesBase64, enriching, redirect } = this.state
+    const { word, enriching, redirect } = this.state
+    const { images, isLoading } = this.props
 
-    if (!word) {
-      return null
-    } else if (redirect) {
-      return <Redirect to={redirect} />
-    }
+    if (isLoading) return <Spinner />
+    if (!word) return null
+    if (redirect) return <Redirect to={redirect} />
 
     const roots = <RootsComponent key={1} word={word} />
     const definition = (
@@ -201,19 +177,18 @@ class WordComponent extends React.Component<any, State> {
         <Header.s style={{ marginTop: "30px" }}>obscurity</Header.s>
         <Input.m
           type="text"
-          value={word.obscurity}
+          value={word.obscurity || ""}
           onChange={e => this.editObscurity(e.target.value, word.obscurity)}
         />
       </div>
     )
-
-    const images = (
+    const gallery = (
       <Gallery
         key={8}
         word={word.value}
         removeImage={this.removeImage.bind(this)}
         addImage={this.addImage.bind(this)}
-        imagesBase64={imagesBase64}
+        images={images}
       />
     )
 
@@ -224,30 +199,26 @@ class WordComponent extends React.Component<any, State> {
       synonyms,
       tags,
       obscurity,
-      images
+      gallery
     }
 
     return (
       <div>
-        <Subnav
-          minimized={false}
-          title={word!.value}
-          subtitle={"words"}
-          subtitleLink={"/library?view=words"}
-          isEnriching={enriching !== undefined}
-          next={enriching && this.next.bind(this)}
-          invert={true}
-        />
-
         {enriching && enriching.isEnriching !== "all"
           ? [
               attrComponents[enriching.isEnriching],
               unverifiedComponent(enriching.isEnriching)
             ]
-          : _.values(attrComponents)}
+          : values(attrComponents)}
       </div>
     )
   }
 }
 
-export default WordComponent
+const mapStateToProps = (state: any, ownProps: any) => ({
+  word: state.entities.word,
+  images: state.entities.images || [],
+  isLoading: state.entities.isLoading === true
+})
+
+export default connect(mapStateToProps)(WordComponent)

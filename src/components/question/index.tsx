@@ -11,16 +11,13 @@ import Interactive from "./interactive"
 import OnCorrect from "./onCorrect"
 import Prompt from "./prompt"
 
-import {
-  Question,
-  QuestionLog,
-  questionsForUser,
-  saveQuestionsForUser,
-  userSawFactoid,
-  questionsForType
-} from "../../models/question"
+import { Question, QuestionLog } from "../../interfaces/question"
+// questionsForUser,
+// saveQuestionsForUser,
+// userSawFactoid,
+// questionsForType
 
-import { User } from "../../models/user"
+import { User } from "../../interfaces/user"
 
 import { sleep } from "../../lib/helpers"
 import { calcProgress } from "./helpers"
@@ -98,14 +95,15 @@ class QuestionComponent extends React.Component<Props, State> {
 
   public async loadQuestions(cb?: () => void) {
     const { gameElements, type } = this.state
-    const newElements = await (type
-      ? questionsForType(type)
-      : questionsForUser(this.props.user.id))
-    if (!(newElements instanceof Error)) {
-      const parsed = JSON.parse(newElements)
-      gameElements.push(...parsed)
-      this.setState({ gameElements }, cb)
-    }
+    console.log("TODO", gameElements, type)
+    // const newElements = await (type
+    //   ? questionsForType(type)
+    //   : questionsForUser(this.props.user.id))
+    // if (!(newElements instanceof Error)) {
+    //   const parsed = JSON.parse(newElements)
+    //   gameElements.push(...parsed)
+    //   this.setState({ gameElements }, cb)
+    // }
   }
 
   public record(question: Question) {
@@ -116,7 +114,8 @@ class QuestionComponent extends React.Component<Props, State> {
     const { id, value } = type === "word" ? sources.word! : sources.passage!
     questionLog.push({ correct, type, id, value })
     if (questionLog.length === 1) {
-      saveQuestionsForUser(this.props.user.id, questionLog) // TODO: - what to do with error?
+      // TODO
+      // saveQuestionsForUser(this.props.user.id, questionLog) // TODO: - what to do with error?
       this.setState({ questionLog: [] })
     } else {
       this.setState({ questionLog })
@@ -140,7 +139,8 @@ class QuestionComponent extends React.Component<Props, State> {
       this.record(question)
     } else if (get(onCorrectElement as Factoid, "title")) {
       const factoid = onCorrectElement as Factoid
-      userSawFactoid(this.props.user.id, factoid.id)
+      console.log(factoid)
+      // userSawFactoid(this.props.user.id, factoid.id)
     }
 
     const element = gameElements.shift()

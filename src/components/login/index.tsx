@@ -7,7 +7,7 @@ import Input from "../common/input"
 import { Form, BoldSpan, ErrorMessage, MainHeader } from "./components"
 
 import { loginUserAction } from "../../actions"
-import { User } from "../../models/user"
+import { User } from "../../interfaces/user"
 
 export interface Props {
   dispatch: any

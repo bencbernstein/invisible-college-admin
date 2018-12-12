@@ -10,60 +10,53 @@ import Header from "../common/header"
 import StyledText from "../common/text"
 import blankLinkStyle from "../common/blankLinkStyle"
 
-import { parseTexts } from "../../models/text"
 import { fetchTextsAction, setEntity } from "../../actions"
-import { alphabetize } from "../../lib/helpers"
+import { alphabetize, lastPath } from "../../lib/helpers"
 
 interface State {
-  index?: string
+  index: string
 }
 
 interface Props {
   texts: any[]
   dispatch: any
   isLoading: boolean
-  collection?: string
 }
 
 class TextListComponent extends React.Component<Props, State> {
   constructor(props: any) {
     super(props)
-    this.state = {}
+
+    this.state = {
+      index: lastPath(window)
+    }
   }
 
   public componentDidMount() {
-    if (this.props.collection) {
-      this.loadData(this.props.collection)
-    }
-  }
-
-  public componentWillReceiveProps(nextProps: Props) {
-    const collection = nextProps.collection
-    if (collection && collection !== this.props.collection) {
-      this.loadData(collection)
-    }
+    this.loadData()
   }
 
   public async onDrop(acceptedFiles: File[]) {
     if (acceptedFiles.length) {
-      await parseTexts(acceptedFiles)
-      this.loadData(this.props.collection!)
+      console.log("implement parseTexts!")
+      // await parseTexts(acceptedFiles)
+      // this.loadData(this.props.collection!)
     }
   }
 
-  public async loadData(collection: string) {
-    const index = collection.replace(/ /g, "_")
+  public async loadData() {
     this.props.dispatch(setEntity({ isLoading: true }))
-    this.props.dispatch(fetchTextsAction(index))
-    this.setState({ index })
+    this.props.dispatch(fetchTextsAction(this.state.index))
   }
 
   public render() {
-    const { collection, isLoading, texts } = this.props
-    if (!collection) return null
+    const { isLoading, texts } = this.props
+    const { index } = this.state
 
     const header = (
-      <Header.m style={{ textTransform: "capitalize" }}>{collection}</Header.m>
+      <Header.m style={{ textTransform: "capitalize" }}>
+        {index.replace(/-/g, " ")}
+      </Header.m>
     )
 
     const uploadButton = (
@@ -111,8 +104,7 @@ class TextListComponent extends React.Component<Props, State> {
 
 const mapStateToProps = (state: any, ownProps: any) => ({
   texts: state.entities.texts || [],
-  isLoading: state.entities.isLoading === true,
-  collection: state.entities.collection
+  isLoading: state.entities.isLoading === true
 })
 
 export default connect(mapStateToProps)(TextListComponent)

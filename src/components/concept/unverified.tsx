@@ -6,7 +6,6 @@ import Header from "../common/header"
 import Text from "../common/text"
 
 import { colors } from "../../lib/colors"
-import { Word, enrichWord } from "../../models/word"
 
 const Container = styled.div`
   margin-top: 30px;
@@ -36,7 +35,7 @@ const Background = styled.div`
 `
 
 interface Props {
-  word: Word
+  word: any
   attr: string
   addUnverified: (attr: string, value: string) => {}
 }
@@ -66,13 +65,14 @@ class UnverifiedComponent extends React.Component<Props, State> {
 
   public async enrich(value: string) {
     const { attr } = this.props
-    const enriched = await enrichWord(value)
-    if (enriched[attr]) {
-      const unverified = Array.isArray(enriched[attr])
-        ? enriched[attr]
-        : [enriched[attr]]
-      this.setState({ unverified })
-    }
+    console.log(attr)
+    // const enriched = await enrichWord(value)
+    // if (enriched[attr]) {
+    //   const unverified = Array.isArray(enriched[attr])
+    //     ? enriched[attr]
+    //     : [enriched[attr]]
+    //   this.setState({ unverified })
+    // }
   }
 
   public render() {

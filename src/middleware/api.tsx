@@ -6,7 +6,7 @@ export const CALL_API = "Call API"
 
 const callApi = (
   query: string,
-  schema: string,
+  schema: undefined | string | string[],
   route: string,
   parseJson: boolean = false
 ) => {
@@ -27,8 +27,17 @@ const callApi = (
           return Promise.reject(message)
         }
 
-        if (data[route]) {
-          result[schema] = parseJson ? JSON.parse(data[route]) : data[route]
+        if (data[route] && schema) {
+          if (Array.isArray(schema)) {
+            schema.forEach(
+              s =>
+                (result[s] = parseJson
+                  ? JSON.parse(data[route])
+                  : data[route][s])
+            )
+          } else {
+            result[schema] = parseJson ? JSON.parse(data[route]) : data[route]
+          }
         }
 
         return result

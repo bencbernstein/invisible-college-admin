@@ -2,14 +2,13 @@ import * as React from "react"
 
 import { LeaderboardContainer, MainHeader } from "./components"
 
-import { Rank } from "../../models/user"
 import FlexedDiv from "../common/flexedDiv"
 import Icon from "../common/icon"
 
 import yellowStar from "../../lib/images/gameplay/icon-star-yellow.png"
 
 interface Props {
-  ranks: Rank[]
+  ranks: any[]
   userId: string
 }
 
@@ -17,7 +16,7 @@ class Leaderboard extends React.Component<Props, any> {
   public render() {
     const { ranks, userId } = this.props
 
-    const row = (rank: Rank) => (
+    const row = (rank: any) => (
       <FlexedDiv
         bColor={userId === rank.id ? "rgba(245,222,179, 0.5)" : ""}
         padding="2px 10px"

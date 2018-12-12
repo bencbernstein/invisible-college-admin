@@ -6,8 +6,6 @@ import Header from "../common/header"
 import Input from "../common/input"
 import Text from "../common/text"
 
-import { Tag, Word } from "../../models/word"
-
 import { colors } from "../../lib/colors"
 
 const Form = styled.form`
@@ -26,9 +24,9 @@ const Autocomplete = styled.div`
 `
 
 interface Props {
-  word: Word
+  word: any
   keywordValues: string[]
-  update: (word: Word) => void
+  update: (word: any) => void
 }
 
 interface State {
@@ -54,7 +52,7 @@ class TagsComponent extends React.Component<Props, State> {
   public addTag(tag: string) {
     const word = this.props.word
 
-    if (tag.length && word.tags.map(t => t.value).indexOf(tag) === -1) {
+    if (tag.length && word.tags.map((t: any) => t.value).indexOf(tag) === -1) {
       word.tags.push({ value: tag })
       this.props.update(word)
       this.setState({ autocomplete: [], tag: "" })
@@ -77,7 +75,7 @@ class TagsComponent extends React.Component<Props, State> {
     const { autocomplete, tag } = this.state
     const { word } = this.props
 
-    const tags = word.tags.map((t: Tag, i: number) => (
+    const tags = word.tags.map((t: any, i: number) => (
       <Button.circ
         marginRight={"5px"}
         onClick={() => this.removeTag(i)}

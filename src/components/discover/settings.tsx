@@ -7,9 +7,9 @@ import Text from "../common/text"
 import { Textarea, Divider, SettingsHeader } from "./components"
 
 import { colors } from "../../lib/colors"
+import { encodeUri } from "../../lib/helpers"
 import COLLECTIONS from "../../lib/collections"
 
-import { PassageResult } from "../../models/discover"
 import FlexedDiv from "../common/flexedDiv"
 
 interface Props {
@@ -19,10 +19,10 @@ interface Props {
   searchWords: string[]
   hasSearchCollections: boolean
   runPassageSearch: () => void
+  hits: any[]
   exportPassages: () => void
   editedSearchCollections: (name: string) => void
   canExport: boolean
-  passageResults: PassageResult[]
   searchCollections: string[]
 }
 
@@ -39,7 +39,8 @@ class Settings extends React.Component<Props, any> {
       canExport,
       isLoading,
       searchCollections,
-      hasSearchCollections
+      hasSearchCollections,
+      hits
     } = this.props
 
     const passageSearchDirections = (
@@ -83,11 +84,9 @@ class Settings extends React.Component<Props, any> {
           style={{ width: "100%" }}
         >
           <a
-            style={{ color: colors.gray, textDecoration: "none" }}
-            download="data.json"
-            href={`data: text/json;charset=utf-8,${encodeURIComponent(
-              JSON.stringify(this.props.passageResults)
-            )}`}
+            style={{ color: "black", textDecoration: "none" }}
+            download={`hits_${Date.now()}.json`}
+            href={`data: text/json;charset=utf-8,${encodeUri(hits)}`}
           >
             Download
           </a>
@@ -131,7 +130,8 @@ class Settings extends React.Component<Props, any> {
 }
 
 const mapStateToProps = (state: any, ownProps: any) => ({
-  isLoading: state.entities.isLoading === true
+  isLoading: state.entities.isLoading === true,
+  hits: state.entities.hits || []
 })
 
 export default connect(mapStateToProps)(Settings)

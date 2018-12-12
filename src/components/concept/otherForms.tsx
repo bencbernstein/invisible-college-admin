@@ -5,16 +5,14 @@ import Button from "../common/button"
 import Header from "../common/header"
 import Input from "../common/input"
 
-import { Word } from "../../models/word"
-
 const Form = styled.form`
   position: relative;
   width: 150px;
 `
 
 interface Props {
-  word: Word
-  update: (word: Word) => void
+  word: any
+  update: (word: any) => void
 }
 
 interface State {

@@ -6,11 +6,12 @@ import Text from "../common/text"
 import { Background, Box, MainHeader, Content, AvatarImg } from "./components"
 import FlexedDiv from "../common/flexedDiv"
 
-import { User } from "../../models/user"
-import {
-  fetchQuestionTypeCounts,
-  QuestionTypeCount
-} from "../../models/question"
+import { User } from "../../interfaces/user"
+
+// import {
+//   fetchQuestionTypeCounts,
+//   QuestionTypeCount
+// } from "../../models/question"
 
 import { colors } from "../../lib/colors"
 
@@ -24,7 +25,7 @@ interface Props {
 
 interface State {
   redirect?: string
-  questionTypeCounts: QuestionTypeCount[]
+  questionTypeCounts: any[]
 }
 
 class AdminHome extends React.Component<Props, State> {
@@ -36,10 +37,11 @@ class AdminHome extends React.Component<Props, State> {
   }
 
   public async componentDidMount() {
-    const questionTypeCounts = await fetchQuestionTypeCounts()
-    if (!(questionTypeCounts instanceof Error)) {
-      this.setState({ questionTypeCounts })
-    }
+    console.log("TODO")
+    // const questionTypeCounts = await fetchQuestionTypeCounts()
+    // if (!(questionTypeCounts instanceof Error)) {
+    //   this.setState({ questionTypeCounts })
+    // }
   }
 
   public render() {
@@ -49,7 +51,7 @@ class AdminHome extends React.Component<Props, State> {
       return <Redirect to={redirect} />
     }
 
-    const playQuestionType = (q: QuestionTypeCount) => (
+    const playQuestionType = (q: any) => (
       <Text.s
         margin="5px 0"
         onClick={() => this.setState({ redirect: `/play?type=${q.type}` })}

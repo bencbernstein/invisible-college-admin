@@ -1,4 +1,5 @@
 import * as React from "react"
+import { Redirect } from "react-router"
 import { connect } from "react-redux"
 import { without, uniq } from "lodash"
 
@@ -11,11 +12,13 @@ import { colors } from "../../lib/colors"
 
 import {
   fetchWordsByValuesAction,
-  findPassagesAction,
-  createQueueAction
+  findEsPassagesAction,
+  createQueueAction,
+  setEntity
 } from "../../actions"
 
 import { Word } from "../../interfaces/word"
+import { Curriculum } from "../../interfaces/curriculum"
 
 const combineLcds = (words: Word[], searchWords: string[]): string[] => {
   words.forEach((word: Word) => {
@@ -30,12 +33,14 @@ const combineLcds = (words: Word[], searchWords: string[]): string[] => {
 interface State {
   error?: string
   searchWords: string[]
+  redirect?: string
   searchCollections: string[]
 }
 
 interface Props {
   dispatch: any
   words: Word[]
+  curriculum: Curriculum
   hits: any[]
   isLoading: boolean
 }
@@ -53,7 +58,8 @@ class Discover extends React.Component<Props, State> {
   public async runPassageSearch() {
     await this.props.dispatch(fetchWordsByValuesAction(this.state.searchWords))
     const lcds = combineLcds(this.props.words, this.state.searchWords)
-    this.props.dispatch(findPassagesAction(lcds))
+    this.props.dispatch(setEntity({ isLoading: true }))
+    this.props.dispatch(findEsPassagesAction(lcds))
   }
 
   private editedSearchWords(str: string) {
@@ -78,14 +84,21 @@ class Discover extends React.Component<Props, State> {
       id: _id,
       tags: uniq(findMatches(highlight.sentences))
     }))
-    const createdOn = Date.now()
-    const params = { type: "filter", entity: "passage", items, createdOn }
-    this.props.dispatch(createQueueAction(params))
+    const params = { type: "filter", entity: "passage", items }
+    const curriculum = this.props.curriculum.name
+    const confirm = `Create ${curriculum} queue from ${items.length} passages?`
+    if (window.confirm(confirm)) {
+      this.props.dispatch(setEntity({ isLoading: true }))
+      await this.props.dispatch(createQueueAction(params))
+      this.setState({ redirect: "/queues" })
+    }
   }
 
   public render() {
-    const { searchWords, searchCollections, error } = this.state
+    const { searchWords, searchCollections, error, redirect } = this.state
     const { hits, isLoading } = this.props
+
+    if (redirect) return <Redirect to={redirect} />
 
     return (
       <Container>
@@ -114,7 +127,8 @@ class Discover extends React.Component<Props, State> {
 const mapStateToProps = (state: any, ownProps: any) => ({
   words: state.entities.words || [],
   hits: state.entities.hits || [],
-  isLoading: state.entities.isLoading
+  isLoading: state.entities.isLoading === true,
+  curriculum: state.entities.curriculum
 })
 
 export default connect(mapStateToProps)(Discover)

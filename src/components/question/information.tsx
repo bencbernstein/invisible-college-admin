@@ -13,7 +13,7 @@ import DeleteIcon from "../../lib/images/icon-delete.png"
 import binoculars from "../../lib/images/gameplay/icon-binoculars.png"
 import flame from "../../lib/images/gameplay/icon-speedy.png"
 
-import { Question } from "../../models/question"
+import { Question } from "../../interfaces/question"
 
 import grayStar from "../../lib/images/gameplay/icon-star-gray.png"
 import yellowStar from "../../lib/images/gameplay/icon-star-yellow.png"

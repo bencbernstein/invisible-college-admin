@@ -3,7 +3,7 @@ import * as React from "react"
 
 import { PromptBox, Span, PromptText, PromptImage } from "./components"
 
-import { PromptPart } from "../../models/question"
+import { PromptPart } from "../../interfaces/question"
 
 import { isPunc } from "../../lib/helpers"
 

@@ -36,7 +36,7 @@ const PositionedIcon = Icon.extend`
 `
 
 interface Props {
-  imagesBase64: string[]
+  images: string[]
   addImage: (file: File) => void
   removeImage: (imageId: string) => void
   word: string
@@ -75,7 +75,7 @@ class Gallery extends React.Component<Props, State> {
   }
 
   public render() {
-    const { imagesBase64 } = this.props
+    const { images } = this.props
     const { isHoveringDelete } = this.state
 
     const img = (image: any, i: number) => (
@@ -87,7 +87,7 @@ class Gallery extends React.Component<Props, State> {
           onClick={e => this.props.removeImage(image.id)}
           src={isHoveringDelete === i ? deleteIconRed : deleteIcon}
         />
-        <Image src={image.base64} />
+        <Image src={`https://s3.amazonaws.com/${image.url}`} />
       </ImageContainer>
     )
 
@@ -109,7 +109,7 @@ class Gallery extends React.Component<Props, State> {
       <div style={{ marginTop: "30px" }}>
         <Header.s>images</Header.s>
         <ListContainer>
-          {imagesBase64.map(img)}
+          {images.map(img)}
           <Dropzone
             style={{
               width: "250px",

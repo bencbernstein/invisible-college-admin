@@ -4,7 +4,7 @@ import * as React from "react"
 import { Button, Image, ChoicesGridBox, ChoicesFlexBox } from "./components"
 import { Guess } from "./"
 
-import { AnswerPart } from "../../models/question"
+import { AnswerPart } from "../../interfaces/question"
 
 import { colors } from "../../lib/colors"
 
