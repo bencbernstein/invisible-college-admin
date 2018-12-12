@@ -50,7 +50,7 @@ class Discover extends React.Component<Props, State> {
     super(props)
 
     this.state = {
-      searchWords: ["carnivore"],
+      searchWords: [],
       searchCollections: ["simple english wikipedia"]
     }
   }
