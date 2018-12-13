@@ -7,7 +7,11 @@ import Text from "../common/text"
 import Spinner from "../common/spinner"
 import Input from "../common/input"
 
-import { fetchPassages, updatePassageAction } from "../../actions"
+import {
+  fetchPassages,
+  updatePassageAction,
+  removePassageAction
+} from "../../actions"
 import { colors } from "../../lib/colors"
 import Icon from "../common/icon"
 
@@ -64,7 +68,15 @@ class PassageListComponent extends React.Component<Props, State> {
         key={i}
         style={{ margin: "12px 0", display: "flex", alignItems: "center" }}
       >
-        <Icon pointer={true} small={true} src={deleteIcon} />
+        <Icon
+          onClick={async () => {
+            await this.props.dispatch(removePassageAction(data.id))
+            this.loadData()
+          }}
+          pointer={true}
+          small={true}
+          src={deleteIcon}
+        />
 
         <form onSubmit={e => this.updateDifficulty(e, data)}>
           <Input.m

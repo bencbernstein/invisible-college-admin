@@ -1,9 +1,7 @@
 import * as React from "react"
 import { connect } from "react-redux"
-
 import { Link } from "react-router-dom"
 
-import Header from "../common/header"
 import Spinner from "../common/spinner"
 import Text from "../common/text"
 
@@ -44,21 +42,18 @@ class IndexesListComponent extends React.Component<Props, State> {
     if (indexCounts.length === 0) return <Spinner />
 
     return (
-      <div style={{ textAlign: "center" }}>
-        <Header.m>Collections</Header.m>
-        <div>
-          <Link
-            style={blankLinkStyle}
-            to={`/library/${INDEXES[0].replace(/_/g, "-")}`}
-          >
-            <Text.regular style={{ textTransform: "capitalize" }}>
-              {INDEXES[0].replace(/_/g, " ")}
-            </Text.regular>
-          </Link>
-          <Text.regular color={colors.mediumLGray}>
-            Count: {indexCounts[0]}
+      <div style={{ width: "600px", margin: "0 auto", marginTop: "30px" }}>
+        <Link
+          style={blankLinkStyle}
+          to={`/library/${INDEXES[0].replace(/_/g, "-")}`}
+        >
+          <Text.regular style={{ textTransform: "capitalize" }}>
+            {INDEXES[0].replace(/_/g, " ")}
           </Text.regular>
-        </div>
+        </Link>
+        <Text.regular color={colors.mediumLGray}>
+          Count: {indexCounts[0]}
+        </Text.regular>
       </div>
     )
   }

@@ -8,50 +8,31 @@ interface Props {
   color?: string
 }
 
-const Large = styled.p`
-  font-size: 2.3em;
-  color: ${(p: Props) => p.color};
+const headerProps = (props: Props) => `
+  margin: ${props.margin};
+  text-align: ${props.textAlign};
+  text-decoration: ${props.textDecoration};
+  flex: ${props.flex};
+  color: ${props.color};
   letter-spacing: 1px;
-  font-family: BrandonGrotesque;
-  margin: ${(p: Props) => p.margin};
-  text-align: ${(p: Props) => p.textAlign};
-  text-decoration: ${(p: Props) => p.textDecoration};
-  flex: ${(p: Props) => p.flex};
-`
-
-const ExtraLarge = Large.extend`
-  font-size: 4.5em;
-`
-
-const MediumL = styled.h2`
   font-family: BrandonGrotesqueBold;
-  letter-spacing: 1px;
-  color: ${(p: Props) => p.color};
-  margin: ${(p: Props) => p.margin};
-  text-align: ${(p: Props) => p.textAlign};
-  text-decoration: ${(p: Props) => p.textDecoration};
-  flex: ${(p: Props) => p.flex};
+  text-transform: uppercase;
+`
+
+const Large = styled.h2`
+  ${(p: Props) => headerProps(p)}
+`
+
+const ExtraLarge = styled.h1`
+  ${(p: Props) => headerProps(p)}
 `
 
 const Medium = styled.h3`
-  font-family: BrandonGrotesqueBold;
-  letter-spacing: 1px;
-  margin: ${(p: Props) => p.margin};
-  color: ${(p: Props) => p.color};
-  text-align: ${(p: Props) => p.textAlign};
-  text-decoration: ${(p: Props) => p.textDecoration};
-  flex: ${(p: Props) => p.flex};
+  ${(p: Props) => headerProps(p)}
 `
 
-const Small = styled.h5`
-  font-family: BrandonGrotesqueBold;
-  margin: 15px 0px;
-  color: ${(p: Props) => p.color};
-  letter-spacing: 1px;
-  margin: ${(p: Props) => p.margin};
-  text-align: ${(p: Props) => p.textAlign};
-  text-decoration: ${(p: Props) => p.textDecoration};
-  flex: ${(p: Props) => p.flex};
+const Small = styled.h4`
+  ${(p: Props) => headerProps(p)}
 `
 
 const ForInput = Small.extend`
@@ -63,7 +44,6 @@ const ForInput = Small.extend`
 export default {
   l: Large,
   m: Medium,
-  ml: MediumL,
   xl: ExtraLarge,
   s: Small,
   forInput: ForInput

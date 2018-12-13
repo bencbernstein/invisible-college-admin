@@ -16,7 +16,6 @@ interface State {
 
 interface Props {
   dispatch: any
-  collection: string
   searchQuery?: string
 }
 
@@ -49,9 +48,8 @@ class Search extends React.Component<Props, State> {
   private search() {
     const networkingOperation = this.requiresNetworkingFor()
 
-    // TODO: - this breaks, remove this.props.collection
     if (networkingOperation === "texts") {
-      const index = this.props.collection.replace(/ /g, "_")
+      const index = "simple_english_wikipedia"
       this.props.dispatch(fetchTextsAction(index, this.props.searchQuery))
     }
 
@@ -84,7 +82,6 @@ class Search extends React.Component<Props, State> {
 }
 
 const mapStateToProps = (state: any, ownProps: any) => ({
-  collection: state.entities.collection,
   searchQuery: state.entities.searchQuery
 })
 

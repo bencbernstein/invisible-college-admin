@@ -5,10 +5,11 @@ import { wordAttrs } from "../interfaces/concept"
 import { encodeUri } from "../lib/helpers"
 
 const queueAttrs =
-  "id entity type createdOn accessLevel items { id tags decisions { indexes accepted id userId userAccessLevel } }"
+  "id entity type createdOn accessLevel curriculum curriculumId part items { id tags decisions { indexes accepted id userId userAccessLevel } }"
 
 const imageAttrs = "id url caption location wordValues firstWordValue"
-const esPassageAttrs = "_id _source { sentences source title section }"
+const esPassageAttrs =
+  "_id _source { sentences source title section join_field { name parent } }"
 
 const taggedAttrs =
   "tagged { value pos isFocusWord isPunctuation isSentenceConnector isConnector isUnfocused wordId choiceSetId }"
@@ -233,13 +234,13 @@ export const fetchEsPassageBySectionAction = (
     }
   })
 
-export const createQueueAction = (
-  params: any,
-  route: string = "createQueue"
+export const createQueuesAction = (
+  queues: any[],
+  route: string = "createQueues"
 ) => (dispatch: any) =>
   dispatch({
     [CALL_API]: {
-      query: `mutation { ${route}(data: "${encodeUri(params)}") }`,
+      query: `mutation { ${route}(data: "${encodeUri(queues)}") }`,
       types: types(camelCaseToUpperCase(route)),
       route
     }
@@ -248,16 +249,28 @@ export const createQueueAction = (
 export const updateQueueItemAction = (
   id: string,
   index: number,
-  update: any,
+  update?: any,
   route: string = "updateQueueItem"
 ) => (dispatch: any) =>
   dispatch({
     [CALL_API]: {
-      query: `mutation { ${route}(id: "${id}", index: "${index}", update: "${encodeUri(
-        update
-      )}") { ${queueAttrs} } }`,
+      query: `mutation { ${route}(id: "${id}", index: "${index}", update: "${
+        update ? encodeUri(update) : ""
+      }") { ${queueAttrs} } }`,
       types: types(camelCaseToUpperCase(route)),
       schema: "queue",
+      route
+    }
+  })
+
+export const removePassageAction = (
+  id: string,
+  route: string = "removePassage"
+) => (dispatch: any) =>
+  dispatch({
+    [CALL_API]: {
+      query: `mutation { ${route}(id: "${id}") { id } }`,
+      types: types(camelCaseToUpperCase(route)),
       route
     }
   })

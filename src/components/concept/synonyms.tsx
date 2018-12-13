@@ -76,13 +76,14 @@ class SynonymsComponent extends React.Component<Props, State> {
     const { word } = this.props
 
     const synonyms = word.synonyms.map((s: string, i: number) => (
-      <Button.circ
+      <Button.s
+        margin={"0 5px 0 0"}
         marginRight={"5px"}
         onClick={() => this.removeSynonym(i)}
         key={i}
       >
         {s}
-      </Button.circ>
+      </Button.s>
     ))
 
     return (

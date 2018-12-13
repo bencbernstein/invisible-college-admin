@@ -76,13 +76,13 @@ class TagsComponent extends React.Component<Props, State> {
     const { word } = this.props
 
     const tags = word.tags.map((t: any, i: number) => (
-      <Button.circ
-        marginRight={"5px"}
+      <Button.regular
+        margin={"0 5px 0 0"}
         onClick={() => this.removeTag(i)}
         key={i}
       >
         {t.value}
-      </Button.circ>
+      </Button.regular>
     ))
 
     return (

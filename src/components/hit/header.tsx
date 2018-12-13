@@ -7,19 +7,17 @@ interface Props {
   passage: any
 }
 
-export default class ProgressBar extends React.Component<Props, any> {
-  constructor(props: Props) {
-    super(props)
-  }
-
+export default class HitHeader extends React.Component<Props, any> {
   public render() {
     const { passage } = this.props
 
     return (
-      <Header.s margin={"0"}>
+      <Header.s textAlign="center" margin="0">
         <a
           style={{ color: colors.blue, textDecoration: "none" }}
-          href={`https://en.wikipedia.org/wiki/${passage._source.title}`}
+          href={`http://localhost:3000/library/text/${
+            passage._source.join_field.parent
+          }`}
           target={"_blank"}
         >
           {passage._source.title}

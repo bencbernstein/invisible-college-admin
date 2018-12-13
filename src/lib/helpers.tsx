@@ -122,3 +122,6 @@ export const encodeUri = (data: any) => encodeURIComponent(JSON.stringify(data))
 
 export const lastPath = (window: Window): string =>
   last(window.location.pathname.split("/")) || ""
+
+export const unixToDateString = (timestamp: string) =>
+  new Date(parseInt(timestamp, 10)).toLocaleDateString()

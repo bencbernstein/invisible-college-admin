@@ -76,6 +76,7 @@ class App extends React.Component<Props, State> {
   private async checkForAuth() {
     const json = localStorage.getItem("user")
     const user = json ? JSON.parse(json) : undefined
+    console.log(user)
     if (user) {
       this.props.dispatch(setEntity({ user }))
     }

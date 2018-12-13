@@ -18,6 +18,7 @@ const colors = {
   red: "#FD7274",
   red10l: "#FF7171",
   darkGray: "#686868",
+  gray3: "#6b6b6b",
   mediumGray: "#BDBEC0",
   gray2: "#58595B",
   brown: "#AF7803",

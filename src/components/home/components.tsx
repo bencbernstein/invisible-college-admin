@@ -10,7 +10,7 @@ interface HeaderProps {
   small?: boolean
 }
 
-export const MainHeader = Header.ml.extend`
+export const MainHeader = Header.l.extend`
   font-family: AveriaLight;
   color: ${colors.darkGray};
   font-size: ${(p: HeaderProps) => p.small && "0.85em"};

@@ -1,20 +1,14 @@
 import * as React from "react"
 import { connect } from "react-redux"
 import { Redirect } from "react-router"
+import { get } from "lodash"
 import { Link } from "react-router-dom"
 
 import Search from "../search"
 import Text from "../common/text"
 import Header from "../common/header"
 
-import {
-  Modal,
-  ModalButton,
-  InvisibleCollege,
-  Button,
-  NavBox,
-  FlexBox
-} from "./components"
+import { Modal, ModalButton, Button, NavBox, FlexBox } from "./components"
 
 import { setEntity } from "../../actions"
 import { User } from "../../interfaces/user"
@@ -72,14 +66,15 @@ class Nav extends React.Component<Props, State> {
   public render() {
     if (this.state.redirect) return <Redirect to={this.state.redirect} />
     const { curriculum, user, curricula } = this.props
-    if (!user || !curriculum) return null
+    if (!user) return null
     const { displayModal } = this.state
 
     const { firstName, lastName } = user
 
     const link = (item: any): any => {
       const path = item.toLowerCase().replace(" ", "-")
-      const color = path === lastPath(window) ? colors.blue : colors.darkGray
+      const isViewing = path === lastPath(window)
+      const color = isViewing ? colors.blue : colors.darkGray
       return (
         <Link
           style={{
@@ -90,7 +85,7 @@ class Nav extends React.Component<Props, State> {
           key={item}
           to={`/${path}`}
         >
-          <Text.regular>{item}</Text.regular>
+          <Text.regular bold={isViewing}>{item}</Text.regular>
         </Link>
       )
     }
@@ -108,14 +103,22 @@ class Nav extends React.Component<Props, State> {
       .reduce((prev: any, curr: any, i: number) => [prev, "/", curr])
 
     return (
-      <div>
+      <div style={{ height: "75px" }}>
         <NavBox>
           <Link style={{ textDecoration: "none", flex: 1 }} to="/library">
-            <InvisibleCollege>Wordcraft</InvisibleCollege>
+            <Header.s
+              style={{
+                color: colors.gray,
+                textAlign: "left",
+                margin: "0"
+              }}
+            >
+              Wordcraft
+            </Header.s>
           </Link>
 
           <FlexedDiv>
-            <Header.m margin="0 10px 0 0">{curriculum.name}</Header.m>
+            <Header.m margin="0 10px 0 0">{get(curriculum, "name")}</Header.m>
             <select
               onChange={e => {
                 const curriculum = curricula.find(
@@ -124,7 +127,7 @@ class Nav extends React.Component<Props, State> {
                 this.setCurriculum(curriculum!)
               }}
               style={{ width: "15px" }}
-              value={curriculum.name}
+              value={get(curriculum, "name")}
             >
               {curricula.map((curriculum: Curriculum) => (
                 <option key={curriculum.id} value={curriculum.id}>

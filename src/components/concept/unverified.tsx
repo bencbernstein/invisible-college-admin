@@ -81,13 +81,14 @@ class UnverifiedComponent extends React.Component<Props, State> {
     const { attr } = this.props
 
     const suggestions = unverified.map(value => (
-      <Button.circ
+      <Button.regular
+        margin={"0 5px 0 0"}
         key={value}
         onClick={() => this.props.addUnverified(attr, value)}
         marginRight={"5px"}
       >
         {value}
-      </Button.circ>
+      </Button.regular>
     ))
 
     if (suggestions.length === 0) {
