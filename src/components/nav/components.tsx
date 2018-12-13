@@ -3,21 +3,12 @@ import { colors } from "../../lib/colors"
 
 // Nav
 
-export const InvisibleCollege = styled.p`
-  text-transform: uppercase;
-  font-family: BrandonGrotesqueBold;
-  letter-spacing: 1px;
-  margin: 0;
-  text-align: left;
-  color: ${colors.gray};
-`
-
 export const NavBox = styled.div`
   text-align: center;
   display: flex;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
 `
 
 interface ButtonProps {

@@ -9,13 +9,15 @@ import Spinner from "../common/spinner"
 import Text from "../common/text"
 import Icon from "../common/icon"
 import HitHeader from "../hit/header"
+import ProgressBar from "../question/progressBar"
 
 import { Icons } from "./components"
 
 import {
   fetchEsPassageAction,
   updateQueueItemAction,
-  finishedQueue
+  finishedQueue,
+  setEntity
 } from "../../actions"
 
 import nextImg from "../../lib/images/icon-next.png"
@@ -27,6 +29,7 @@ import { lastPath } from "../../lib/helpers"
 
 interface State {
   saved: number[]
+  redirect?: string
 }
 
 interface Props {
@@ -40,13 +43,33 @@ interface Props {
 class FilterPassageComponent extends React.Component<Props, State> {
   constructor(props: any) {
     super(props)
+
     this.state = {
       saved: []
     }
+
+    this.handleKeyDown = this.handleKeyDown.bind(this)
   }
 
   public componentDidMount() {
     this.loadData(lastPath(window))
+  }
+
+  public componentWillMount() {
+    document.addEventListener("keydown", this.handleKeyDown, false)
+  }
+
+  public componentWillUnmount() {
+    document.removeEventListener("keydown", this.handleKeyDown, false)
+  }
+
+  public handleKeyDown(e: any) {
+    const itemIdx = this.queueItemIndex(this.props.passage._id)
+    if (e.key === "right arrow" || e.key === "ArrowRight") {
+      this.nextPassage(itemIdx, itemIdx + 1)
+    } else if (e.key === "left arrow" || e.key === "ArrowLeft") {
+      this.nextPassage(itemIdx, itemIdx - 1)
+    }
   }
 
   private async loadData(id: string) {
@@ -91,7 +114,9 @@ class FilterPassageComponent extends React.Component<Props, State> {
       this.loadData(nextItem.id)
       history.push("/passage/filter/" + nextItem.id)
     } else {
-      this.props.dispatch(finishedQueue(queue.id))
+      await this.props.dispatch(setEntity({ isLoading: true }))
+      await this.props.dispatch(finishedQueue(queue.id))
+      this.setState({ redirect: "/queues" })
     }
   }
 
@@ -103,10 +128,10 @@ class FilterPassageComponent extends React.Component<Props, State> {
 
   public render() {
     const { passage, isLoading, queue } = this.props
-    const { saved } = this.state
+    const { saved, redirect } = this.state
 
     if (!passage) return null
-    if (!queue) return <Redirect to={"/queues"} />
+    if (redirect || !queue) return <Redirect to={redirect || "/queues"} />
     if (isLoading) return <Spinner />
 
     const itemIdx = this.queueItemIndex(passage._id)
@@ -114,8 +139,15 @@ class FilterPassageComponent extends React.Component<Props, State> {
 
     return (
       <div>
+        <div style={{ width: "400px", margin: "0 auto", marginBottom: "12px" }}>
+          <ProgressBar completion={itemIdx / queue.items.length} />
+        </div>
+
         <HitHeader passage={passage} />
-        <Text.s>tags: {tags.join(", ")}</Text.s>
+
+        <Text.s margin="0 0 12px 0" style={{ textAlign: "center" }}>
+          tags: {tags.join(", ")}
+        </Text.s>
 
         {passage._source.sentences.map((text: string, i: number) => (
           <Text.garamond

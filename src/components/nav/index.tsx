@@ -8,14 +8,7 @@ import Search from "../search"
 import Text from "../common/text"
 import Header from "../common/header"
 
-import {
-  Modal,
-  ModalButton,
-  InvisibleCollege,
-  Button,
-  NavBox,
-  FlexBox
-} from "./components"
+import { Modal, ModalButton, Button, NavBox, FlexBox } from "./components"
 
 import { setEntity } from "../../actions"
 import { User } from "../../interfaces/user"
@@ -80,7 +73,8 @@ class Nav extends React.Component<Props, State> {
 
     const link = (item: any): any => {
       const path = item.toLowerCase().replace(" ", "-")
-      const color = path === lastPath(window) ? colors.blue : colors.darkGray
+      const isViewing = path === lastPath(window)
+      const color = isViewing ? colors.blue : colors.darkGray
       return (
         <Link
           style={{
@@ -91,7 +85,7 @@ class Nav extends React.Component<Props, State> {
           key={item}
           to={`/${path}`}
         >
-          <Text.regular>{item}</Text.regular>
+          <Text.regular bold={isViewing}>{item}</Text.regular>
         </Link>
       )
     }
@@ -109,10 +103,18 @@ class Nav extends React.Component<Props, State> {
       .reduce((prev: any, curr: any, i: number) => [prev, "/", curr])
 
     return (
-      <div>
+      <div style={{ height: "75px" }}>
         <NavBox>
           <Link style={{ textDecoration: "none", flex: 1 }} to="/library">
-            <InvisibleCollege>Wordcraft</InvisibleCollege>
+            <Header.s
+              style={{
+                color: colors.gray,
+                textAlign: "left",
+                margin: "0"
+              }}
+            >
+              Wordcraft
+            </Header.s>
           </Link>
 
           <FlexedDiv>

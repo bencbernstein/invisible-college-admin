@@ -42,7 +42,7 @@ class ImageListComponent extends React.Component<Props, State> {
     const alphabetized = alphabetize(images, "firstWordValue")
 
     return (
-      <div>
+      <div style={{ marginTop: "30px" }}>
         {isLoading ? (
           <Spinner />
         ) : (

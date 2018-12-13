@@ -48,13 +48,13 @@ class OtherFormsComponent extends React.Component<Props, State> {
     const { word } = this.props
 
     const otherForms = word.otherForms.map((o: string, i: number) => (
-      <Button.circ
-        marginRight={"5px"}
+      <Button.s
+        margin={"0 5px 0 0"}
         onClick={() => this.removeOtherForm(i)}
         key={i}
       >
         {o}
-      </Button.circ>
+      </Button.s>
     ))
 
     return (

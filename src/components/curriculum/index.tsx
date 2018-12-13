@@ -1,7 +1,6 @@
 import * as React from "react"
 import { connect } from "react-redux"
 
-import Header from "../common/header"
 import Spinner from "../common/spinner"
 import Input from "../common/input"
 import FlexedDiv from "../common/flexedDiv"
@@ -18,6 +17,7 @@ import {
 import { Curriculum } from "../../interfaces/curriculum"
 import { User } from "../../interfaces/user"
 import { colors } from "../../lib/colors"
+import { unixToDateString } from "../../lib/helpers"
 
 import deleteIcon from "../../lib/images/icon-delete.png"
 
@@ -69,9 +69,7 @@ class CurriculumComponent extends React.Component<Props, State> {
     if (isLoading) return <Spinner />
 
     return (
-      <div>
-        <Header.m textAlign="center">Curriculum</Header.m>
-
+      <div style={{ width: "600px", margin: "0 auto", marginTop: "30px" }}>
         {curricula.map((curriculum: Curriculum) => (
           <FlexedDiv
             style={{ margin: "30px 0" }}
@@ -86,8 +84,7 @@ class CurriculumComponent extends React.Component<Props, State> {
             />
             <Text.regular margin="0 15px">{curriculum.name}</Text.regular>
             <Text.regular margin="0" color={colors.mediumGray}>
-              Created on:{" "}
-              {new Date(parseInt(curriculum.createdOn, 10)).toString()}
+              Created {unixToDateString(curriculum.createdOn)}
             </Text.regular>
           </FlexedDiv>
         ))}

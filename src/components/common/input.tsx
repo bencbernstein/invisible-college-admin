@@ -92,15 +92,30 @@ const Box = Basic.extend`
   padding: ${(p: BoxProps) => (p.padding ? "10px" : "0px")};
 `
 
-const Submit = Basic.extend`
-  border: 1px solid black;
-  font-size: 1.1em;
-  padding: 5px;
+interface SubmitProps {
+  disabled?: boolean
+  margin?: string
+}
+
+const Submit = styled.input`
+  font-family: BrandonGrotesque;
+  font-size: 1em;
+  border: 4px solid ${colors.lightGray};
+  pointer-events: ${(p: SubmitProps) => (p.disabled ? "none" : "auto")};
+  background-color: ${(p: SubmitProps) =>
+    p.disabled ? colors.lightestGray : "white"};
+  padding: 7px 10px;
+  border-radius: 10px;
+  min-width: 75px;
+  box-sizing: border-box;
+  text-align: center
   cursor: pointer;
+  color: ${(p: SubmitProps) => (p.disabled ? colors.gray3 : "black")};
+  margin: ${(p: SubmitProps) => p.margin};
   &:hover {
-    background-color: black;
-    color: white;
-  }
+    border: 4px solid ${(p: SubmitProps) =>
+      p.disabled ? colors.lightGray : colors.blue};
+  }  
 `
 
 export default {

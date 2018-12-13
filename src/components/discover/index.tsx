@@ -1,19 +1,19 @@
 import * as React from "react"
 import { Redirect } from "react-router"
 import { connect } from "react-redux"
-import { without, uniq } from "lodash"
+import { without, uniq, chunk } from "lodash"
 
 import Spinner from "../common/spinner"
 import Text from "../common/text"
 import Settings from "./settings"
 import PassagesList from "./passages"
-import { Container, LeftPane, RightPane } from "./components"
+import { LeftPane, RightPane } from "./components"
 import { colors } from "../../lib/colors"
 
 import {
   fetchWordsByValuesAction,
   findEsPassagesAction,
-  createQueueAction,
+  createQueuesAction,
   setEntity
 } from "../../actions"
 
@@ -76,20 +76,41 @@ class Discover extends React.Component<Props, State> {
   }
 
   public async exportPassages() {
+    const { hits, curriculum } = this.props
+
+    const queueSize = parseInt(
+      window.prompt("Max queue size? (min. 10)", "20") || "",
+      10
+    )
+    if (!queueSize || queueSize < 10) return
+
     const findMatches = (sentences: string[]) =>
       (sentences.join(" ").match(/>([^<]*)<\/span/g) || []).map((s: any) =>
         s.replace(/>|<\/span/gi, "").toLowerCase()
       )
-    const items = this.props.hits.map(({ _id, highlight }) => ({
+
+    const items = hits.map(({ _id, highlight }) => ({
       id: _id,
       tags: uniq(findMatches(highlight.sentences))
     }))
-    const params = { type: "filter", entity: "passage", items }
-    const curriculum = this.props.curriculum.name
-    const confirm = `Create ${curriculum} queue from ${items.length} passages?`
+
+    const chunks = chunk(items, queueSize)
+    const queues = chunks.map((items: any[], idx: number) => ({
+      type: "filter",
+      entity: "passage",
+      curriculumId: curriculum.id,
+      curriculum: curriculum.name,
+      part: chunks.length > 1 && idx + 1,
+      items
+    }))
+
+    const confirm = `Create ${queues.length} ${curriculum.name} queue(s) from ${
+      items.length
+    } passages?`
+
     if (window.confirm(confirm)) {
       this.props.dispatch(setEntity({ isLoading: true }))
-      await this.props.dispatch(createQueueAction(params))
+      await this.props.dispatch(createQueuesAction(queues))
       this.setState({ redirect: "/queues" })
     }
   }
@@ -101,7 +122,7 @@ class Discover extends React.Component<Props, State> {
     if (redirect) return <Redirect to={redirect} />
 
     return (
-      <Container>
+      <div style={{ display: "flex" }}>
         <LeftPane>
           <Settings
             canExport={hits.length > 0}
@@ -119,7 +140,7 @@ class Discover extends React.Component<Props, State> {
           {error && <Text.s color={colors.red}>{error}</Text.s>}
           {isLoading ? <Spinner /> : <PassagesList />}
         </RightPane>
-      </Container>
+      </div>
     )
   }
 }

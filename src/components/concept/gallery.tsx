@@ -66,11 +66,6 @@ class Gallery extends React.Component<Props, State> {
         `https://www.google.com/search?q=${word}&source=lnms&tbm=isch&tbs=sur:fc,ic:gray`,
         "_blank"
       )
-    } else if (site === "duckDuckGo") {
-      window.open(
-        `https://duckduckgo.com/?q=${word}&t=h_&iax=images&ia=images&iaf=color%3Acolor2-bw`,
-        "_blank"
-      )
     }
   }
 
@@ -93,14 +88,8 @@ class Gallery extends React.Component<Props, State> {
 
     const searchBox = (
       <FlexedDiv justifyContent="flex-start">
-        <Button.regular
-          marginRight="15px"
-          onClick={() => this.search("google")}
-        >
+        <Button.regular onClick={() => this.search("google")}>
           Search Google
-        </Button.regular>
-        <Button.regular onClick={() => this.search("duckDuckGo")}>
-          Search DuckDuckGo
         </Button.regular>
       </FlexedDiv>
     )

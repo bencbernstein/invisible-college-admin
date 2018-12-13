@@ -12,6 +12,7 @@ import Input from "../common/input"
 import FlexedDiv from "../common/flexedDiv"
 import Header from "../common/header"
 import CommonIcon from "../common/icon"
+import ProgressBar from "../question/progressBar"
 
 import { Tagged, Textarea, Icons } from "./components"
 
@@ -19,7 +20,10 @@ import {
   fetchPassageAction,
   fetchKeywords,
   updatePassageAction,
-  updateQueueItemAction
+  updateQueueItemAction,
+  setEntity,
+  finishedQueue,
+  removePassageAction
 } from "../../actions"
 
 import { User } from "../../interfaces/user"
@@ -60,6 +64,7 @@ interface Props {
   user: User
   dispatch: any
   keywords: any
+  isLoading: boolean
 }
 
 const automaticFocus = (tag: any) =>
@@ -69,7 +74,7 @@ class EnrichPassageComponent extends React.Component<Props, State> {
   constructor(props: any) {
     super(props)
 
-    const isQueue = window.location.pathname.endsWith("&q=1")
+    const isQueue = window.location.search.includes("?q=1")
 
     this.state = {
       isQueue,
@@ -148,88 +153,116 @@ class EnrichPassageComponent extends React.Component<Props, State> {
     }
   }
 
-  private updatePassage(): any {
+  private async updatePassage() {
     const { passage } = this.state
     passage.tagged.forEach(cleanObj)
-    this.props.dispatch(updatePassageAction(passage.id, passage))
+    await this.props.dispatch(updatePassageAction(passage.id, passage))
     return passage
   }
 
-  private async nextPassage(current: number, next: number) {
+  private async nextPassage(
+    current: number,
+    next: number,
+    remove: boolean = false
+  ) {
     const { queue, user } = this.props
-    const passage = this.updatePassage()
 
     const currentItem = queue.items[current]
     const nextItem = queue.items[next]
 
-    const decision: any = {}
-    decision.userId = user.id
-    decision.userAccessLevel = user.accessLevel || 1
-    decision.id = passage.id
-    currentItem.decisions = currentItem.decisions
-      .filter((d: any) => d.userId !== user.id)
-      .concat(decision)
+    if (remove) {
+      this.props.dispatch(removePassageAction(this.state.passage.id))
+    } else {
+      const passage = await this.updatePassage()
+      const decision: any = {}
+      decision.userId = user.id
+      decision.userAccessLevel = user.accessLevel || 1
+      decision.id = passage.id
+      currentItem.decisions = currentItem.decisions
+        .filter((d: any) => d.userId !== user.id)
+        .concat(decision)
+    }
 
     await this.props.dispatch(
-      updateQueueItemAction(queue.id, current, currentItem)
+      updateQueueItemAction(queue.id, current, !remove && currentItem)
     )
 
     if (nextItem) {
       this.loadData(nextItem.id)
       history.push("/passage/enrich/" + nextItem.id)
     } else {
-      console.log("completed!")
+      await this.props.dispatch(setEntity({ isLoading: true }))
+      await this.props.dispatch(finishedQueue(queue.id, "finishedEnrichQueue"))
+      this.setState({ redirect: "/queues" })
+    }
+  }
+
+  private updateDifficulty() {
+    const difficulty = parseInt(this.state.difficultyInput || "", 10)
+    if (difficulty > 0 && difficulty < 101) {
+      const passage = extend(this.state.passage, { difficulty })
+      this.setState({ passage, difficultyInput: undefined })
     }
   }
 
   public render() {
-    const { queue } = this.props
+    const { queue, isLoading } = this.props
+
     const {
       sentences,
       passage,
       isEditing,
       isQueue,
-      difficultyInput
+      difficultyInput,
+      redirect
     } = this.state
 
-    if (isQueue && !queue) return <Redirect to={"/queues"} />
-    if (!passage) return <Spinner />
+    if (redirect || (isQueue && !queue)) return <Redirect to={"/queues"} />
+    if (!passage || isLoading) return <Spinner />
 
-    const queueNavigation = () => {
-      const itemIdx = this.queueItemIndex(passage.id)
-      return (
-        <Icons>
-          <CommonIcon
-            pointer={true}
-            large={true}
-            disable={itemIdx === 0}
-            onClick={() => this.nextPassage(itemIdx, itemIdx - 1)}
-            flipHorizontal={true}
-            src={nextImg}
-          />
-          <CommonIcon
-            pointer={true}
-            large={true}
-            onClick={() => console.log("TODO: - delete")}
-            src={deleteIcon}
-          />
-          <CommonIcon
-            pointer={true}
-            large={true}
-            onClick={() => this.nextPassage(itemIdx, itemIdx + 1)}
-            src={nextImg}
-          />
-        </Icons>
-      )
-    }
+    const itemIdx = isQueue && this.queueItemIndex(passage.id)
+
+    const queueNavigation = isQueue ? (
+      <Icons>
+        <CommonIcon
+          pointer={true}
+          large={true}
+          disable={itemIdx === 0}
+          onClick={() => this.nextPassage(itemIdx, itemIdx - 1)}
+          flipHorizontal={true}
+          src={nextImg}
+        />
+        <CommonIcon
+          margin="0 75px"
+          pointer={true}
+          large={true}
+          onClick={() => this.nextPassage(itemIdx, itemIdx + 1, true)}
+          src={deleteIcon}
+        />
+        <CommonIcon
+          pointer={true}
+          large={true}
+          onClick={() => this.nextPassage(itemIdx, itemIdx + 1)}
+          src={nextImg}
+        />
+      </Icons>
+    ) : null
 
     return (
       <div style={{ margin: "0", textAlign: "center" }}>
+        {isQueue && (
+          <div
+            style={{ width: "400px", margin: "0 auto", marginBottom: "12px" }}
+          >
+            <ProgressBar completion={itemIdx / queue.items.length} />
+          </div>
+        )}
+
         <Header.s margin="0">{passage.title.toUpperCase()}</Header.s>
 
         <FlexedDiv
           style={{
-            margin: "0 5px",
+            margin: "5px 0",
             justifyContent: "center",
             alignItems: "center"
           }}
@@ -246,28 +279,23 @@ class EnrichPassageComponent extends React.Component<Props, State> {
               })
             }
           />
-        </FlexedDiv>
 
-        <FlexedDiv style={{ margin: "0 0 15px 0", justifyContent: "center" }}>
-          <Text.s margin="0 3px 0 0">Difficulty</Text.s>
+          <Text.s margin="0 3px 0 15px">Difficulty</Text.s>
           <form
             onSubmit={e => {
               e.preventDefault()
-              const difficulty = parseInt(difficultyInput || "", 10)
-              if (difficulty > 0 && difficulty < 101) {
-                this.setState({ passage: extend(passage, { difficulty }) })
-              }
+              this.updateDifficulty()
             }}
           >
             <Input.s
-              style={{ color: "black" }}
+              style={{ color: "black", textAlign: "center" }}
               width="30px"
               type="text"
               value={
                 isString(difficultyInput) ? difficultyInput : passage.difficulty
               }
               onFocus={() => this.setState({ difficultyInput: "" })}
-              onBlur={() => this.setState({ difficultyInput: undefined })}
+              onBlur={this.updateDifficulty.bind(this)}
               onChange={e => this.setState({ difficultyInput: e.target.value })}
             />
           </form>
@@ -330,7 +358,7 @@ class EnrichPassageComponent extends React.Component<Props, State> {
           </FlexedDiv>
         ))}
 
-        {isQueue && queueNavigation()}
+        {queueNavigation}
       </div>
     )
   }
@@ -340,7 +368,8 @@ const mapStateToProps = (state: any, ownProps: any) => ({
   passage: state.entities.passage,
   queue: state.entities.queue,
   user: state.entities.user,
-  keywords: state.entities.keywords
+  keywords: state.entities.keywords,
+  isLoading: state.entities.isLoading === true
 })
 
 export default connect(mapStateToProps)(EnrichPassageComponent)

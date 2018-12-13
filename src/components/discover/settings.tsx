@@ -3,8 +3,9 @@ import * as React from "react"
 
 import Button from "../common/button"
 import Text from "../common/text"
+import Header from "../common/header"
 
-import { Textarea, Divider, SettingsHeader } from "./components"
+import { Textarea, Divider } from "./components"
 
 import { colors } from "../../lib/colors"
 import { encodeUri } from "../../lib/helpers"
@@ -84,7 +85,7 @@ class Settings extends React.Component<Props, any> {
           style={{ width: "100%" }}
         >
           <a
-            style={{ color: "black", textDecoration: "none" }}
+            style={{ color: "inherit", textDecoration: "none" }}
             download={`hits_${Date.now()}.json`}
             href={`data: text/json;charset=utf-8,${encodeUri(hits)}`}
           >
@@ -96,7 +97,7 @@ class Settings extends React.Component<Props, any> {
 
     return (
       <div>
-        <SettingsHeader>COLLECTIONS</SettingsHeader>
+        <Header.s margin="0">COLLECTIONS</Header.s>
         {COLLECTIONS.map((name: string) => (
           <FlexedDiv
             key={name}
@@ -122,7 +123,7 @@ class Settings extends React.Component<Props, any> {
           placeholder="Search words"
         />
         <Divider />
-        <SettingsHeader>DIRECTIONS</SettingsHeader>
+        <Header.s margin="0">DIRECTIONS</Header.s>
         {passageSearchDirections}
       </div>
     )

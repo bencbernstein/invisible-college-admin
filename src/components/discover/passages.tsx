@@ -6,7 +6,7 @@ import { chunk, sortBy } from "lodash"
 import Text from "../common/text"
 import HitHeader from "../hit/header"
 
-import { PassageContainer, Image } from "./components"
+import { Image } from "./components"
 import FlexedDiv from "../common/flexedDiv"
 import { colors } from "../../lib/colors"
 
@@ -30,10 +30,11 @@ interface State {
 }
 
 const sort = (hits: any[], comparator: SortBy): any[] => {
+  console.log(hits[0])
   const isAscending = comparator.includes("asc")
   let sorted: any[] = []
   if (comparator.includes("Length")) {
-    sorted = sortBy(hits, h => h._source.content.join("").length)
+    sorted = sortBy(hits, h => h.highlight.sentences.join("").length)
   } else {
     sorted = sortBy(hits, "_score")
   }
@@ -89,7 +90,7 @@ class PassagesList extends React.Component<Props, State> {
     )
 
     const passageComponent = (hit: any, i: number) => (
-      <PassageContainer key={i}>
+      <div style={{ margin: "30px 0px" }} key={i}>
         <div style={{ textAlign: "center", margin: " 10px 0" }}>
           <HitHeader passage={hit} />
           <Text.s>{Number(hit._score.toFixed(2))}</Text.s>
@@ -97,7 +98,7 @@ class PassagesList extends React.Component<Props, State> {
         {hit.highlight.sentences.map((__html: string, i: number) => (
           <Text.garamond key={i} dangerouslySetInnerHTML={{ __html }} />
         ))}
-      </PassageContainer>
+      </div>
     )
 
     const sorted = sort(hits, selectedSortBy)

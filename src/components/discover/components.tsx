@@ -1,11 +1,6 @@
 import styled from "styled-components"
 
-import Header from "../common/header"
 import { colors } from "../../lib/colors"
-
-export const Container = styled.div`
-  display: flex;
-`
 
 export const LeftPane = styled.div`
   width: 200px;
@@ -34,10 +29,6 @@ export const Divider = styled.div`
   background-color: ${colors.lightGray};
 `
 
-export const SettingsHeader = Header.s.extend`
-  margin: 0;
-`
-
 interface SearchContainerProps {
   expanded: boolean
 }
@@ -56,13 +47,6 @@ export const SearchForm = styled.form`
   justify-content: space-between;
 `
 
-export const PredictiveCorpusResults = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  text-align: center;
-  justify-content: center;
-`
-
 interface SpanProps {
   hoverColor: string
   color: string
@@ -76,10 +60,6 @@ export const Span = styled.span`
   }
 `
 
-export const PassageContainer = styled.div`
-  margin: 30px 0px;
-`
-
 interface ImageProps {
   isDisabled: boolean
 }
@@ -89,20 +69,4 @@ export const Image = styled.img`
   opacity: ${(p: ImageProps) => (p.isDisabled ? 0.5 : 1)};
   height: 50px;
   cursor: ${(p: ImageProps) => (p.isDisabled ? "" : "pointer")};
-`
-
-interface SentenceProps {
-  isMatch: boolean
-  isHeader: boolean
-}
-
-export const Sentence = styled.span`
-  margin-right: 5px;
-  text-transform: ${(p: SentenceProps) => (p.isHeader ? "uppercase" : "")};
-  margin: ${(p: SentenceProps) => (p.isHeader ? "5px 0px" : "")};
-  font-family: ${(p: SentenceProps) => p.isHeader && "BrandonGrotesqueBold"};
-  font-size: ${(p: SentenceProps) => (p.isHeader ? "0.8em" : "1em")};
-  letter-spacing: ${(p: SentenceProps) => (p.isHeader ? "1px" : "0px")};
-  display: ${(p: SentenceProps) => (p.isHeader ? "block" : "")};
-  color: ${(p: SentenceProps) => (p.isMatch ? "black" : colors.lighterGray)};
 `

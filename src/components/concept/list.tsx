@@ -50,7 +50,7 @@ class ConceptListComponent extends React.Component<Props, State> {
     const alphabetized = alphabetize(filtered, "value")
 
     return (
-      <div>
+      <div style={{ marginTop: "30px" }}>
         {isLoading ? (
           <Spinner />
         ) : (
