@@ -1,7 +1,7 @@
 import * as React from "react"
 import { Link } from "react-router-dom"
 import { connect } from "react-redux"
-import { sortBy } from "lodash"
+import { sortBy, isEqual } from "lodash"
 
 import Text from "../common/text"
 import Spinner from "../common/spinner"
@@ -48,8 +48,9 @@ class PassageListComponent extends React.Component<Props, State> {
   }
 
   public async componentWillReceiveProps(nextProps: Props) {
-    if (nextProps.curriculum && !this.props.curriculum) {
-      this.loadData(nextProps.curriculum)
+    const { curriculum } = nextProps
+    if (curriculum && !isEqual(curriculum, this.props.curriculum)) {
+      this.loadData(curriculum)
     }
   }
 
