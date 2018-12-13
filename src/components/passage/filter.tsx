@@ -92,7 +92,8 @@ class FilterPassageComponent extends React.Component<Props, State> {
   }
 
   private async nextPassage(current: number, next: number) {
-    const { queue, user } = this.props
+    const { queue, user, isLoading } = this.props
+    if (isLoading) return
 
     const currentItem = queue.items[current]
     const nextItem = queue.items[next]
@@ -106,6 +107,7 @@ class FilterPassageComponent extends React.Component<Props, State> {
       .filter((d: any) => d.userId !== user.id)
       .concat(decision)
 
+    await this.props.dispatch(setEntity({ isLoading: true }))
     await this.props.dispatch(
       updateQueueItemAction(queue.id, current, currentItem)
     )

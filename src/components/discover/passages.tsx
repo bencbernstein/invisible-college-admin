@@ -30,7 +30,6 @@ interface State {
 }
 
 const sort = (hits: any[], comparator: SortBy): any[] => {
-  console.log(hits[0])
   const isAscending = comparator.includes("asc")
   let sorted: any[] = []
   if (comparator.includes("Length")) {

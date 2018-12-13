@@ -179,12 +179,13 @@ export const fetchPassageAction = (
     }
   })
 
-export const fetchPassages = (route: string = "getPassages") => (
-  dispatch: any
-) =>
+export const fetchPassages = (
+  curriculumId: string,
+  route: string = "getPassages"
+) => (dispatch: any) =>
   dispatch({
     [CALL_API]: {
-      query: `query { ${route} { ${passageAttrs} } }`,
+      query: `query { ${route}(curriculumId: "${curriculumId}"){ ${passageAttrs} } }`,
       types: types(camelCaseToUpperCase(route)),
       schema: "passages",
       route

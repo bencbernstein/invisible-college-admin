@@ -1,7 +1,7 @@
 import * as React from "react"
 import { connect } from "react-redux"
 import { Redirect } from "react-router"
-import { get } from "lodash"
+import { get, sortBy } from "lodash"
 import { Link } from "react-router-dom"
 
 import Search from "../search"
@@ -127,11 +127,14 @@ class Nav extends React.Component<Props, State> {
                 this.setCurriculum(curriculum!)
               }}
               style={{ width: "15px" }}
-              value={get(curriculum, "name")}
             >
-              {curricula.map((curriculum: Curriculum) => (
-                <option key={curriculum.id} value={curriculum.id}>
-                  {curriculum.name}
+              {sortBy(curricula, "name").map(({ id, name }) => (
+                <option
+                  selected={get(curriculum, "name") === name}
+                  key={id}
+                  value={id}
+                >
+                  {name}
                 </option>
               ))}
             </select>
