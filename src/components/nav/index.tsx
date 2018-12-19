@@ -1,7 +1,7 @@
 import * as React from "react"
 import { connect } from "react-redux"
 import { Redirect } from "react-router"
-import { get, sortBy } from "lodash"
+import { get } from "lodash"
 import { Link } from "react-router-dom"
 
 import Search from "../search"
@@ -64,17 +64,23 @@ class Nav extends React.Component<Props, State> {
   }
 
   public render() {
-    if (this.state.redirect) return <Redirect to={this.state.redirect} />
     const { curriculum, user, curricula } = this.props
+    const { displayModal, redirect } = this.state
+
+    if (redirect) return <Redirect to={redirect} />
     if (!user) return null
-    const { displayModal } = this.state
 
     const { firstName, lastName } = user
 
     const link = (item: any): any => {
       const path = item.toLowerCase().replace(" ", "-")
       const isViewing = path === lastPath(window)
-      const color = isViewing ? colors.blue : colors.darkGray
+      const color =
+        item === "Play"
+          ? colors.green
+          : isViewing
+          ? colors.blue
+          : colors.darkGray
       return (
         <Link
           style={{
@@ -97,7 +103,8 @@ class Nav extends React.Component<Props, State> {
       "Concepts",
       "Images",
       "Passages",
-      "Queues"
+      "Queues",
+      "Play"
     ]
       .map(link)
       .reduce((prev: any, curr: any, i: number) => [prev, "/", curr])
@@ -127,13 +134,10 @@ class Nav extends React.Component<Props, State> {
                 this.setCurriculum(curriculum!)
               }}
               style={{ width: "15px" }}
+              value={get(curriculum, "id")}
             >
-              {sortBy(curricula, "name").map(({ id, name }) => (
-                <option
-                  selected={get(curriculum, "name") === name}
-                  key={id}
-                  value={id}
-                >
+              {curricula.map(({ id, name }) => (
+                <option key={id} value={id}>
                   {name}
                 </option>
               ))}

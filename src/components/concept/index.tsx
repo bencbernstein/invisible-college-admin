@@ -59,9 +59,8 @@ class WordComponent extends React.Component<Props, State> {
   }
 
   public componentWillReceiveProps(nextProps: Props) {
-    const { word } = nextProps
-    if (word && !isEqual(word, this.state.word)) {
-      this.setState({ word })
+    if (nextProps.word && !isEqual(nextProps.word, this.state.word)) {
+      this.setState({ word: nextProps.word })
     }
   }
 

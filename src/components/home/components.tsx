@@ -28,13 +28,17 @@ export const Background = styled.div`
   }
 `
 
+interface BoxProps {
+  justifyContent?: string
+}
+
 export const Box = styled.div`
   max-width: 400px;
   width: 100%;
   border-radius: 10px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: ${(p: BoxProps) => p.justifyContent || "space-between"};
   margin: 0 auto;
   position: absolute;
   left: 0;
