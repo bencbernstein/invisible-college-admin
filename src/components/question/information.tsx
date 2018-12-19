@@ -104,8 +104,8 @@ export default class Prompt extends React.Component<Props, State> {
                 this.setState({
                   redirect:
                     window.location.search.indexOf("type") > -1
-                      ? "/admin-home"
-                      : "/home"
+                      ? "/admin-play"
+                      : "/play"
                 })
               }
               pointer={true}

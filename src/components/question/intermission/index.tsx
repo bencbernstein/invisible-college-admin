@@ -20,7 +20,7 @@ export default class Intermission extends React.Component<Props, any> {
     const { level } = this.props
 
     return (
-      <Box>
+      <Box style={{ zIndex: 200 }}>
         <div style={{ textAlign: "center" }}>
           <Header.xl margin="0" color={colors.yellow}>
             {level}

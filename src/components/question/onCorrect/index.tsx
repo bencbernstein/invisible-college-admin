@@ -11,20 +11,15 @@ interface Props {
 }
 
 export default class Prompt extends React.Component<Props, any> {
-  constructor(props: any) {
-    super(props)
-    this.state = {}
-  }
-
   public render() {
     const { element } = this.props
 
-    const { base64 } = element as Image
+    const { url } = element as Image
     const { title, value } = element as Factoid
 
     return (
       <Box>
-        {base64 && <StyledImage src={base64} />}
+        {url && <StyledImage src={`https://s3.amazonaws.com/${url}`} />}
 
         {value && (
           <StyledText>

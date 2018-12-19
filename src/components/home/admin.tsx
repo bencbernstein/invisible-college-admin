@@ -1,60 +1,51 @@
 import * as React from "react"
 import { Redirect } from "react-router"
 import { sortBy } from "lodash"
+import { connect } from "react-redux"
 
 import Text from "../common/text"
-import { Background, Box, MainHeader, Content, AvatarImg } from "./components"
-import FlexedDiv from "../common/flexedDiv"
-
-import { User } from "../../interfaces/user"
-
-// import {
-//   fetchQuestionTypeCounts,
-//   QuestionTypeCount
-// } from "../../models/question"
+import { Background, Box, MainHeader, Content } from "./components"
+import Button from "../common/button"
 
 import { colors } from "../../lib/colors"
 
-import willow from "../../lib/images/avatars/willow.jpg"
-import alejandro from "../../lib/images/avatars/alejandro.jpg"
-import steve from "../../lib/images/avatars/steve.jpg"
+import { User } from "../../interfaces/user"
+
+import {
+  fetchQuestionTypeCountsAction,
+  clearUserHistoryAction
+} from "../../actions"
 
 interface Props {
   user: User
+  dispatch: any
+  questionTypeCounts: any[]
 }
 
 interface State {
   redirect?: string
-  questionTypeCounts: any[]
 }
 
 class AdminHome extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
-    this.state = {
-      questionTypeCounts: []
-    }
+    this.state = {}
   }
 
   public async componentDidMount() {
-    console.log("TODO")
-    // const questionTypeCounts = await fetchQuestionTypeCounts()
-    // if (!(questionTypeCounts instanceof Error)) {
-    //   this.setState({ questionTypeCounts })
-    // }
+    this.props.dispatch(fetchQuestionTypeCountsAction())
   }
 
   public render() {
-    const { redirect, questionTypeCounts } = this.state
+    const { redirect } = this.state
+    const { questionTypeCounts } = this.props
 
-    if (redirect) {
-      return <Redirect to={redirect} />
-    }
+    if (redirect) return <Redirect to={redirect} />
 
     const playQuestionType = (q: any) => (
       <Text.s
         margin="5px 0"
-        onClick={() => this.setState({ redirect: `/play?type=${q.type}` })}
+        onClick={() => this.setState({ redirect: `/question?type=${q.type}` })}
         pointer={true}
         key={q.type}
       >
@@ -62,19 +53,12 @@ class AdminHome extends React.Component<Props, State> {
       </Text.s>
     )
 
-    const avatar = (data: any) => (
-      <FlexedDiv key={data[1]} direction="column">
-        <AvatarImg src={data[0]} />
-        <Text.s>{data[1]}</Text.s>
-      </FlexedDiv>
-    )
-
     return (
       <Background>
-        <Box>
+        <Box justifyContent="flex-start">
           <Text.regular
             pointer={true}
-            onClick={() => this.setState({ redirect: "/home" })}
+            onClick={() => this.setState({ redirect: "/play" })}
           >
             Back
           </Text.regular>
@@ -84,20 +68,30 @@ class AdminHome extends React.Component<Props, State> {
             {sortBy(questionTypeCounts, "type").map(playQuestionType)}
           </Content>
 
-          <MainHeader textAlign="center">Play As</MainHeader>
-          <Content>
-            <FlexedDiv>
-              {[
-                [alejandro, "Alejandro"],
-                [willow, "Willow"],
-                [steve, "Steve"]
-              ].map(avatar)}
-            </FlexedDiv>
-          </Content>
+          <br />
+
+          <Button.regularWc
+            margin="0 auto"
+            width="275px"
+            uppercase={true}
+            onClick={async () => {
+              await this.props.dispatch(
+                clearUserHistoryAction(this.props.user.id)
+              )
+              this.setState({ redirect: `/play` })
+            }}
+          >
+            Clear My History
+          </Button.regularWc>
         </Box>
       </Background>
     )
   }
 }
 
-export default AdminHome
+const mapStateToProps = (state: any, ownProps: any) => ({
+  user: state.entities.user,
+  questionTypeCounts: state.entities.questionTypeCounts || []
+})
+
+export default connect(mapStateToProps)(AdminHome)

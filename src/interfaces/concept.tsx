@@ -20,6 +20,11 @@ export interface Tag {
   choiceSetIds?: string[]
 }
 
+export interface PassageRelationship {
+  id: string
+  curriculumId: string
+}
+
 export interface Word {
   id: string
   value: string
@@ -33,6 +38,7 @@ export interface Word {
   lcd: string
   tags: Tag[]
   unverified: Unverified
+  passages: PassageRelationship[]
 }
 
 export const wordAttrs = `
@@ -61,4 +67,8 @@ export const wordAttrs = `
   }
   obscurity
   images
+  passages {
+    id
+    curriculumId  
+  }
 `

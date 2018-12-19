@@ -1,6 +1,8 @@
 import * as React from "react"
+import { Redirect } from "react-router"
 import { find, without, uniq, get, extend } from "lodash"
 import * as moment from "moment"
+import { connect } from "react-redux"
 
 import { FLEXES, Box, ReadMoreTab, ExitReadMode } from "./components"
 import Information from "./information"
@@ -11,19 +13,23 @@ import Interactive from "./interactive"
 import OnCorrect from "./onCorrect"
 import Prompt from "./prompt"
 
-import { Question, QuestionLog } from "../../interfaces/question"
-// questionsForUser,
-// saveQuestionsForUser,
-// userSawFactoid,
-// questionsForType
-
-import { User } from "../../interfaces/user"
-
 import { sleep } from "../../lib/helpers"
 import { calcProgress } from "./helpers"
 
+import { Question, QuestionLog } from "../../interfaces/question"
+import { User } from "../../interfaces/user"
+import { Curriculum } from "../../interfaces/curriculum"
+
+import {
+  fetchQuestionsForTypeAction,
+  fetchQuestionsForUserAction,
+  userSawFactoidAction,
+  saveQuestionsForUserAction,
+  clearUserHistoryAction
+} from "../../actions"
+
 export interface Image {
-  base64: string
+  url: string
 }
 
 export interface Factoid {
@@ -39,6 +45,8 @@ export interface Guess {
 
 interface Props {
   user: User
+  dispatch: any
+  curriculum: Curriculum
 }
 
 interface State {
@@ -51,6 +59,7 @@ interface State {
   isBetweenQuestions?: boolean
   isInteractive?: boolean
   isReadMode?: boolean
+  redirect?: string
   level: number
   onCorrectElement?: Image | Factoid
   promptIsOverflowing?: boolean
@@ -83,46 +92,81 @@ class QuestionComponent extends React.Component<Props, State> {
   }
 
   public componentWillMount() {
-    const { questionsAnswered } = this.props.user
+    if (!this.props.user) return this.setState({ redirect: "play" })
+    this.setupGame(this.props.user)
+  }
 
+  private async setupGame(user: User, simulate: boolean = false) {
     const { qsForLevel, qsAnsweredForLevel, level } = calcProgress(
-      questionsAnswered
+      user.questionsAnswered
     )
     const type = window.location.search.split("?type=")[1]
     const state = { type, qsForLevel, qsAnsweredForLevel, level }
-    this.setState(state, () => this.loadQuestions(() => this.nextQuestion(0)))
+
+    await this.props.dispatch(clearUserHistoryAction(user.id))
+
+    if (simulate) {
+      let i = 0
+      while (true) {
+        await this.loadQuestions()
+
+        const simulatedResults = this.state.gameElements
+          .filter(element => (element as Question).TYPE)
+          .map((element: Question) => ({
+            correct: Math.random() > 0.25,
+            id:
+              get(element.sources.word, "id") ||
+              get(element.sources.passage, "id"),
+            value: get(element.sources.word, "value"),
+            type: element.sources.word ? "word" : "passage"
+          }))
+
+        await this.props.dispatch(
+          saveQuestionsForUserAction(user.id, simulatedResults)
+        )
+
+        i += 1
+        if (i === 5) {
+          console.log("done!")
+          break
+        }
+      }
+    } else {
+      this.setState(state, () => this.loadQuestions(() => this.nextQuestion(0)))
+    }
   }
 
-  public async loadQuestions(cb?: () => void) {
+  private async loadQuestions(cb?: () => void): Promise<any | undefined> {
     const { gameElements, type } = this.state
-    console.log("TODO", gameElements, type)
-    // const newElements = await (type
-    //   ? questionsForType(type)
-    //   : questionsForUser(this.props.user.id))
-    // if (!(newElements instanceof Error)) {
-    //   const parsed = JSON.parse(newElements)
-    //   gameElements.push(...parsed)
-    //   this.setState({ gameElements }, cb)
-    // }
+    const { user, dispatch, curriculum } = this.props
+    const result = type
+      ? await dispatch(fetchQuestionsForTypeAction(type!))
+      : await dispatch(fetchQuestionsForUserAction(user.id, curriculum.id))
+    const questions = result.response.questions
+    console.log(gameElements)
+    gameElements.push(...questions)
+    this.setState({ gameElements }, cb)
   }
 
-  public record(question: Question) {
+  private record(question: Question) {
     const { correct, questionLog } = this.state
 
     const { sources } = question
     const type = question.passageOrWord
     const { id, value } = type === "word" ? sources.word! : sources.passage!
     questionLog.push({ correct, type, id, value })
-    if (questionLog.length === 1) {
-      // TODO
-      // saveQuestionsForUser(this.props.user.id, questionLog) // TODO: - what to do with error?
+
+    if (questionLog.length === 3) {
+      this.props.dispatch(
+        saveQuestionsForUserAction(this.props.user.id, questionLog)
+      )
       this.setState({ questionLog: [] })
     } else {
       this.setState({ questionLog })
     }
   }
 
-  public async nextQuestion(sleepDuration: number = 2) {
+  private async nextQuestion(sleepDuration: number = 2) {
     const {
       gameElements,
       question,
@@ -139,15 +183,14 @@ class QuestionComponent extends React.Component<Props, State> {
       this.record(question)
     } else if (get(onCorrectElement as Factoid, "title")) {
       const factoid = onCorrectElement as Factoid
-      console.log(factoid)
-      // userSawFactoid(this.props.user.id, factoid.id)
+      this.props.dispatch(userSawFactoidAction(this.props.user.id, factoid.id))
     }
 
     const element = gameElements.shift()
 
     if ((element as Question).TYPE) {
       this.setQuestion(element as Question)
-    } else if ((element as Image).base64) {
+    } else if ((element as Image).url) {
       this.setState({ onCorrectElement: element as Image, question: undefined })
     } else if ((element as Factoid).title) {
       this.setState({
@@ -163,13 +206,13 @@ class QuestionComponent extends React.Component<Props, State> {
     const displayIntermission = qsAnsweredForLevel === qsForLevel
     const state = { gameElements, displayIntermission }
     if (displayIntermission) {
-      const questionsAnswered = this.props.user.questionsAnswered + qCounter
+      const questionsAnswered = this.props.user!.questionsAnswered + qCounter
       extend(state, calcProgress(questionsAnswered))
     }
     this.setState(state)
   }
 
-  public setQuestion(question: Question) {
+  private setQuestion(question: Question) {
     this.setState({
       correct: true,
       displayAnswerSpace: ["Roots", "Chars"].some(
@@ -184,7 +227,7 @@ class QuestionComponent extends React.Component<Props, State> {
     })
   }
 
-  public interactiveGuessed(correct: boolean, count: number) {
+  private interactiveGuessed(correct: boolean, count: number) {
     const { question } = this.state
     if (count === question!.answerCount) {
       this.nextQuestion()
@@ -194,7 +237,7 @@ class QuestionComponent extends React.Component<Props, State> {
     }
   }
 
-  public guessed(choice: string, buttonIdx: number, answerValues: string[]) {
+  private guessed(choice: string, buttonIdx: number, answerValues: string[]) {
     const { guessedCorrectly } = this.state
     let { qsAnsweredForLevel, qCounter } = this.state
 
@@ -220,7 +263,7 @@ class QuestionComponent extends React.Component<Props, State> {
     })
   }
 
-  public onCorrectContinue() {
+  private onCorrectContinue() {
     this.setState({ onCorrectElement: undefined }, () => {
       if (!this.state.displayIntermission) {
         this.nextQuestion(0)
@@ -243,8 +286,11 @@ class QuestionComponent extends React.Component<Props, State> {
       promptIsOverflowing,
       qsAnsweredForLevel,
       qsForLevel,
-      qStartTime
+      qStartTime,
+      redirect
     } = this.state
+
+    if (redirect) return <Redirect to={redirect} />
 
     const questionComponents = (question: Question) => {
       const { prompt, answer, redHerrings, TYPE, interactive } = question
@@ -349,4 +395,9 @@ class QuestionComponent extends React.Component<Props, State> {
   }
 }
 
-export default QuestionComponent
+const mapStateToProps = (state: any, ownProps: any) => ({
+  user: state.entities.user,
+  curriculum: state.entities.curriculum
+})
+
+export default connect(mapStateToProps)(QuestionComponent)

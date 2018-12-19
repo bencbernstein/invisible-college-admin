@@ -19,6 +19,7 @@ const callApi = (
       .json()
       .then(json => {
         const { data, errors } = json
+        // console.log(data)
         const result: any = { isLoading: false }
 
         if (errors && errors.length) {

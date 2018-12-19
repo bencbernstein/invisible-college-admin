@@ -1,5 +1,6 @@
 import * as React from "react"
 import { connect } from "react-redux"
+import { sortBy } from "lodash"
 
 import Spinner from "../common/spinner"
 import Input from "../common/input"
@@ -11,7 +12,8 @@ import {
   fetchCurriculaAction,
   setEntity,
   createCurriculumAction,
-  removeCurriculumAction
+  removeCurriculumAction,
+  updateCurriculumAction
 } from "../../actions"
 
 import { Curriculum } from "../../interfaces/curriculum"
@@ -58,50 +60,75 @@ class CurriculumComponent extends React.Component<Props, State> {
     }
   }
 
-  public async removeCurriculum(id: string) {
-    await this.props.dispatch(removeCurriculumAction(id))
-    this.loadData()
-  }
-
   public render() {
     const { curricula, isLoading } = this.props
     const { newCurriculumName } = this.state
+
     if (isLoading) return <Spinner />
 
-    return (
-      <div style={{ width: "600px", margin: "0 auto", marginTop: "30px" }}>
-        {curricula.map((curriculum: Curriculum) => (
-          <FlexedDiv
-            style={{ margin: "30px 0" }}
-            justifyContent="flex-start"
-            key={curriculum.id}
-          >
+    const curriculum = (curriculum: Curriculum) => (
+      <div key={curriculum.id} style={{ margin: "30px 0" }}>
+        <FlexedDiv justifyContent="space-between">
+          <FlexedDiv>
             <Icon
-              onClick={() => this.removeCurriculum(curriculum.id)}
+              onClick={async () => {
+                const { name, id } = curriculum
+                const confirm = `Are you sure you want to delete ${name}?`
+                if (!window.confirm(confirm)) return
+                await this.props.dispatch(removeCurriculumAction(id))
+                this.loadData()
+              }}
               pointer={true}
               small={true}
               src={deleteIcon}
             />
-            <Text.regular margin="0 15px">{curriculum.name}</Text.regular>
-            <Text.regular margin="0" color={colors.mediumGray}>
-              Created {unixToDateString(curriculum.createdOn)}
+            <Text.regular margin="0 5px 0 15px">{curriculum.name}</Text.regular>
+            <Text.regular margin="0 5px">
+              {curriculum.questionsCount} questions
             </Text.regular>
           </FlexedDiv>
-        ))}
 
-        <form
-          onSubmit={this.createCurriculum.bind(this)}
-          style={{ display: "flex", justifyContent: "flex-start" }}
-        >
-          <Input.m
-            margin="0 25px 0 0"
-            type="text"
-            placeholder="New"
-            value={newCurriculumName || ""}
-            onChange={e => this.setState({ newCurriculumName: e.target.value })}
+          <Text.s color={colors.mediumGray}>
+            created {unixToDateString(curriculum.createdOn)}
+          </Text.s>
+        </FlexedDiv>
+        <FlexedDiv justifyContent="flex-start">
+          <input
+            style={{ margin: "8px 8px 8px 40px" }}
+            readOnly={true}
+            checked={curriculum.public}
+            type="radio"
+            onClick={async () => {
+              curriculum.public = !curriculum.public
+              await this.props.dispatch(updateCurriculumAction(curriculum))
+              this.loadData()
+            }}
           />
-          <Input.submit type="submit" />
-        </form>
+          <Text.s>Public</Text.s>
+        </FlexedDiv>
+      </div>
+    )
+
+    const createNewForm = (
+      <form
+        onSubmit={this.createCurriculum.bind(this)}
+        style={{ display: "flex", justifyContent: "flex-start" }}
+      >
+        <Input.m
+          margin="0 25px 0 0"
+          type="text"
+          placeholder="New"
+          value={newCurriculumName || ""}
+          onChange={e => this.setState({ newCurriculumName: e.target.value })}
+        />
+        <Input.submit type="submit" />
+      </form>
+    )
+
+    return (
+      <div style={{ width: "600px", margin: "0 auto", marginTop: "30px" }}>
+        {sortBy(curricula, "name").map(curriculum)}
+        {createNewForm}
       </div>
     )
   }

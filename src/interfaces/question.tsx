@@ -27,7 +27,7 @@ export interface InteractivePart {
 }
 
 export interface Question {
-  id: string
+  _id: string
   TYPE: string
   prompt: PromptPart[]
   answer: AnswerPart[]
@@ -45,3 +45,39 @@ export interface QuestionLog {
   id: string
   correct: boolean
 }
+
+const sources = `
+  sources {
+    passage {
+      id
+      value
+    }
+    word {
+      id
+      value
+    }
+  }
+`
+
+export const questionAttrs = `
+  id
+  TYPE
+  passageOrWord
+  prompt {
+    value
+    highlight
+    hide
+  }
+  answer {
+    value
+    prefill
+  }
+  interactive {
+    value
+    correct
+  }
+  answerCount
+  redHerrings
+  ${sources}
+  experience
+`

@@ -109,7 +109,7 @@ class EnrichPassageComponent extends React.Component<Props, State> {
 
     sentences[senIdx] = tagger.tag(lexed).map((t: any) => ({
       value: t[0],
-      tag: t[1],
+      pos: t[1],
       isPunctuation: t[0] === t[1],
       isConnector: connectors.indexOf(t[0]) > -1,
       wordId: words[t[0].toLowerCase()],

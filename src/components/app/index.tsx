@@ -11,6 +11,9 @@ import Login from "../login"
 import Curriculum from "../curriculum"
 import Concepts from "../concept/list"
 import Concept from "../concept"
+import Admin from "../home/admin"
+import Play from "../home"
+import Question from "../question"
 import Passages from "../passage/list"
 import Queues from "../queue/list"
 import FilterPassage from "../passage/filter"
@@ -76,7 +79,6 @@ class App extends React.Component<Props, State> {
   private async checkForAuth() {
     const json = localStorage.getItem("user")
     const user = json ? JSON.parse(json) : undefined
-    console.log(user)
     if (user) {
       this.props.dispatch(setEntity({ user }))
     }
@@ -107,8 +109,11 @@ class App extends React.Component<Props, State> {
       { path: "/concept/enrich/:id", Component: Concept, noSearch: true },
       { path: "/images", Component: Images, exact: true },
       { path: "/queues", Component: Queues, exact: true, noSearch: true },
+      { path: "/play", Component: Play, exact: true, noNav: true },
+      { path: "/admin-play", Component: Admin, exact: true, noNav: true },
       { path: "/discover", Component: Discover, exact: true, noSearch: true },
       { path: "/passages", Component: Passages, exact: true, noSearch: true },
+      { path: "/question", Component: Question, noNav: true },
       { path: "/library", Component: IndexesList, exact: true, noSearch: true },
       { path: "/library/:id", Component: TextList, exact: true },
       { path: "/library/text/:id", Component: Text, noSearch: true },
