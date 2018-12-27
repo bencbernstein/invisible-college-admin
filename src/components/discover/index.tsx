@@ -100,7 +100,7 @@ class Discover extends React.Component<Props, State> {
       entity: "passage",
       curriculumId: curriculum.id,
       curriculum: curriculum.name,
-      part: chunks.length > 1 && idx + 1,
+      part: chunks.length > 0 && idx + 1,
       items
     }))
 

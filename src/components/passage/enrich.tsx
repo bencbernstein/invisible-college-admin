@@ -107,15 +107,23 @@ class EnrichPassageComponent extends React.Component<Props, State> {
     const lexed = new pos.Lexer().lex(value)
     const tagger = new pos.Tagger()
 
-    sentences[senIdx] = tagger.tag(lexed).map((t: any) => ({
-      value: t[0],
-      pos: t[1],
-      isPunctuation: t[0] === t[1],
-      isConnector: connectors.indexOf(t[0]) > -1,
-      wordId: words[t[0].toLowerCase()],
-      choiceSetId: choices[t[0].toLowerCase()],
-      isFocusWord: false
-    }))
+    sentences[senIdx] = tagger.tag(lexed).map((t: any) => {
+      const [value, pos] = t
+      const isPunctuation = value === pos
+      const isConnector = connectors.indexOf(value) > -1
+      const wordId = words[value.toLowerCase()]
+      const choiceSetId = choices[value.toLowerCase()]
+      const isUnfocused = isConnector
+      return {
+        value,
+        pos,
+        isPunctuation,
+        isConnector,
+        wordId,
+        choiceSetId,
+        isUnfocused
+      }
+    })
 
     passage.tagged = flattenSentences(sentences)
     this.setState({ passage, sentences, isEditing: undefined })
