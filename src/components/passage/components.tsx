@@ -7,7 +7,7 @@ import { colors } from "../../lib/colors"
 
 export const Icons = FlexedDiv.extend`
   padding: 20px 0px 15px 0px;
-  justify-content: space-around;
+  justify-content: center;
   background-color: white;
   position: fixed;
   width: 100%;
