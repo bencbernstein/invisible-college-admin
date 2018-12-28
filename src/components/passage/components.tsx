@@ -6,8 +6,14 @@ import Text from "../common/text"
 import { colors } from "../../lib/colors"
 
 export const Icons = FlexedDiv.extend`
-  margin-top: 40px;
-  justify-content: center;
+  padding: 20px 0px 15px 0px;
+  justify-content: space-around;
+  background-color: white;
+  position: fixed;
+  width: 100%;
+  opacity: 0.95;
+  left: 0;
+  bottom: 0;
 `
 
 interface TaggedProps {

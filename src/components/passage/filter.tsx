@@ -150,20 +150,7 @@ class FilterPassageComponent extends React.Component<Props, State> {
         <Text.s margin="0 0 12px 0" style={{ textAlign: "center" }}>
           tags: {tags.join(", ")}
         </Text.s>
-
-        {passage._source.sentences.map((text: string, i: number) => (
-          <Text.garamond
-            pointer={true}
-            style={{
-              textDecoration: saved.indexOf(i) > -1 ? "underline" : "none"
-            }}
-            onClick={() => this.clickedSentence(i)}
-            key={i}
-          >
-            {text}
-          </Text.garamond>
-        ))}
-
+      
         <Icons>
           <Icon
             pointer={true}
@@ -187,6 +174,21 @@ class FilterPassageComponent extends React.Component<Props, State> {
             src={nextImg}
           />
         </Icons>
+
+        {passage._source.sentences.map((text: string, i: number) => (
+          <Text.garamond
+            pointer={true}
+            style={{
+              textDecoration: saved.indexOf(i) > -1 ? "underline" : "none"
+            }}
+            onClick={() => this.clickedSentence(i)}
+            key={i}
+          >
+            {text}
+          </Text.garamond>
+        ))}
+
+        
       </div>
     )
   }
