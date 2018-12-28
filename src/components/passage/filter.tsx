@@ -150,7 +150,7 @@ class FilterPassageComponent extends React.Component<Props, State> {
         <Text.s margin="0 0 12px 0" style={{ textAlign: "center" }}>
           tags: {tags.join(", ")}
         </Text.s>
-      
+
         <Icons>
           <Icon
             pointer={true}
@@ -188,7 +188,6 @@ class FilterPassageComponent extends React.Component<Props, State> {
           </Text.garamond>
         ))}
 
-        
       </div>
     )
   }
