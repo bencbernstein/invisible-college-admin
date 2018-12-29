@@ -10,11 +10,12 @@ import Spinner from "../common/spinner"
 import Text from "../common/text"
 import Input from "../common/input"
 import FlexedDiv from "../common/flexedDiv"
+import BottomNav from "../common/bottomNav"
 import Header from "../common/header"
 import CommonIcon from "../common/icon"
 import ProgressBar from "../question/progressBar"
 
-import { Tagged, Textarea, Icons } from "./components"
+import { Tagged, Textarea } from "./components"
 
 import {
   fetchPassageAction,
@@ -231,7 +232,7 @@ class EnrichPassageComponent extends React.Component<Props, State> {
     const itemIdx = isQueue && this.queueItemIndex(passage.id)
 
     const queueNavigation = isQueue ? (
-      <Icons>
+      <BottomNav>
         <CommonIcon
           pointer={true}
           large={true}
@@ -253,7 +254,7 @@ class EnrichPassageComponent extends React.Component<Props, State> {
           onClick={() => this.nextPassage(itemIdx, itemIdx + 1)}
           src={nextImg}
         />
-      </Icons>
+      </BottomNav>
     ) : null
 
     return (

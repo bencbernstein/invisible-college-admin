@@ -89,7 +89,7 @@ class Settings extends React.Component<Props, any> {
             download={`hits_${Date.now()}.json`}
             href={`data: text/json;charset=utf-8,${encodeUri(hits)}`}
           >
-            Download
+            Download Search Results
           </a>
         </Button.regular>
       </div>

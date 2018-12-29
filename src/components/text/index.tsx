@@ -7,6 +7,7 @@ import Header from "../common/header"
 import StyledText from "../common/text"
 import Spinner from "../common/spinner"
 import Icon from "../common/icon"
+import BottomNav from "../common/bottomNav"
 
 import {
   fetchTextAction,
@@ -147,7 +148,7 @@ class TextComponent extends React.Component<Props, State> {
           ))}
         </div>
 
-        <div style={{ margin: "40px 0" }}>
+        <BottomNav>
           <Icon
             margin="0 50px"
             pointer={true}
@@ -165,7 +166,7 @@ class TextComponent extends React.Component<Props, State> {
             onClick={() => this.loadPassage(current + 1)}
             src={nextImg}
           />
-        </div>
+        </BottomNav>
       </div>
     )
   }

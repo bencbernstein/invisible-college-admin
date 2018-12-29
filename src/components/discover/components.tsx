@@ -46,27 +46,3 @@ export const SearchForm = styled.form`
   align-items: center;
   justify-content: space-between;
 `
-
-interface SpanProps {
-  hoverColor: string
-  color: string
-}
-
-export const Span = styled.span`
-  cursor: pointer;
-  color: ${(p: SpanProps) => p.color};
-  &:hover {
-    color: ${(p: SpanProps) => p.hoverColor};
-  }
-`
-
-interface ImageProps {
-  isDisabled: boolean
-}
-
-export const Image = styled.img`
-  width: 50px;
-  opacity: ${(p: ImageProps) => (p.isDisabled ? 0.5 : 1)};
-  height: 50px;
-  cursor: ${(p: ImageProps) => (p.isDisabled ? "" : "pointer")};
-`

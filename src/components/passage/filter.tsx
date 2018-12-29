@@ -8,10 +8,9 @@ import history from "../../history"
 import Spinner from "../common/spinner"
 import Text from "../common/text"
 import Icon from "../common/icon"
+import BottomNav from "../common/bottomNav"
 import HitHeader from "../hit/header"
 import ProgressBar from "../question/progressBar"
-
-import { Icons } from "./components"
 
 import {
   fetchEsPassageAction,
@@ -151,7 +150,7 @@ class FilterPassageComponent extends React.Component<Props, State> {
           tags: {tags.join(", ")}
         </Text.s>
 
-        <Icons>
+        <BottomNav>
           <Icon
             pointer={true}
             large={true}
@@ -173,7 +172,7 @@ class FilterPassageComponent extends React.Component<Props, State> {
             onClick={() => this.nextPassage(itemIdx, itemIdx + 1)}
             src={nextImg}
           />
-        </Icons>
+        </BottomNav>
 
         {passage._source.sentences.map((text: string, i: number) => (
           <Text.garamond
