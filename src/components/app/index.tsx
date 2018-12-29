@@ -115,8 +115,8 @@ class App extends React.Component<Props, State> {
       { path: "/passages", Component: Passages, exact: true, noSearch: true },
       { path: "/question", Component: Question, noNav: true },
       { path: "/library", Component: IndexesList, exact: true, noSearch: true },
-      { path: "/library/:id", Component: TextList, exact: true },
-      { path: "/library/text/:id", Component: Text, noSearch: true },
+      { path: "/library/:index", Component: TextList, exact: true },
+      { path: "/library/:index/:id", Component: Text, noSearch: true },
       { path: "/passage/filter/:id", Component: FilterPassage, noSearch: true },
       { path: "/passage/enrich/:id", Component: EnrichPassage, noSearch: true },
       {

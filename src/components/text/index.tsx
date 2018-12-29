@@ -15,7 +15,6 @@ import {
 } from "../../actions"
 import { User } from "../../interfaces/user"
 import { colors } from "../../lib/colors"
-import { lastPath } from "../../lib/helpers"
 
 import nextImg from "../../lib/images/icon-next.png"
 
@@ -26,6 +25,8 @@ interface State {
   title?: string
   author?: string
   isFocused: boolean
+  id: string
+  index: string
 }
 
 interface Props {
@@ -40,9 +41,15 @@ class TextComponent extends React.Component<Props, State> {
   constructor(props: any) {
     super(props)
 
+    const path = window.location.pathname.split("/")
+    const id = path.pop()!
+    const index = path.pop()!
+
     this.state = {
       isHovering: false,
-      isFocused: false
+      isFocused: false,
+      id,
+      index
     }
   }
 
@@ -72,16 +79,16 @@ class TextComponent extends React.Component<Props, State> {
 
   private async loadData() {
     this.props.dispatch(setEntity({ isLoading: true }))
-    this.props.dispatch(fetchTextAction(lastPath(window)))
+    this.props.dispatch(fetchTextAction(this.state.index, this.state.id))
   }
 
   private loadPassage(section: number) {
     this.props.dispatch(setEntity({ isLoading: true }))
     this.props.dispatch(
       fetchEsPassageBySectionAction(
-        "simple_english_wikipedia",
+        this.state.index,
         this.props.text._id,
-        section
+        section + 1
       )
     )
   }

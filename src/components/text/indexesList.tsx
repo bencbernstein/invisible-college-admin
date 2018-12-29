@@ -10,7 +10,7 @@ import { colors } from "../../lib/colors"
 import blankLinkStyle from "../common/blankLinkStyle"
 
 interface State {
-  INDEXES: string[]
+  collections: string[]
 }
 
 interface Props {
@@ -19,13 +19,13 @@ interface Props {
   isLoading: boolean
 }
 
-const INDEXES = ["simple_english_wikipedia"]
+import collections from "../../lib/collections"
 
 class IndexesListComponent extends React.Component<Props, State> {
   constructor(props: any) {
     super(props)
     this.state = {
-      INDEXES
+      collections
     }
   }
 
@@ -34,26 +34,29 @@ class IndexesListComponent extends React.Component<Props, State> {
   }
 
   private loadData() {
-    this.props.dispatch(findIndexCountsAction(INDEXES))
+    this.props.dispatch(findIndexCountsAction(collections))
   }
 
   public render() {
     const { indexCounts } = this.props
     if (indexCounts.length === 0) return <Spinner />
 
-    return (
-      <div style={{ width: "600px", margin: "0 auto", marginTop: "30px" }}>
-        <Link
-          style={blankLinkStyle}
-          to={`/library/${INDEXES[0].replace(/_/g, "-")}`}
-        >
+    const collection = (name: string, i: number) => (
+      <div key={name}>
+        <Link style={blankLinkStyle} to={`/library/${name.replace(/_/g, "-")}`}>
           <Text.regular style={{ textTransform: "capitalize" }}>
-            {INDEXES[0].replace(/_/g, " ")}
+            {name.replace(/_/g, " ")}
           </Text.regular>
         </Link>
         <Text.regular color={colors.mediumLGray}>
-          Count: {indexCounts[0]}
+          Count: {indexCounts[i]}
         </Text.regular>
+      </div>
+    )
+
+    return (
+      <div style={{ width: "600px", margin: "0 auto", marginTop: "30px" }}>
+        {collections.map(collection)}
       </div>
     )
   }

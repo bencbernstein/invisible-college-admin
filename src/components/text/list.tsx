@@ -23,6 +23,18 @@ interface Props {
   isLoading: boolean
 }
 
+const parseTextQuery = (formData: FormData, params: string): any | Error =>
+  fetch("http://localhost:4000/index-texts" + params, {
+    body: formData,
+    method: "POST"
+  }).then(res => res.json())
+
+export const parseTexts = async (files: File[]): Promise<any | Error> => {
+  const formData = new FormData()
+  files.forEach((file: File, i: number) => formData.append(`file-${i}`, file))
+  return parseTextQuery(formData, `?count=${files.length}`)
+}
+
 class TextListComponent extends React.Component<Props, State> {
   constructor(props: any) {
     super(props)
@@ -37,6 +49,7 @@ class TextListComponent extends React.Component<Props, State> {
   }
 
   public async onDrop(acceptedFiles: File[]) {
+    console.log(acceptedFiles.length)
     if (acceptedFiles.length) {
       console.log("implement parseTexts!")
       // await parseTexts(acceptedFiles)
@@ -84,7 +97,7 @@ class TextListComponent extends React.Component<Props, State> {
               {divider}
             </StyledText.xxl>
           ) : (
-            <Link style={blankLinkStyle} key={i} to={`/library/text/${id}`}>
+            <Link style={blankLinkStyle} key={i} to={`/library/${index}/${id}`}>
               <StyledText.regular>{title}</StyledText.regular>
             </Link>
           )

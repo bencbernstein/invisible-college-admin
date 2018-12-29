@@ -76,12 +76,14 @@ export const fetchTextsAction = (
     }
   })
 
-export const fetchTextAction = (id: string, route: string = "text") => (
-  dispatch: any
-) =>
+export const fetchTextAction = (
+  index: string,
+  id: string,
+  route: string = "text"
+) => (dispatch: any) =>
   dispatch({
     [CALL_API]: {
-      query: `query { ${route}(id: "${id}") { text { _id _source { title sections_count } } esPassage { _id _source { section sentences } } } }`,
+      query: `query { ${route}(index: "${index}", id: "${id}") { text { _id _source { title sections_count } } esPassage { _id _source { section sentences } } } }`,
       types: types(camelCaseToUpperCase(route)),
       schema: ["text", "esPassage"],
       route
