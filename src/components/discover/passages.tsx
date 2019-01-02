@@ -4,14 +4,14 @@ import { connect } from "react-redux"
 import { chunk, sortBy } from "lodash"
 
 import Text from "../common/text"
+import Icon from "../common/icon"
 import HitHeader from "../hit/header"
+import BottomNav from "../common/bottomNav"
 
-import { Image } from "./components"
 import FlexedDiv from "../common/flexedDiv"
 import { colors } from "../../lib/colors"
 
-import arrowLeft from "../../lib/images/arrow-left.png"
-import arrowRight from "../../lib/images/arrow-right.png"
+import nextImg from "../../lib/images/icon-next.png"
 
 interface Props {
   hits: any[]
@@ -108,18 +108,24 @@ class PassagesList extends React.Component<Props, State> {
     const disabledRight = currentPage + 1 === chunked.length
 
     const navigation = (
-      <FlexedDiv justifyContent={"space-between"}>
-        <Image
-          onClick={() => this.paginate(true, disabledLeft)}
-          isDisabled={disabledLeft}
-          src={arrowLeft}
+      <BottomNav position={"sticky"}>
+        <Icon
+            pointer={true}
+            large={true}
+            disable={disabledLeft}
+            onClick={() => this.paginate(true, disabledLeft)}
+            flipHorizontal={true}
+            src={nextImg}
         />
-        <Image
-          onClick={() => this.paginate(false, disabledRight)}
-          isDisabled={disabledRight}
-          src={arrowRight}
+        <Icon
+            pointer={true}
+            large={true}
+            disable={disabledRight}
+            onClick={() => this.paginate(false, disabledRight)}
+            flipHorizontal={false}
+            src={nextImg}
         />
-      </FlexedDiv>
+      </BottomNav>
     )
 
     let informationText = `${listLength} passages`
