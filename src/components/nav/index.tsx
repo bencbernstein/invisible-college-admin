@@ -1,19 +1,19 @@
 import * as React from "react"
 import { connect } from "react-redux"
 import { Redirect } from "react-router"
-import { get } from "lodash"
+import { get, sortBy } from "lodash"
 import { Link } from "react-router-dom"
 
 import Search from "../search"
 import Text from "../common/text"
 import Header from "../common/header"
 
-import { Modal, ModalButton, Button, NavBox, FlexBox } from "./components"
+import { Modal, ModalButton, Button } from "./components"
 
 import { setEntity } from "../../actions"
 import { User } from "../../interfaces/user"
 
-import { formatName, lastPath } from "../../lib/helpers"
+import { formatName } from "../../lib/helpers"
 import { colors } from "../../lib/colors"
 import FlexedDiv from "../common/flexedDiv"
 
@@ -25,6 +25,7 @@ interface Props {
   noSearch: boolean
   dispatch: any
   curricula: Curriculum[]
+  isRob: boolean
 }
 
 interface State {
@@ -41,9 +42,12 @@ class Nav extends React.Component<Props, State> {
   }
 
   public componentDidMount() {
-    const { curricula, curriculum } = this.props
-    if (curricula.length && !curriculum) {
-      this.setCurriculum(curricula[0])
+    const { curricula, user } = this.props
+    if (curricula.length && !this.props.curriculum && user) {
+      const curriculum = curricula.filter(
+        ({ id }) => user.curricula.indexOf(id) > -1
+      )[0]
+      this.setCurriculum(curriculum)
     }
   }
 
@@ -60,11 +64,12 @@ class Nav extends React.Component<Props, State> {
 
   public logout() {
     localStorage.removeItem("user")
+    this.props.dispatch(setEntity({ isRob: false }))
     this.setState({ redirect: "/login" })
   }
 
   public render() {
-    const { curriculum, user, curricula } = this.props
+    const { curriculum, user, curricula, isRob } = this.props
     const { displayModal, redirect } = this.state
 
     if (redirect) return <Redirect to={redirect} />
@@ -74,7 +79,7 @@ class Nav extends React.Component<Props, State> {
 
     const link = (item: any): any => {
       const path = item.toLowerCase().replace(" ", "-")
-      const isViewing = path === lastPath(window)
+      const isViewing = window.location.pathname.indexOf(path) > -1
       const color =
         item === "Play"
           ? colors.green
@@ -96,36 +101,28 @@ class Nav extends React.Component<Props, State> {
       )
     }
 
-    const menuItems = [
-      "Curricula",
-      "Library",
-      "Discover",
-      "Concepts",
-      "Images",
-      "Passages",
-      "Queues",
-      "Play"
-    ]
+    const links = isRob
+      ? ["Concepts", "Library", "Passages"]
+      : [
+          "Curricula",
+          "Library",
+          "Discover",
+          "Concepts",
+          "Images",
+          "Passages",
+          "Queues",
+          "Play"
+        ]
+
+    const menuItems = links
       .map(link)
       .reduce((prev: any, curr: any, i: number) => [prev, "/", curr])
 
     return (
-      <div style={{ height: "75px" }}>
-        <NavBox>
-          <Link style={{ textDecoration: "none", flex: 1 }} to="/library">
-            <Header.s
-              style={{
-                color: colors.gray,
-                textAlign: "left",
-                margin: "0"
-              }}
-            >
-              Wordcraft
-            </Header.s>
-          </Link>
-
-          <FlexedDiv>
-            <Header.m margin="0 10px 0 0">{get(curriculum, "name")}</Header.m>
+      <div style={{ marginBottom: "25px" }}>
+        <FlexedDiv style={{ marginBottom: "5px" }}>
+          <FlexedDiv flex={1} justifyContent="flex-start">
+            <Header.s margin="0 10px 0 0">{get(curriculum, "name")}</Header.s>
             <select
               onChange={e => {
                 const curriculum = curricula.find(
@@ -137,14 +134,24 @@ class Nav extends React.Component<Props, State> {
               value={get(curriculum, "id")}
             >
               {curricula.map(({ id, name }) => (
-                <option key={id} value={id}>
+                <option
+                  disabled={!user.admin && user.curricula.indexOf(id) === -1}
+                  key={id}
+                  value={id}
+                >
                   {name}
                 </option>
               ))}
             </select>
           </FlexedDiv>
 
-          <FlexBox style={{ flex: 1, justifyContent: "flex-end" }}>
+          <FlexedDiv>{menuItems}</FlexedDiv>
+
+          <FlexedDiv
+            flex={1}
+            justifyContent="flex-end"
+            style={{ position: "relative" }}
+          >
             <Button
               style={{ margin: 0 }}
               onClick={() => this.setState({ displayModal: !displayModal })}
@@ -158,22 +165,10 @@ class Nav extends React.Component<Props, State> {
                 </ModalButton>
               </Modal>
             )}
-          </FlexBox>
-        </NavBox>
-
-        <div
-          style={{
-            flex: 4,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center"
-          }}
-        >
-          {menuItems}
-        </div>
+          </FlexedDiv>
+        </FlexedDiv>
 
         {!this.props.noSearch && <Search />}
-        <br />
       </div>
     )
   }
@@ -182,7 +177,8 @@ class Nav extends React.Component<Props, State> {
 const mapStateToProps = (state: any, ownProps: any) => ({
   user: state.entities.user,
   curriculum: state.entities.curriculum,
-  curricula: state.entities.curricula || []
+  curricula: sortBy(state.entities.curricula, "name") || [],
+  isRob: state.entities.isRob === true
 })
 
 export default connect(mapStateToProps)(Nav)

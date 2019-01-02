@@ -1,16 +1,6 @@
 import styled from "styled-components"
 import { colors } from "../../lib/colors"
 
-// Nav
-
-export const NavBox = styled.div`
-  text-align: center;
-  display: flex;
-  margin-bottom: 5px;
-  justify-content: space-between;
-  align-items: flex-start;
-`
-
 interface ButtonProps {
   bold?: boolean
 }
@@ -40,9 +30,4 @@ export const Modal = styled.div`
   right: 0px;
   top: 30px;
   background-color: white;
-`
-
-export const FlexBox = styled.div`
-  display: flex;
-  position: relative;
 `
