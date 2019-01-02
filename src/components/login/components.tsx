@@ -4,34 +4,34 @@ import { colors } from "../../lib/colors"
 
 import Header from "../common/header"
 
-export const GameTitle = Header.m.extend`
-  margin: 0;
-  flex: 11;
-  display: flex;
-  align-items: center;
-  z-index: 10;
-`
+import backgroundImg from "../../lib/images/background-opaque.png"
 
-export const Container = styled.div`
-  height: 100vh;
-  position: relative;
-  top: 0;
+interface HeaderProps {
+  isGameTitle: boolean
+}
+
+export const MainHeader = Header.m.extend`
+  font-family: ${(p: HeaderProps) => p.isGameTitle && "Averia"};
+  margin: 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  flex-direction: column;
-  width: 100vw;
   z-index: 10;
 `
 
 export const Form = styled.form`
-  width: 300px;
-  margin: 0 auto;
+  width: 100vw;
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  flex: 9;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: center;
   z-index: 10;
+  position: relative;
+  text-align: center;
+  background-image: url(${backgroundImg});
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 `
 
 export const ErrorMessage = styled.p`
@@ -39,17 +39,24 @@ export const ErrorMessage = styled.p`
   font-size: 0.85em;
   height: 50px;
   line-height: 50px;
+  margin: 0;
   text-align: center;
 `
 
 export const BackgroundImage = styled.img`
   position: fixed;
-  max-width: 90%;
-  max-height: 50%;
+  min-height: 100%;
+  opacity: 0.4;
+  min-width: 100%;
   width: auto;
   height: auto;
   position: fixed;
   top: 0;
   bottom: 0;
   margin: auto;
+`
+
+export const BoldSpan = styled.span`
+  color: ${colors.blue};
+  font-family: BrandonGrotesqueBold;
 `

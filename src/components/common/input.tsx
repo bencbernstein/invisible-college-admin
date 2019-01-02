@@ -15,6 +15,7 @@ const Basic = styled.input`
   width: ${(p: Props) => p.width};
   margin: ${(p: Props) => p.margin};
   border: none;
+  border-bottom: 1px solid black;
   box-sizing: border-box;
 `
 
@@ -23,22 +24,23 @@ const Rounded = styled.input`
   outline: none;
   width: ${(p: Props) => p.width};
   margin: ${(p: Props) => p.margin};
-  padding: 5px;
-  border: 2px solid ${colors.lightestGray};
+  padding: 12px 5px;
+  border: 3px solid ${colors.lightestGray};
   &:focus {
-    border: 2px solid ${colors.blue};
+    border: 3px solid ${colors.blue};
   }
   &:hover {
-    border: 2px solid ${colors.blue};
+    border: 3px solid ${colors.blue};
   }
   transition: all 0.2s ease;
   font-size: 1em;
+  max-width: 275px;
   border-radius: 5px;
   box-sizing: border-box;
 `
 
 const RoundedSubmit = Rounded.extend`
-  border: 2px solid ${colors.blue};
+  border: 3px solid ${colors.blue};
   background-color: ${colors.blue};
   text-align: center;
   color: white;
@@ -55,13 +57,11 @@ const FileLabel = styled.label`
 `
 
 const Medium = Basic.extend`
-  border-bottom: 1px solid ${colors.gray};
   font-size: 1.1em;
   padding: 5px;
 `
 
 const Large = Basic.extend`
-  border-bottom: 1px solid black;
   font-size: 1.3em;
   padding: 5px;
 `
@@ -75,7 +75,6 @@ const Circular = Basic.extend`
 `
 
 const Small = Basic.extend`
-  border-bottom: 1px solid ${colors.gray};
   color: ${colors.gray};
   font-size: 0.8em;
   padding: 0px;
@@ -93,15 +92,30 @@ const Box = Basic.extend`
   padding: ${(p: BoxProps) => (p.padding ? "10px" : "0px")};
 `
 
-const Submit = Basic.extend`
-  border: 1px solid black;
-  font-size: 1.1em;
-  padding: 5px;
+interface SubmitProps {
+  disabled?: boolean
+  margin?: string
+}
+
+const Submit = styled.input`
+  font-family: BrandonGrotesque;
+  font-size: 1em;
+  border: 4px solid ${colors.lightGray};
+  pointer-events: ${(p: SubmitProps) => (p.disabled ? "none" : "auto")};
+  background-color: ${(p: SubmitProps) =>
+    p.disabled ? colors.lightestGray : "white"};
+  padding: 7px 10px;
+  border-radius: 10px;
+  min-width: 75px;
+  box-sizing: border-box;
+  text-align: center
   cursor: pointer;
+  color: ${(p: SubmitProps) => (p.disabled ? colors.gray3 : "black")};
+  margin: ${(p: SubmitProps) => p.margin};
   &:hover {
-    background-color: black;
-    color: white;
-  }
+    border: 4px solid ${(p: SubmitProps) =>
+      p.disabled ? colors.lightGray : colors.blue};
+  }  
 `
 
 export default {

@@ -1,35 +1,30 @@
+import { connect } from "react-redux"
 import * as React from "react"
 
 import Button from "../common/button"
-import Header from "../common/header"
-import FlexedDiv from "../common/flexedDiv"
 import Text from "../common/text"
-import Slider from "rc-slider"
-import "rc-slider/assets/index.css"
+import Header from "../common/header"
 
-import { Textarea, Divider, SettingsHeader } from "./components"
+import { Textarea, Divider } from "./components"
 
-import { MainDisplay } from "./"
 import { colors } from "../../lib/colors"
+import { encodeUri } from "../../lib/helpers"
+import COLLECTIONS from "../../lib/collections"
 
-import { PassageResult } from "../../models/discover"
+import FlexedDiv from "../common/flexedDiv"
 
 interface Props {
   editedSearchWords: (str: string) => void
-  editedContext: (e: number) => void
-  context: number
-  mainDisplay: MainDisplay
-  changeMainDisplay: (m: MainDisplay) => void
-  hasLinks: boolean
   hasSearchWords: boolean
-  searchWords: string[]
-  hasPredictiveCorpusLinks: boolean
   isLoading: boolean
+  searchWords: string[]
+  hasSearchCollections: boolean
   runPassageSearch: () => void
-  runPredictiveCorpus: () => void
+  hits: any[]
   exportPassages: () => void
+  editedSearchCollections: (name: string) => void
   canExport: boolean
-  passageResults: PassageResult[]
+  searchCollections: string[]
 }
 
 class Settings extends React.Component<Props, any> {
@@ -40,24 +35,23 @@ class Settings extends React.Component<Props, any> {
 
   public render() {
     const {
-      context,
-      mainDisplay,
-      hasLinks,
       hasSearchWords,
       searchWords,
+      canExport,
       isLoading,
-      hasPredictiveCorpusLinks,
-      canExport
+      searchCollections,
+      hasSearchCollections,
+      hits
     } = this.props
 
     const passageSearchDirections = (
       <div>
         <Text.regular
           style={{ marginTop: "10px" }}
-          color={hasLinks ? colors.blue : colors.lightGray}
+          color={hasSearchCollections ? colors.blue : colors.lightGray}
         >
           <span style={{ marginRight: "10px" }}>1</span>
-          Enter search article
+          Select collections to search
         </Text.regular>
         <Text.regular
           color={hasSearchWords ? colors.blue : colors.lightGray}
@@ -70,7 +64,7 @@ class Settings extends React.Component<Props, any> {
         <Button.regular
           margin={"10px 0px 3px 0px"}
           onClick={this.props.runPassageSearch.bind(this)}
-          disabled={!hasLinks || !hasSearchWords || isLoading}
+          disabled={!hasSearchCollections || !hasSearchWords || isLoading}
           style={{ width: "100%" }}
         >
           Search
@@ -82,7 +76,7 @@ class Settings extends React.Component<Props, any> {
           disabled={!canExport || isLoading}
           style={{ width: "100%" }}
         >
-          Export
+          Create Queue
         </Button.regular>
 
         <Button.regular
@@ -91,101 +85,54 @@ class Settings extends React.Component<Props, any> {
           style={{ width: "100%" }}
         >
           <a
-            style={{ color: colors.gray, textDecoration: "none" }}
-            download="data.json"
-            href={`data: text/json;charset=utf-8,${encodeURIComponent(
-              JSON.stringify(this.props.passageResults)
-            )}`}
+            style={{ color: "inherit", textDecoration: "none" }}
+            download={`hits_${Date.now()}.json`}
+            href={`data: text/json;charset=utf-8,${encodeUri(hits)}`}
           >
-            Download
+            Download Search Results
           </a>
-        </Button.regular>
-      </div>
-    )
-
-    const predictiveCorpusDirections = (
-      <div>
-        <Text.regular
-          style={{ marginTop: "10px" }}
-          color={hasPredictiveCorpusLinks ? colors.blue : colors.lightGray}
-        >
-          <span style={{ marginRight: "10px" }}>1</span>
-          Select articles (max 3)
-        </Text.regular>
-
-        <Button.regular
-          onClick={this.props.runPredictiveCorpus.bind(this)}
-          disabled={!hasPredictiveCorpusLinks || isLoading}
-          style={{ width: "100%" }}
-        >
-          Search
         </Button.regular>
       </div>
     )
 
     return (
       <div>
-        <Header.l>Discover</Header.l>
-
+        <Header.s margin="0">COLLECTIONS</Header.s>
+        {COLLECTIONS.map((name: string) => (
+          <FlexedDiv
+            key={name}
+            justifyContent="flex-start"
+            style={{ marginTop: "5px" }}
+          >
+            <input
+              readOnly={true}
+              checked={searchCollections.indexOf(name) > -1}
+              onClick={() => this.props.editedSearchCollections(name)}
+              type="radio"
+            />
+            <Text.s style={{ textTransform: "capitalize", marginLeft: "5px" }}>
+              {name}
+            </Text.s>
+          </FlexedDiv>
+        ))}
         <Divider />
-
         <Textarea
           spellCheck={false}
           value={searchWords.join(", ")}
           onChange={e => this.props.editedSearchWords(e.target.value)}
           placeholder="Search words"
         />
-
         <Divider />
-
-        <FlexedDiv justifyContent={"space-between"}>
-          <SettingsHeader>context</SettingsHeader>
-          <Text.s>0 - 10 sentences</Text.s>
-        </FlexedDiv>
-        <Slider
-          value={context}
-          onChange={e => this.props.editedContext(e)}
-          style={{ margin: "10px 0px 40px 0px" }}
-          min={0}
-          max={10}
-          marks={{ 0: "0", 5: "5", 10: "10" }}
-        />
-
-        <Divider />
-
-        <SettingsHeader>DIRECTIONS</SettingsHeader>
-
-        {mainDisplay === MainDisplay.PredictiveCorpus
-          ? predictiveCorpusDirections
-          : passageSearchDirections}
-
-        {hasLinks && (
-          <div>
-            <Divider />
-            <SettingsHeader>VIEW</SettingsHeader>
-            <FlexedDiv>
-              <input
-                type="radio"
-                onChange={() =>
-                  this.props.changeMainDisplay(MainDisplay.Passages)
-                }
-                checked={mainDisplay === MainDisplay.Passages}
-              />
-              <Text.s>Passages</Text.s>
-              <input
-                type="radio"
-                onChange={() =>
-                  this.props.changeMainDisplay(MainDisplay.PredictiveCorpus)
-                }
-                checked={mainDisplay === MainDisplay.PredictiveCorpus}
-              />
-              <Text.s>Predictive Corpus</Text.s>
-            </FlexedDiv>
-          </div>
-        )}
+        <Header.s margin="0">DIRECTIONS</Header.s>
+        {passageSearchDirections}
       </div>
     )
   }
 }
 
-export default Settings
+const mapStateToProps = (state: any, ownProps: any) => ({
+  isLoading: state.entities.isLoading === true,
+  hits: state.entities.hits || []
+})
+
+export default connect(mapStateToProps)(Settings)

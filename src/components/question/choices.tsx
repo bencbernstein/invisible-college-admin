@@ -4,7 +4,7 @@ import * as React from "react"
 import { Button, Image, ChoicesGridBox, ChoicesFlexBox } from "./components"
 import { Guess } from "./"
 
-import { AnswerPart } from "../../models/question"
+import { AnswerPart } from "../../interfaces/question"
 
 import { colors } from "../../lib/colors"
 
@@ -12,8 +12,10 @@ interface Props {
   answer: AnswerPart[]
   redHerrings: string[]
   guess?: Guess
+  isBetweenQuestions?: boolean
   guessed: (choice: string, buttonIdx: number, answerValues: string[]) => void
   type: string
+  flex: number
 }
 
 const disabledColor = (buttonIdx: number, g: Guess): string =>
@@ -25,39 +27,61 @@ const disabledColor = (buttonIdx: number, g: Guess): string =>
 
 export default class Choices extends React.Component<Props, any> {
   public render() {
-    const { answer, guess, redHerrings, type } = this.props
+    const {
+      answer,
+      guess,
+      redHerrings,
+      type,
+      flex,
+      isBetweenQuestions
+    } = this.props
+
+    const isSpell = type.indexOf("Chars") > -1
 
     const isImage =
-      type === "WORD_TO_IMG" && redHerrings[0].startsWith("data:image")
+      type === "Word to Image" && redHerrings[0].startsWith("data:image")
 
     const answerValues = _.compact(
       answer.filter(a => !a.prefill).map(a => a.value)
     )
 
-    const choices = redHerrings.concat(answerValues).map(
-      (c: string, i: number) =>
-        isImage ? (
+    const choices = redHerrings
+      .concat(answerValues)
+      .map((c: string, i: number) => {
+        const userGuessed = guess !== undefined
+        const userGuessedCorrectly = userGuessed && guess!.correct
+        const buttonGuessed = userGuessed && guess!.buttonIdx === i
+        const disable =
+          (userGuessed && !userGuessedCorrectly) ||
+          (userGuessedCorrectly && buttonGuessed)
+        const bColor = disable ? disabledColor(i, guess!) : colors.blue
+        return isImage ? (
           <Image
-            disabled={guess !== undefined}
-            backgroundColor={guess ? disabledColor(i, guess) : colors.blue}
+            disabled={disable || isBetweenQuestions === true}
+            backgroundColor={bColor}
             onClick={() => this.props.guessed(c, i, answerValues)}
             src={c}
             key={i}
           />
         ) : (
           <Button
-            disabled={guess !== undefined}
-            backgroundColor={guess ? disabledColor(i, guess) : colors.blue}
+            isSpell={isSpell}
+            disabled={disable || isBetweenQuestions === true}
+            backgroundColor={bColor}
             onClick={() => this.props.guessed(c, i, answerValues)}
             key={i}
           >
             {c}
           </Button>
         )
-    )
+      })
 
     const Container = false ? ChoicesFlexBox : ChoicesGridBox
 
-    return <Container count={choices.length}>{choices}</Container>
+    return (
+      <Container flex={flex} count={choices.length}>
+        {choices}
+      </Container>
+    )
   }
 }

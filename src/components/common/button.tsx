@@ -9,24 +9,29 @@ interface Props {
   marginLeft?: string
   margin?: string
   width?: string
+  uppercase?: boolean
+  bold?: boolean
 }
 
 const RegularWC = styled.p`
-  font-family: BrandonGrotesque;
+  font-family: ${(p: Props) => p.bold && "BrandonGrotesqueBold"};
+  text-transform: ${(p: Props) => p.uppercase && "uppercase"};
   outline: none;
+  cursor: pointer;
+  letter-spacing: 1px;
+  max-width: 275px;
   width: ${(p: Props) => p.width};
   margin: ${(p: Props) => p.margin};
-  padding: 5px;
+  padding: 12px 5px;
   transition: all 0.2s ease;
   font-size: 1em;
   border-radius: 5px;
-  box-sizing: border-box;
   border: 2px solid ${(p: Props) => p.color || colors.blue};
   background-color: ${(p: Props) => p.color || colors.blue};
-  box-sizing: broder-box;
+  box-sizing: border-box;
   color: white;
   text-align: center;
-  margin: 0;
+  margin: ${(p: Props) => p.margin || "0"};
 `
 
 const Regular = styled.p`
@@ -34,16 +39,15 @@ const Regular = styled.p`
   pointer-events: ${(p: Props) => (p.disabled ? "none" : "auto")};
   background-color: ${(p: Props) =>
     p.disabled ? colors.lightestGray : "white"};
-  padding: 10px 5px;
+  padding: 7px 10px;
   min-width: 100px;
+  border-radius: 10px;
   box-sizing: border-box;
   text-align: center
   display: inline-block;
   cursor: pointer;
-  color: black;
-  margin-right: ${(p: Props) => p.marginRight || "0px"};
-  margin-left: ${(p: Props) => p.marginLeft || ""};
-  margin: ${(p: Props) => p.margin || ""};
+  color: ${(p: Props) => (p.disabled ? colors.gray3 : "black")};
+  margin: ${(p: Props) => p.margin};
   &:hover {
     border: 4px solid ${(p: Props) =>
       p.disabled ? colors.lightGray : p.color || colors.blue};
@@ -58,17 +62,11 @@ const Small = Regular.extend`
 const Large = Regular.extend`
   font-size: 1.2em;
   min-width: 150px;
-  padding: 5px;
-`
-
-const Circular = Small.extend`
-  border-radius: 20px;
 `
 
 export default {
   l: Large,
   regular: Regular,
-  regularWc: RegularWC,
   s: Small,
-  circ: Circular
+  regularWc: RegularWC
 }

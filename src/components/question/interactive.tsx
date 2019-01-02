@@ -1,15 +1,16 @@
 import * as React from "react"
-import { includes } from "lodash"
+import { includes, isEqual } from "lodash"
 
 import { InteractiveBox, Span } from "./components"
 
-import { InteractivePart } from "../../models/question"
+import { InteractivePart } from "../../interfaces/question"
 
 import { isPunc } from "../../lib/helpers"
 
 interface Props {
   data: InteractivePart[]
-  guessed: (count: number) => void
+  guessed: (correct: boolean, count: number) => void
+  flex: number
 }
 
 interface State {
@@ -24,6 +25,12 @@ export default class Prompt extends React.Component<Props, State> {
     }
   }
 
+  public componentWillReceiveProps(nextProps: Props) {
+    if (!isEqual(this.props.data, nextProps.data)) {
+      this.setState({ guessedCorrectly: [] })
+    }
+  }
+
   public clicked(part: InteractivePart, idx: number) {
     const { guessedCorrectly } = this.state
     const { correct } = part
@@ -33,11 +40,11 @@ export default class Prompt extends React.Component<Props, State> {
       this.setState({ guessedCorrectly })
     }
 
-    this.props.guessed(guessedCorrectly.length)
+    this.props.guessed(correct, guessedCorrectly.length)
   }
 
   public render() {
-    const { data } = this.props
+    const { data, flex } = this.props
     const { guessedCorrectly } = this.state
 
     const span = (p: InteractivePart, i: number): any => (
@@ -52,7 +59,7 @@ export default class Prompt extends React.Component<Props, State> {
     )
 
     return (
-      <InteractiveBox>
+      <InteractiveBox flex={flex}>
         {data
           .map(span)
           .reduce((prev: any[], curr: any, i: number) => [

@@ -1,45 +1,49 @@
-import pos from "pos"
 import * as React from "react"
-import { get } from "lodash"
-import * as _ from "underscore"
+import pos from "pos"
+import { Redirect } from "react-router"
+import { connect } from "react-redux"
+import { extend, get, flatten, isEqual, isString } from "lodash"
 
-import CommonIcon from "../common/icon"
+import history from "../../history"
+
+import Spinner from "../common/spinner"
 import Text from "../common/text"
+import Input from "../common/input"
 import FlexedDiv from "../common/flexedDiv"
+import BottomNav from "../common/bottomNav"
+import Header from "../common/header"
+import CommonIcon from "../common/icon"
+import ProgressBar from "../question/progressBar"
+
+import { Tagged, Textarea } from "./components"
 
 import {
-  TagValue,
-  PartOfSpeech,
-  Tagged,
-  Textarea,
-  PassageContainer,
-  Icon,
-  Icons
-} from "./components"
+  fetchPassageAction,
+  fetchKeywords,
+  updatePassageAction,
+  updateQueueItemAction,
+  setEntity,
+  finishedQueue,
+  removePassageAction
+} from "../../actions"
 
-import { PassageSequence } from "../../models/passageSequence"
-import { Tag } from "../../models/text"
-import { Passage } from "../../models/passage"
-import { Keywords } from "../../models/word"
+import { User } from "../../interfaces/user"
 
-import connectors from "../text/passages/data/connectors"
+import {
+  highlight,
+  toSentences,
+  flattenSentences,
+  tagsToSentence,
+  cleanObj,
+  lastPath
+} from "../../lib/helpers"
 
-import { highlight, tagsToSentence, flattenSentences } from "../../lib/helpers"
-
-import nextImg from "../../lib/images/icon-next.png"
 import addIcon from "../../lib/images/icon-add.png"
+import nextImg from "../../lib/images/icon-next.png"
 import deleteIcon from "../../lib/images/icon-delete.png"
 
-const connectorValues = _.flatten(connectors.map(c => c.elements))
-
-interface Props {
-  keywords?: Keywords
-  passage: Passage
-  passageSequences: PassageSequence[]
-  sentences: Tag[][]
-  nextPassage: (next: number, passage: Passage, remove?: boolean) => void
-  idx: number
-}
+import CONNECTORS from "../../lib/connectors"
+const connectors = flatten(CONNECTORS.map(c => c.elements))
 
 interface IsEditing {
   idx: number
@@ -47,201 +51,334 @@ interface IsEditing {
 }
 
 interface State {
-  sentences: Tag[][]
-  passage: Passage
+  redirect?: string
+  passage?: any
+  sentences: any[][]
   isEditing?: IsEditing
+  isQueue: boolean
+  difficultyInput?: string
 }
 
-const automaticFocus = (tag: Tag) =>
+interface Props {
+  queue: any
+  passage: any
+  user: User
+  dispatch: any
+  keywords: any
+  isLoading: boolean
+}
+
+const automaticFocus = (tag: any) =>
   tag.wordId || tag.choiceSetId || tag.isConnector
 
-class EnrichComponent extends React.Component<Props, State> {
-  constructor(props: Props) {
+class EnrichPassageComponent extends React.Component<Props, State> {
+  constructor(props: any) {
     super(props)
 
-    const { passage, sentences } = this.props
+    const isQueue = window.location.search.includes("?q=1")
 
     this.state = {
-      passage,
-      sentences
+      isQueue,
+      sentences: []
     }
+  }
+
+  public componentDidMount() {
+    this.loadData(lastPath(window))
   }
 
   public componentWillReceiveProps(nextProps: Props) {
-    const { passage, sentences } = nextProps
-    if (passage.id !== this.props.passage.id) {
-      this.setState({
-        passage,
-        sentences
-      })
+    const { passage } = nextProps
+    if (passage && !isEqual(passage, this.props.passage)) {
+      const sentences = toSentences(passage.tagged)
+      this.setState({ sentences, passage })
     }
   }
 
-  public editValue(senIdx: number, value: string) {
-    const { passage, sentences } = this.state
+  private async loadData(id: string) {
+    await this.props.dispatch(fetchPassageAction(id))
+    if (this.props.keywords) return
+    this.props.dispatch(fetchKeywords())
+  }
 
-    const [words, choices] = this.props.keywords
-      ? [this.props.keywords.words, this.props.keywords.choices]
-      : [{}, {}]
+  private editValue(senIdx: number, value: string) {
+    const { passage, sentences } = this.state
+    const { words, choices } = this.props.keywords
 
     const lexed = new pos.Lexer().lex(value)
     const tagger = new pos.Tagger()
 
-    sentences[senIdx] = tagger.tag(lexed).map((t: any) => ({
-      value: t[0],
-      tag: t[1],
-      isPunctuation: t[0] === t[1],
-      isConnector: connectorValues.indexOf(t[0]) > -1,
-      wordId: words[t[0].toLowerCase()],
-      choiceSetId: choices[t[0].toLowerCase()],
-      isFocusWord: false
-    }))
+    sentences[senIdx] = tagger.tag(lexed).map((t: any) => {
+      const [value, pos] = t
+      const isPunctuation = value === pos
+      const isConnector = connectors.indexOf(value) > -1
+      const wordId = words[value.toLowerCase()]
+      const choiceSetId = choices[value.toLowerCase()]
+      const isUnfocused = isConnector
+      return {
+        value,
+        pos,
+        isPunctuation,
+        isConnector,
+        wordId,
+        choiceSetId,
+        isUnfocused
+      }
+    })
 
     passage.tagged = flattenSentences(sentences)
-
     this.setState({ passage, sentences, isEditing: undefined })
   }
 
-  public switchFocus(senIdx: number, wordIdx: number) {
-    const { passage, sentences } = this.state
-
+  private switchFocus(senIdx: number, wordIdx: number) {
+    const { sentences } = this.state
     const tag = sentences[senIdx][wordIdx]
     const attr = automaticFocus(tag) ? "isUnfocused" : "isFocusWord"
     sentences[senIdx][wordIdx][attr] = !tag[attr]
-    passage.tagged = flattenSentences(sentences)
-
-    this.setState({ passage, sentences })
+    this.setState({ sentences })
   }
 
-  public removeSentence(idx: number) {
+  private removeSentence(idx: number) {
     const { passage, sentences } = this.state
-
     sentences.splice(idx, 1)
-    passage.filteredSentences = _.without(
-      passage.filteredSentences.map(i => (i > idx ? i - 1 : i)).concat(idx + 1),
-      idx
-    )
     passage.tagged = flattenSentences(sentences)
-
     this.setState({ passage, sentences })
   }
 
   public addSentenceAfter(idx: number) {
     const { passage, sentences } = this.state
-
     sentences.splice(idx + 1, 0, [])
-    passage.filteredSentences = passage.filteredSentences
-      .map(i => (i > idx ? i + 1 : i))
-      .concat(idx + 1)
     passage.tagged = flattenSentences(sentences)
-
     this.setState({ passage, sentences })
   }
 
-  public changedFactoidOnCorrect() {
+  private queueItemIndex(id: string) {
+    return this.props.queue.items.findIndex((item: any) => item.id === id)
+  }
+
+  public componentWillUnmount() {
+    if (!this.state.isQueue) {
+      this.updatePassage()
+    }
+  }
+
+  private async updatePassage() {
     const { passage } = this.state
-    passage.factoidOnCorrect = !passage.factoidOnCorrect
-    this.setState({ passage })
+    passage.tagged.forEach(cleanObj)
+    await this.props.dispatch(updatePassageAction(passage.id, passage))
+    return passage
+  }
+
+  private async nextPassage(
+    current: number,
+    next: number,
+    remove: boolean = false
+  ) {
+    const { queue, user } = this.props
+
+    const currentItem = queue.items[current]
+    const nextItem = queue.items[next]
+
+    if (remove) {
+      this.props.dispatch(removePassageAction(this.state.passage.id))
+    } else {
+      const passage = await this.updatePassage()
+      const decision: any = {}
+      decision.userId = user.id
+      decision.userAccessLevel = user.accessLevel || 1
+      decision.id = passage.id
+      currentItem.decisions = currentItem.decisions
+        .filter((d: any) => d.userId !== user.id)
+        .concat(decision)
+    }
+
+    await this.props.dispatch(
+      updateQueueItemAction(queue.id, current, !remove && currentItem)
+    )
+
+    if (nextItem) {
+      this.loadData(nextItem.id)
+      history.push("/passage/enrich/" + nextItem.id)
+    } else {
+      await this.props.dispatch(setEntity({ isLoading: true }))
+      await this.props.dispatch(finishedQueue(queue.id, "finishedEnrichQueue"))
+      this.setState({ redirect: "/queues" })
+    }
+  }
+
+  private updateDifficulty() {
+    const difficulty = parseInt(this.state.difficultyInput || "", 10)
+    if (difficulty > 0 && difficulty < 101) {
+      const passage = extend(this.state.passage, { difficulty })
+      this.setState({ passage, difficultyInput: undefined })
+    }
   }
 
   public render() {
-    const { isEditing, sentences, passage } = this.state
-    const { idx } = this.props
+    const { queue, isLoading } = this.props
 
-    const wordComponent = (tags: Tag[], i: number) =>
-      _.include(passage.filteredSentences, i) ? (
-        tags.map((tag: Tag, i2: number) => (
-          <Tagged isPunctuation={tag.isPunctuation} key={`${i}-${i2}`}>
-            <TagValue
-              isUnfocused={tag.isUnfocused}
-              isFocusWord={tag.isFocusWord}
-              onClick={() => this.switchFocus(i, i2)}
-              color={highlight(tag)}
-            >
-              {tag.value}
-            </TagValue>
-            {(tag.isFocusWord || (automaticFocus(tag) && !tag.isUnfocused)) && (
-              <PartOfSpeech>{tag.tag}</PartOfSpeech>
-            )}
-          </Tagged>
-        ))
-      ) : (
-        <Tagged key={i} hide={true}>
-          <TagValue>...</TagValue>
-        </Tagged>
-      )
+    const {
+      sentences,
+      passage,
+      isEditing,
+      isQueue,
+      difficultyInput,
+      redirect
+    } = this.state
 
-    const sentenceComponent = (tags: Tag[], i: number) =>
-      _.include(passage.filteredSentences, i) && (
-        <FlexedDiv justifyContent={"space-between"} key={i}>
-          <Text.s>{i + 1}</Text.s>
-          <Textarea
-            spellCheck={false}
-            onChange={e =>
-              this.setState({
-                isEditing: { idx: i, value: e.target.value }
-              })
-            }
-            onBlur={() => {
-              if (isEditing) {
-                this.editValue(i, isEditing.value)
-              }
-            }}
-            value={
-              i === get(isEditing, "idx")
-                ? isEditing!.value
-                : tagsToSentence(tags)
-            }
-          />
-          <CommonIcon
-            small={true}
-            src={addIcon}
-            pointer={true}
-            onClick={() => this.addSentenceAfter(i)}
-          />
-          <CommonIcon
-            small={true}
-            src={deleteIcon}
-            pointer={true}
-            onClick={() => this.removeSentence(i)}
-          />
-        </FlexedDiv>
-      )
+    if (redirect || (isQueue && !queue)) return <Redirect to={"/queues"} />
+    if (!passage || isLoading) return <Spinner />
+
+    const itemIdx = isQueue && this.queueItemIndex(passage.id)
+
+    const queueNavigation = isQueue ? (
+      <BottomNav>
+        <CommonIcon
+          pointer={true}
+          large={true}
+          disable={itemIdx === 0}
+          onClick={() => this.nextPassage(itemIdx, itemIdx - 1)}
+          flipHorizontal={true}
+          src={nextImg}
+        />
+        <CommonIcon
+          margin="0 75px"
+          pointer={true}
+          large={true}
+          onClick={() => this.nextPassage(itemIdx, itemIdx + 1, true)}
+          src={deleteIcon}
+        />
+        <CommonIcon
+          pointer={true}
+          large={true}
+          onClick={() => this.nextPassage(itemIdx, itemIdx + 1)}
+          src={nextImg}
+        />
+      </BottomNav>
+    ) : null
 
     return (
-      <PassageContainer>
-        {sentences.map(wordComponent)}
-        <br />
-        <br />
-        {sentences.map(sentenceComponent)}
-        <br />
-        <FlexedDiv justifyContent="flex-start">
+      <div style={{ margin: "0", textAlign: "center" }}>
+        {isQueue && (
+          <div
+            style={{ width: "400px", margin: "0 auto", marginBottom: "12px" }}
+          >
+            <ProgressBar completion={itemIdx / queue.items.length} />
+          </div>
+        )}
+
+        <Header.s margin="0">{passage.title.toUpperCase()}</Header.s>
+
+        <FlexedDiv
+          style={{
+            margin: "5px 0",
+            justifyContent: "center",
+            alignItems: "center"
+          }}
+        >
+          <Text.s margin="10px 3px 5px 0">Factoid on correct</Text.s>
           <input
             type="checkbox"
             checked={passage.factoidOnCorrect}
-            onChange={this.changedFactoidOnCorrect.bind(this)}
+            onChange={() =>
+              this.setState({
+                passage: extend(passage, {
+                  factoidOnCorrect: !passage.factoidOnCorrect
+                })
+              })
+            }
           />
-          <Text.s margin="0 0 0 5px">Factoid on correct</Text.s>
+
+          <Text.s margin="0 3px 0 15px">Difficulty</Text.s>
+          <form
+            onSubmit={e => {
+              e.preventDefault()
+              this.updateDifficulty()
+            }}
+          >
+            <Input.s
+              style={{ color: "black", textAlign: "center" }}
+              width="30px"
+              type="text"
+              value={
+                isString(difficultyInput) ? difficultyInput : passage.difficulty
+              }
+              onFocus={() => this.setState({ difficultyInput: "" })}
+              onBlur={this.updateDifficulty.bind(this)}
+              onChange={e => this.setState({ difficultyInput: e.target.value })}
+            />
+          </form>
         </FlexedDiv>
-        <Icons>
-          <Icon
-            disable={idx === 0}
-            onClick={() => this.props.nextPassage(idx - 1, passage)}
-            flipHorizontal={true}
-            src={nextImg}
-          />
-          <Icon
-            onClick={() => this.props.nextPassage(idx + 1, passage, true)}
-            src={deleteIcon}
-          />
-          <Icon
-            onClick={() => this.props.nextPassage(idx + 1, passage)}
-            src={nextImg}
-          />
-        </Icons>
-      </PassageContainer>
+
+        <div style={{ lineHeight: "20px", textAlign: "left" }}>
+          {sentences.map((tags: any[], i: number) =>
+            tags.map((tag: any, i2: number) => (
+              <Tagged
+                isPunctuation={tag.isPunctuation}
+                key={`${i}-${i2}`}
+                isUnfocused={tag.isUnfocused}
+                isFocusWord={tag.isFocusWord}
+                onClick={() => this.switchFocus(i, i2)}
+                color={highlight(tag)}
+              >
+                {tag.value}
+              </Tagged>
+            ))
+          )}
+        </div>
+
+        {sentences.map((tags: any[], i: number) => (
+          <FlexedDiv
+            style={{ margin: "10px 0" }}
+            justifyContent={"space-between"}
+            key={i}
+          >
+            <Text.s>{i + 1}</Text.s>
+            <Textarea
+              spellCheck={false}
+              onChange={e =>
+                this.setState({
+                  isEditing: { idx: i, value: e.target.value }
+                })
+              }
+              onBlur={() => {
+                if (isEditing) {
+                  this.editValue(i, isEditing.value)
+                }
+              }}
+              value={
+                i === get(isEditing, "idx")
+                  ? isEditing!.value
+                  : tagsToSentence(tags)
+              }
+            />
+            <CommonIcon
+              small={true}
+              src={addIcon}
+              pointer={true}
+              onClick={() => this.addSentenceAfter(i)}
+            />
+            <CommonIcon
+              small={true}
+              src={deleteIcon}
+              pointer={true}
+              onClick={() => this.removeSentence(i)}
+            />
+          </FlexedDiv>
+        ))}
+
+        {queueNavigation}
+      </div>
     )
   }
 }
 
-export default EnrichComponent
+const mapStateToProps = (state: any, ownProps: any) => ({
+  passage: state.entities.passage,
+  queue: state.entities.queue,
+  user: state.entities.user,
+  keywords: state.entities.keywords,
+  isLoading: state.entities.isLoading === true
+})
+
+export default connect(mapStateToProps)(EnrichPassageComponent)

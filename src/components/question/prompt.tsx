@@ -1,19 +1,21 @@
 import { isString, isEqual, findIndex } from "underscore"
 import * as React from "react"
 
-import { PromptBox, Span, PromptText } from "./components"
+import { PromptBox, Span, PromptText, PromptImage } from "./components"
 
-import { PromptPart } from "../../models/question"
+import { PromptPart } from "../../interfaces/question"
 
 import { isPunc } from "../../lib/helpers"
 
 interface Props {
   prompt: PromptPart[]
   type: string
-  isReadMode: boolean
-  isOverflowing: (bool: boolean) => {}
+  isReadMode?: boolean
+  isOverflowing: (bool: boolean) => void
   bottom?: number
-  isInteractive: boolean
+  isInteractive?: boolean
+  flex: number
+  questionType: string
 }
 
 interface State {
@@ -27,7 +29,6 @@ export default class Prompt extends React.Component<Props, State> {
   }
 
   public componentDidMount() {
-    console.log(this.props.prompt)
     this.checkOverflow(this.props.prompt)
   }
 
@@ -64,45 +65,57 @@ export default class Prompt extends React.Component<Props, State> {
   }
 
   public render() {
-    const { prompt, type, isReadMode, isInteractive } = this.props
+    const {
+      prompt,
+      type,
+      isReadMode,
+      isInteractive,
+      flex,
+      questionType
+    } = this.props
 
     // TODO - use punctuation as in ./interactive
-    const span = (p: PromptPart, i: number): any => (
+    const promptPart = (p: PromptPart, i: number): any => (
       <Span hide={p.hide} key={i} highlight={p.highlight}>
         {p.value}
       </Span>
     )
 
     const isImage =
-      type === "WORD_TO_IMG" &&
+      type === "Word to Image (reverse)" &&
       isString(prompt[0].value) &&
       prompt[0].value!.startsWith("data:image")
 
     const length = prompt.map(p => p.value).join("").length
 
+    const promptValue =
+      questionType === "word"
+        ? prompt.map(promptPart)
+        : prompt
+            .map(promptPart)
+            .reduce((prev: any[], curr: any, i: number) => [
+              prev,
+              isPunc(prompt[i].value) ? "" : " ",
+              curr
+            ])
+
     const promptComponent = isImage ? (
-      <img style={{ maxHeight: "100%" }} src={prompt[0].value} />
+      <PromptImage src={prompt[0].value} />
     ) : (
       <PromptText
+        textAlign={questionType === "word"}
         bottom={this.state.bottom}
         isReadMode={isReadMode}
         large={length < 50}
         margin={isReadMode ? "20px 0" : "0"}
       >
-        {prompt
-          .map(span)
-          .reduce((prev: any[], curr: any, i: number) => [
-            prev,
-            isPunc(prompt[i].value) ? "" : " ",
-            curr
-          ])}
+        {promptValue}
       </PromptText>
     )
 
-    const flex = isInteractive ? 2 : isReadMode ? "" : 8
-
     return (
       <PromptBox
+        isShort={questionType === "word"}
         isInteractive={isInteractive}
         id="prompt"
         isReadMode={isReadMode}

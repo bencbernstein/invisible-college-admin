@@ -1,33 +1,41 @@
 import styled from "styled-components"
 
 import Text from "../common/text"
+import FlexedDiv from "../common/flexedDiv"
 
 import { colors } from "../../lib/colors"
 
 interface BoxProps {
-  isReadMode: boolean
+  isReadMode?: boolean
+}
+
+export const FLEXES: any = {
+  interactive: {
+    top: 2,
+    prompt: 3,
+    interactive: 18
+  },
+  withAnswer: {
+    top: 2,
+    answer: 3,
+    prompt: 10,
+    choices: 8
+  },
+  withoutAnswer: {
+    top: 2,
+    prompt: 12,
+    choices: 9
+  }
 }
 
 export const Box = styled.div`
-  height: 100vh;
-  width: 100vw;
-  background-color: white;
-  bottom: 0;
-  left: 0;
-  position: fixed;
-  top: 0;
-  right: 0;
+  height: 100%;
+  width: 100%;
   box-sizing: border-box;
-  padding: ${(p: BoxProps) => (p.isReadMode ? "0px" : "10px")} 25px;
+  padding: ${(p: BoxProps) => (p.isReadMode ? "0px" : "10px")} 15px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-`
-
-export const TopInfo = styled.div`
-  flex: 1;
-  align-items: center;
-  display: flex;
 `
 
 export const IconContainer = styled.div`
@@ -37,10 +45,18 @@ export const IconContainer = styled.div`
   width: 10%;
 `
 
+// Information
+
+export const StarContainer = FlexedDiv.extend`
+  position: absolute;
+  left: 0;
+  right: 0;
+`
+
 // Progress Bar
 
 export const ProgressBarBox = styled.div`
-  width: 80%;
+  flex: 5;
   position: relative;
 `
 
@@ -59,33 +75,48 @@ export const Progress = styled.div`
   height: 10px;
   width: ${(p: ProgressProps) => p.completion * 100}%;
   border-radius: 5px;
-  background-color: ${colors.yellow};
+  transition: width 400ms;
+  background-color: ${colors.mainBlue};
   position: absolute;
   top: 0;
 `
 
 // Prompt
 
+export const PromptImage = styled.img`
+  max-height: 80%;
+  max-width: 80%;
+  height: auto;
+  width: auto;
+`
+
 interface PromptBoxProps {
-  isReadMode: boolean
+  isReadMode?: boolean
   flex: any
-  isInteractive: boolean
+  isInteractive?: boolean
+  isShort: boolean
 }
 
 export const PromptBox = styled.div`
-  display: ${(p: PromptBoxProps) => p.isInteractive && "flex"};
-  align-items: ${(p: PromptBoxProps) => p.isInteractive && "center"};
-  justify-content: ${(p: PromptBoxProps) => p.isInteractive && "center"};
+  display: ${(p: PromptBoxProps) => (p.isInteractive || p.isShort) && "flex"};
+  align-items: ${(p: PromptBoxProps) =>
+    (p.isInteractive || p.isShort) && "center"};
+  justify-content: ${(p: PromptBoxProps) =>
+    (p.isInteractive || p.isShort) && "center"};
   flex: ${(p: PromptBoxProps) => p.flex};
   height: ${(p: PromptBoxProps) => (p.isReadMode ? "100vh" : "")};
   box-sizing: border-box;
   overflow: ${(p: PromptBoxProps) => (p.isReadMode ? "scroll" : "hidden")};
-  background-color: ${(p: PromptBoxProps) => (p.isReadMode ? "" : "#f9f9f9")};
+  position: ${(p: PromptBoxProps) => p.isReadMode && "absolute"};
+  top: 0;
+  left: 0;
+  background-color: ${(p: PromptBoxProps) =>
+    !p.isReadMode && !p.isShort ? "#f9f9f9" : "white"};
   border-radius: ${(p: PromptBoxProps) =>
     p.isReadMode ? "" : "5px 5px 0 5px"};
   border: ${(p: PromptBoxProps) =>
-    p.isReadMode ? "" : `1px solid ${colors.lightestGray}`};
-  padding: ${(p: PromptBoxProps) => (p.isReadMode ? "" : "0 5px")};
+    !p.isReadMode && !p.isShort && `1px solid ${colors.lightestGray}`};
+  padding: 10px 15px;
   ::-webkit-scrollbar {
     display: none;
   }
@@ -94,10 +125,12 @@ export const PromptBox = styled.div`
 interface PromptTextProps {
   bottom?: number
   large: boolean
-  isReadMode: boolean
+  isReadMode?: boolean
+  textAlign: boolean
 }
 
 export const PromptText = Text.l.extend`
+  text-align: ${(p: PromptTextProps) => p.textAlign && "center"};
   position: relative;
   font-size: ${(p: PromptTextProps) => p.large && "1.2em"};
   bottom: ${(p: PromptTextProps) =>
@@ -124,6 +157,7 @@ export const Span = styled.span`
   border-bottom: ${(p: SpanProps) => p.hide && "1px solid black"};
   border-radius: ${(p: SpanProps) => !p.hide && "3px"};
   box-sizing: border-box;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
   cursor: ${(p: SpanProps) => p.isInteractive && "pointer"};
 `
 
@@ -171,6 +205,7 @@ export const ExitReadMode = styled.p`
 
 interface ContainerProps {
   count: number
+  flex: number
 }
 
 export const ChoicesFlexBox = styled.div`
@@ -178,51 +213,60 @@ export const ChoicesFlexBox = styled.div`
   flex-wrap: wrap;
   justify-content: ${(p: ContainerProps) => "center"};
   align-items: center;
-  height: 40%;
-  flex: 6;
+  flex: ${(p: ContainerProps) => p.flex};
 `
 
 export const ChoicesGridBox = styled.div`
   display: grid;
   grid-template-columns: ${(p: ContainerProps) => templateForCount(p.count)};
-  height: 40%;
   justify-items: center;
   align-items: center;
-  flex: 6;
+  flex: ${(p: ContainerProps) => p.flex};
 `
 
 interface ChoiceProps {
   disabled: boolean
   backgroundColor: string
+  isSpell?: boolean
 }
 
-const templateForCount = (count: number) =>
-  ({
-    2: "1fr 1fr",
-    6: "1fr 1fr"
-  }[count] || "1fr 1fr 1fr")
+const templateForCount = (count: number) => {
+  if (count < 7) {
+    return "1fr 1fr"
+  } else if (count < 10) {
+    return "1fr 1fr 1fr"
+  }
+  return "1fr 1fr 1fr 1fr"
+}
 
 export const Button = styled.p`
   pointer-events: ${(p: ChoiceProps) => (p.disabled ? "none" : "auto")};
   background-color: ${(p: ChoiceProps) => p.backgroundColor};
-  font-size: 1.1em;
   color: white;
   border-radius: 5px;
   text-align: center
   cursor: pointer;
-  height: 65%;
-  width: 90%;
+  max-height: 90%;
+  max-width: 90%;
+  box-sizing: border-box;
+  min-height: 45px;
+  min-width: ${(p: ChoiceProps) => (p.isSpell ? "45px" : "120px")};
+  box-shadow: 0 0 10px rgba(0,0,0,0.25);
+  padding: 10px;
   align-items: center;
   justify-content: center;
   display: flex;
+  margin: 0;
   font-size: 0.95em;
 `
 
 export const Image = styled.img`
   pointer-events: ${(p: ChoiceProps) => (p.disabled ? "none" : "auto")};
   border: 3px solid ${(p: ChoiceProps) => p.backgroundColor};
-  max-height: 150px;
-  max-width: 150px;
+  max-height: 80%;
+  max-width: 80%;
+  width: auto;
+  height: auto;
   margin: 10px;
   cursor: pointer;
 `
@@ -231,6 +275,7 @@ export const Image = styled.img`
 
 interface AnswerBoxProps {
   height: string
+  flex: number
 }
 
 export const AnswerBox = styled.div`
@@ -238,28 +283,52 @@ export const AnswerBox = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  flex: 2;
+  flex: ${(p: AnswerBoxProps) => p.flex};
 `
 
-interface AnswerSpaceProps {
+export const AnswerText = Text.xl.extend`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: black
+`
+
+interface AnswerPartBoxProps {
   hide: boolean
+  margin: number
 }
 
-export const AnswerSpace = styled.span`
-  color: ${(p: AnswerSpaceProps) => (p.hide ? "white" : "black")};
-  display: ${(p: AnswerSpaceProps) => p.hide && "inline-block"};
+export const AnswerPartBox = styled.span`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 2px;
+  margin: 0 ${(p: AnswerPartBoxProps) => p.margin}px;
+  transition: margin 200ms;
+  color: ${(p: AnswerPartBoxProps) => (p.hide ? "white" : "black")};
 `
 
+interface AnswerUnderlineProps {
+  color: string
+}
+
 export const AnswerUnderline = styled.span`
-  height: 4px;
-  background-color: black;
+  height: 6px;
   border-radius: 5px;
+  background-color: ${(p: AnswerUnderlineProps) => p.color};
+  width: 100%;
+  transition: color 100ms;
+  padding: 0 2px;
 `
 
 // INTERACTIVE
 
+interface InteractiveBoxProps {
+  flex: number
+}
+
 export const InteractiveBox = styled.div`
-  flex: 12;
+  flex: ${(p: InteractiveBoxProps) => p.flex};
   box-sizing: border-box;
   padding: 10px 0px;
   font-size: 1.2em;

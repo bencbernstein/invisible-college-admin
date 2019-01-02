@@ -1,149 +1,160 @@
 import * as React from "react"
-import { Route, Switch } from "react-router"
+import styled from "styled-components"
+import { Route, Redirect, Switch } from "react-router"
 import { Router } from "react-router-dom"
-
-import Container from "./container"
-import Login from "../login"
+import { connect } from "react-redux"
 
 import history from "../../history"
-
 import "./index.css"
+
+import Login from "../login"
+import Curriculum from "../curriculum"
+import Concepts from "../concept/list"
+import Concept from "../concept"
+import Admin from "../home/admin"
+import Play from "../home"
+import Question from "../question"
+import Passages from "../passage/list"
+import Queues from "../queue/list"
+import FilterPassage from "../passage/filter"
+import EnrichPassage from "../passage/enrich"
+import Images from "../image/list"
+import Discover from "../discover"
+import Nav from "../nav"
+import TextList from "../text/list"
+import IndexesList from "../text/indexesList"
+import Text from "../text"
 
 import ProtectedRoute, { ProtectedRouteProps } from "./protectedRoute"
 
-import {
-  fetchUserFromStorage,
-  saveUserToStorage,
-  User
-} from "../../models/user"
+import { User } from "../../interfaces/user"
+import { setEntity, fetchCurriculaAction } from "../../actions"
 
-import { fetchKeywords, Keywords } from "../../models/word"
+const Container = styled.div`
+  text-align: left;
+  max-width: 900px;
+  padding: 20px;
+  margin: 0 auto;
+  position: relative;
+`
+
+const contained = (Component: any, noSearch: boolean = false) => (
+  <Container>
+    <Nav noSearch={noSearch} />
+    <Component />
+  </Container>
+)
 
 interface State {
-  user?: User
-  keywords?: Keywords
   isAuthenticated: boolean
   checkedAuth: boolean
 }
 
-const contained = (
-  component: string,
-  user?: User,
-  keywords?: Keywords
-) => () => <Container component={component} user={user} keywords={keywords} />
+interface Props {
+  user?: User
+  dispatch: any
+}
 
-class App extends React.Component<any, State> {
-  constructor(props: any) {
+class App extends React.Component<Props, State> {
+  constructor(props: Props) {
     super(props)
 
     this.state = {
-      isAuthenticated: false,
-      checkedAuth: false
+      isAuthenticated: true,
+      checkedAuth: true
     }
   }
 
   public componentDidMount() {
     this.checkForAuth()
-    this.loadKeywords()
+    this.loadCurricula()
   }
 
-  public async checkForAuth() {
-    const checkedAuth = true
-    const user = fetchUserFromStorage()
-    const isAuthenticated = user !== undefined
-    this.setState({ user, checkedAuth, isAuthenticated })
-  }
-
-  public async loadKeywords() {
-    const keywords = await fetchKeywords()
-    if (!(keywords instanceof Error)) {
-      this.setState({ keywords: JSON.parse(keywords) })
+  public componentWillReceiveProps(nextProps: Props) {
+    if (nextProps.user && !this.props.user) {
+      this.setState({ isAuthenticated: true })
     }
   }
 
-  public login(user: User, cb: () => void) {
-    saveUserToStorage(user)
-    this.setState({ user, isAuthenticated: true }, cb)
+  private async checkForAuth() {
+    const json = localStorage.getItem("user")
+    const user = json ? JSON.parse(json) : undefined
+    if (user) {
+      this.props.dispatch(setEntity({ user }))
+    }
+    this.setState({ checkedAuth: true, isAuthenticated: user !== undefined })
+  }
+
+  private loadCurricula() {
+    this.props.dispatch(fetchCurriculaAction())
   }
 
   public render() {
-    const { keywords, user, checkedAuth } = this.state
-
-    if (!checkedAuth || !keywords) {
-      return null
-    }
+    const { checkedAuth, isAuthenticated } = this.state
+    if (!checkedAuth) return null
 
     const defaultProtectedRouteProps: ProtectedRouteProps = {
-      isAuthenticated: this.state.isAuthenticated,
+      isAuthenticated,
       authenticationPath: "/login"
     }
 
+    const ROUTES = [
+      {
+        path: "/curricula",
+        Component: Curriculum,
+        exact: true,
+        noSearch: true
+      },
+      { path: "/concepts", Component: Concepts, exact: true },
+      { path: "/concept/enrich/:id", Component: Concept, noSearch: true },
+      { path: "/images", Component: Images, exact: true },
+      { path: "/queues", Component: Queues, exact: true, noSearch: true },
+      { path: "/play", Component: Play, exact: true, noNav: true },
+      { path: "/admin-play", Component: Admin, exact: true, noNav: true },
+      { path: "/discover", Component: Discover, exact: true, noSearch: true },
+      { path: "/passages", Component: Passages, exact: true, noSearch: true },
+      { path: "/question", Component: Question, noNav: true },
+      { path: "/library", Component: IndexesList, exact: true, noSearch: true },
+      { path: "/library/:id", Component: TextList, exact: true },
+      { path: "/library/text/:id", Component: Text, noSearch: true },
+      { path: "/passage/filter/:id", Component: FilterPassage, noSearch: true },
+      { path: "/passage/enrich/:id", Component: EnrichPassage, noSearch: true },
+      {
+        path: "/login",
+        Component: Login,
+        noNav: true,
+        publicRoute: true,
+        exact: true
+      }
+    ]
+
+    const routes = ROUTES.map(
+      ({ path, Component, noNav, publicRoute, exact, noSearch }) => {
+        const PublicOrPrivateRoute = publicRoute ? Route : ProtectedRoute
+        return (
+          <PublicOrPrivateRoute
+            exact={exact || false}
+            key={path}
+            {...defaultProtectedRouteProps}
+            path={path}
+            render={() =>
+              noNav ? <Component /> : contained(Component, noSearch)
+            }
+          />
+        )
+      }
+    ).concat(<Route key="0" render={() => <Redirect to="/login" />} />)
+
     return (
       <Router history={history}>
-        <Switch>
-          <Route
-            exact={true}
-            path="/login"
-            render={() => <Login login={this.login.bind(this)} />}
-          />
-          <ProtectedRoute
-            {...defaultProtectedRouteProps}
-            path="/home"
-            component={contained("home", user)}
-          />
-          <ProtectedRoute
-            {...defaultProtectedRouteProps}
-            path="/text"
-            component={contained("text", user, keywords)}
-          />
-          <ProtectedRoute
-            {...defaultProtectedRouteProps}
-            path="/word"
-            component={contained("word", user, keywords)}
-          />
-          <ProtectedRoute
-            {...defaultProtectedRouteProps}
-            path="/passage"
-            component={contained("passage", user, keywords)}
-          />
-          <ProtectedRoute
-            {...defaultProtectedRouteProps}
-            path="/sequence"
-            component={contained("sequence", user)}
-          />
-          <ProtectedRoute
-            {...defaultProtectedRouteProps}
-            path="/passage-sequence"
-            component={contained("passageSequence", user)}
-          />
-          <ProtectedRoute
-            {...defaultProtectedRouteProps}
-            exact={true}
-            path="/library"
-            component={contained("library", user)}
-          />
-          <ProtectedRoute
-            {...defaultProtectedRouteProps}
-            exact={true}
-            path="/discover"
-            component={contained("discover", user, keywords)}
-          />
-          <ProtectedRoute
-            {...defaultProtectedRouteProps}
-            exact={true}
-            path="/gameplay"
-            component={contained("gameplay", user)}
-          />
-          <ProtectedRoute
-            {...defaultProtectedRouteProps}
-            exact={true}
-            path="/play"
-            component={contained("play", user)}
-          />
-        </Switch>
+        <Switch>{routes}</Switch>
       </Router>
     )
   }
 }
 
-export default App
+const mapStateToProps = (state: any, ownProps: any) => ({
+  user: state.entities.user
+})
+
+export default connect(mapStateToProps)(App)

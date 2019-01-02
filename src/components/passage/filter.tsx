@@ -1,130 +1,202 @@
 import * as React from "react"
-import * as _ from "underscore"
+import { connect } from "react-redux"
+import { without, range } from "lodash"
+import { Redirect } from "react-router"
 
-import Slider from "rc-slider"
-import "rc-slider/assets/index.css"
-import Header from "../common/header"
-import { Span, Sentence, PassageContainer, Icons, Icon } from "./components"
+import history from "../../history"
 
-import { Tag } from "../../models/text"
-import { Passage } from "../../models/passage"
+import Spinner from "../common/spinner"
+import Text from "../common/text"
+import Icon from "../common/icon"
+import BottomNav from "../common/bottomNav"
+import HitHeader from "../hit/header"
+import ProgressBar from "../question/progressBar"
+
+import {
+  fetchEsPassageAction,
+  updateQueueItemAction,
+  finishedQueue,
+  setEntity
+} from "../../actions"
 
 import nextImg from "../../lib/images/icon-next.png"
 import checkImg from "../../lib/images/icon-checkmark.png"
-import { colors } from "../../lib/colors"
 
-interface Props {
-  passage: Passage
-  sentenceCount: number
-  sentences: Tag[][]
-  nextPassage: (nextIdx: number, filteredSentences?: number[]) => void
-  idx: number
-}
+import { User } from "../../interfaces/user"
+
+import { lastPath } from "../../lib/helpers"
 
 interface State {
-  filteredSentences: number[]
-  context: number
+  saved: number[]
+  redirect?: string
 }
 
-class FilterComponent extends React.Component<Props, State> {
-  constructor(props: Props) {
+interface Props {
+  queue: any
+  passage: any
+  user: User
+  dispatch: any
+  isLoading: boolean
+}
+
+class FilterPassageComponent extends React.Component<Props, State> {
+  constructor(props: any) {
     super(props)
 
     this.state = {
-      filteredSentences: [],
-      context: 10
+      saved: []
     }
+
+    this.handleKeyDown = this.handleKeyDown.bind(this)
   }
 
   public componentDidMount() {
-    this.setFilteredSentences(this.props)
+    this.loadData(lastPath(window))
   }
 
-  public componentWillReceiveProps(nextProps: Props) {
-    if (this.props.passage.id !== nextProps.passage.id) {
-      this.setFilteredSentences(nextProps)
+  public componentWillMount() {
+    document.addEventListener("keydown", this.handleKeyDown, false)
+  }
+
+  public componentWillUnmount() {
+    document.removeEventListener("keydown", this.handleKeyDown, false)
+  }
+
+  public handleKeyDown(e: any) {
+    const itemIdx = this.queueItemIndex(this.props.passage._id)
+    if (e.key === "right arrow" || e.key === "ArrowRight") {
+      this.nextPassage(itemIdx, itemIdx + 1)
+    } else if (e.key === "left arrow" || e.key === "ArrowLeft") {
+      this.nextPassage(itemIdx, itemIdx - 1)
     }
   }
 
-  public setFilteredSentences(props: Props) {
-    this.setState({ filteredSentences: props.passage.filteredSentences || [] })
+  private async loadData(id: string) {
+    const { queue } = this.props
+    await this.props.dispatch(fetchEsPassageAction(id))
+    if (!queue) return
+    const decision = queue.items[this.queueItemIndex(id)].decisions[0]
+    const saved = decision ? decision.indexes : []
+    this.setState({ saved })
   }
 
-  public keepAllSentences() {
-    const { filteredSentences } = this.state
-    const { sentenceCount } = this.props
-
-    const updated =
-      filteredSentences.length === sentenceCount
-        ? []
-        : _.range(0, sentenceCount)
-    this.setState({ filteredSentences: updated })
+  private clickedSentence(i: number) {
+    let { saved } = this.state
+    saved = saved.indexOf(i) > -1 ? without(saved, i) : saved.concat(i)
+    this.setState({ saved })
   }
 
-  public handleClickedSentence(i: number) {
-    let { filteredSentences } = this.state
-    filteredSentences =
-      filteredSentences.indexOf(i) > -1
-        ? _.without(filteredSentences, i)
-        : filteredSentences.concat(i)
-    this.setState({ filteredSentences })
+  private queueItemIndex(id: string) {
+    return this.props.queue.items.findIndex((item: any) => item.id === id)
+  }
+
+  private async nextPassage(current: number, next: number) {
+    const { queue, user, isLoading } = this.props
+    if (isLoading) return
+
+    const currentItem = queue.items[current]
+    const nextItem = queue.items[next]
+
+    const decision: any = {}
+    decision.indexes = this.state.saved
+    decision.accepted = decision.indexes.length > 0
+    decision.userId = user.id
+    decision.userAccessLevel = user.accessLevel || 1
+    currentItem.decisions = currentItem.decisions
+      .filter((d: any) => d.userId !== user.id)
+      .concat(decision)
+
+    await this.props.dispatch(setEntity({ isLoading: true }))
+    await this.props.dispatch(
+      updateQueueItemAction(queue.id, current, currentItem)
+    )
+
+    if (nextItem) {
+      this.loadData(nextItem.id)
+      history.push("/passage/filter/" + nextItem.id)
+    } else {
+      await this.props.dispatch(setEntity({ isLoading: true }))
+      await this.props.dispatch(finishedQueue(queue.id))
+      this.setState({ redirect: "/queues" })
+    }
+  }
+
+  private keepAllSentences() {
+    const length = this.props.passage._source.sentences.length
+    const saved = this.state.saved.length === length ? [] : range(0, length)
+    this.setState({ saved })
   }
 
   public render() {
-    const { passage, sentences, idx } = this.props
-    const { filteredSentences, context } = this.state
+    const { passage, isLoading, queue } = this.props
+    const { saved, redirect } = this.state
 
-    const span = (tag: Tag, color: string, i: number) => (
-      <Span key={i} color={color} highlight={tag.wordId || tag.choiceSetId}>
-        {tag.isPunctuation ? tag.value : ` ${tag.value}`}
-      </Span>
-    )
+    if (!passage) return null
+    if (redirect || !queue) return <Redirect to={redirect || "/queues"} />
+    if (isLoading) return <Spinner />
 
-    const sentenceComponents = sentences
-      .map((tags: Tag[], i: number) => (
-        <Sentence
-          onClick={() => this.handleClickedSentence(i)}
-          underline={_.includes(filteredSentences, i)}
-          key={i}
-        >
-          {tags.map((t: Tag, i2: number) =>
-            span(t, i === passage.matchIdx ? "black" : colors.lighterGray, i2)
-          )}
-        </Sentence>
-      ))
-      .slice(
-        Math.max(passage.matchIdx - context, 0),
-        passage.matchIdx + context + 1
-      )
+    const itemIdx = this.queueItemIndex(passage._id)
+    const tags = itemIdx > -1 ? queue.items[itemIdx].tags : []
 
     return (
-      <PassageContainer>
-        {sentenceComponents}
-        <Header.s margin="20px 0 0 0">context</Header.s>
-        <Slider
-          value={context}
-          onChange={newContext => this.setState({ context: newContext })}
-          style={{ margin: "10px 0 0 0", width: "150px" }}
-          min={0}
-          max={10}
-          marks={{ 0: "0", 5: "5", 10: "10" }}
-        />
-        <Icons>
+      <div>
+        <div style={{ width: "400px", margin: "0 auto", marginBottom: "12px" }}>
+          <ProgressBar completion={itemIdx / queue.items.length} />
+        </div>
+
+        <HitHeader passage={passage} />
+
+        <Text.s margin="0 0 12px 0" style={{ textAlign: "center" }}>
+          tags: {tags.join(", ")}
+        </Text.s>
+
+        <BottomNav>
           <Icon
-            disable={idx === 0}
-            onClick={() => this.props.nextPassage(idx - 1, filteredSentences)}
+            pointer={true}
+            large={true}
+            disable={itemIdx === 0}
+            onClick={() => this.nextPassage(itemIdx, itemIdx - 1)}
             flipHorizontal={true}
             src={nextImg}
           />
-          <Icon onClick={this.keepAllSentences.bind(this)} src={checkImg} />
           <Icon
-            onClick={() => this.props.nextPassage(idx + 1, filteredSentences)}
+            margin="0 75px"
+            pointer={true}
+            large={true}
+            onClick={this.keepAllSentences.bind(this)}
+            src={checkImg}
+          />
+          <Icon
+            pointer={true}
+            large={true}
+            onClick={() => this.nextPassage(itemIdx, itemIdx + 1)}
             src={nextImg}
           />
-        </Icons>
-      </PassageContainer>
+        </BottomNav>
+
+        {passage._source.sentences.map((text: string, i: number) => (
+          <Text.garamond
+            pointer={true}
+            style={{
+              textDecoration: saved.indexOf(i) > -1 ? "underline" : "none"
+            }}
+            onClick={() => this.clickedSentence(i)}
+            key={i}
+          >
+            {text}
+          </Text.garamond>
+        ))}
+
+      </div>
     )
   }
 }
 
-export default FilterComponent
+const mapStateToProps = (state: any, ownProps: any) => ({
+  passage: state.entities.passage,
+  isLoading: state.entities.isLoading,
+  queue: state.entities.queue,
+  user: state.entities.user
+})
+
+export default connect(mapStateToProps)(FilterPassageComponent)
