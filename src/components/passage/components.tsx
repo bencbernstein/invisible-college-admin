@@ -1,14 +1,8 @@
 import styled from "styled-components"
 
-import FlexedDiv from "../common/flexedDiv"
 import Text from "../common/text"
 
 import { colors } from "../../lib/colors"
-
-export const Icons = FlexedDiv.extend`
-  margin-top: 40px;
-  justify-content: center;
-`
 
 interface TaggedProps {
   isUnfocused?: boolean
