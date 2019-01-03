@@ -240,7 +240,7 @@ class TextComponent extends React.Component<Props, State> {
           >
             <CSVLink
               data={addresses || []}
-              filename={(title || "").replace(/ /g, "_").toLowerCase()}
+              filename={(title || "").replace(/ /g, "_").toLowerCase() + ".csv"}
               style={blankLinkStyle}
               asyncOnClick={true}
               headers={["address", "context"]}
