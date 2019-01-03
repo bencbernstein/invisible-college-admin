@@ -87,7 +87,6 @@ class App extends React.Component<Props, State> {
 
     if (user && !this.props.user) {
       const isRob = user.id === CONFIG.ROB_ID
-      console.log(CONFIG)
       this.props.dispatch(setEntity({ isRob }))
       this.setState({ isAuthenticated: true })
     }
