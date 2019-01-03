@@ -10,7 +10,7 @@ import Header from "../common/header"
 
 import { Modal, ModalButton, Button } from "./components"
 
-import { setEntity } from "../../actions"
+import { setEntity, removeEntity } from "../../actions"
 import { User } from "../../interfaces/user"
 
 import { formatName } from "../../lib/helpers"
@@ -64,7 +64,8 @@ class Nav extends React.Component<Props, State> {
 
   public logout() {
     localStorage.removeItem("user")
-    this.props.dispatch(setEntity({ isRob: false }))
+    this.props.dispatch(removeEntity("isRob"))
+    this.props.dispatch(removeEntity("user"))
     this.setState({ redirect: "/login" })
   }
 

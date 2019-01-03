@@ -49,7 +49,7 @@ class Search extends React.Component<Props, State> {
     const networkingOperation = this.requiresNetworkingFor()
 
     if (networkingOperation === "texts") {
-      const index = "simple_english_wikipedia"
+      const index = window.location.pathname.split("/")[2]
       this.props.dispatch(fetchTextsAction(index, this.props.searchQuery))
     }
 

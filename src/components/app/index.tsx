@@ -91,7 +91,7 @@ class App extends React.Component<Props, State> {
       this.setState({ isAuthenticated: true })
     }
 
-    if (job && job.id !== get(this.props.job, "id")) {
+    if (job && job.id && job.id !== get(this.props.job, "id")) {
       const interval = setInterval(() => this.pollTask(job), 1000)
       this.setState({ interval })
     }

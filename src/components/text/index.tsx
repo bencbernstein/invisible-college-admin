@@ -2,7 +2,7 @@ import * as React from "react"
 import { Redirect } from "react-router"
 import { connect } from "react-redux"
 import styled from "styled-components"
-import { get, pickBy } from "lodash"
+import { pickBy, isEqual } from "lodash"
 import { CSVLink } from "react-csv"
 
 import Header from "../common/header"
@@ -72,13 +72,11 @@ class TextComponent extends React.Component<Props, State> {
 
   public componentWillReceiveProps(nextProps: Props) {
     const { text, isRob } = nextProps
-
-    if (text && text._id !== get(this.props.text, "_id")) {
-      const { author, title } = text._source
-      this.setState({ author, title })
-      if (isRob) {
-        this.downloadAddressCsv(text._id)
-      }
+    if (!text || isEqual(text, this.props.text)) return
+    const { author, title } = text._source
+    this.setState({ author, title })
+    if (isRob) {
+      this.downloadAddressCsv(text._id)
     }
   }
 

@@ -1,5 +1,5 @@
 export interface Job {
-  id: string
+  id?: string
   text: string
   color: string
 }

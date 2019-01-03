@@ -12,7 +12,7 @@ import StyledText from "../common/text"
 import blankLinkStyle from "../common/blankLinkStyle"
 
 import { ErrorMessage } from "../../interfaces/errorMessage"
-import { fetchTextsAction, setEntity } from "../../actions"
+import { fetchTextsAction, setEntity, removeEntity } from "../../actions"
 import { alphabetize, lastPath } from "../../lib/helpers"
 import { colors } from "../../lib/colors"
 import { Job } from "../../interfaces/job"
@@ -53,21 +53,22 @@ class TextListComponent extends React.Component<Props, State> {
       }
       return this.props.dispatch(setEntity({ error }))
     }
-
+    const job: Job = {
+      text: "Processing " + file.name,
+      color: colors.gray
+    }
+    this.props.dispatch(setEntity({ job }))
     const formData = new FormData()
     formData.append("text", file)
     const url = `${CONFIG.MINE_API_URL}/index-texts?index=${this.state.index}`
     const params = { body: formData, method: "POST" }
     const data = await fetch(url, params).then(res => res.json())
     if (data.id) {
-      const job: Job = {
-        id: data.id,
-        text: "Processing " + file.name,
-        color: colors.gray
-      }
+      job.id = data.id
       this.props.dispatch(setEntity({ job }))
     } else {
       console.log("ERR: ", data)
+      this.props.dispatch(removeEntity("job"))
     }
   }
 
