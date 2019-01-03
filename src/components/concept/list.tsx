@@ -11,12 +11,15 @@ import { fetchWordsAction, setEntity } from "../../actions"
 
 import { alphabetize } from "../../lib/helpers"
 
+import { Curriculum } from "../../interfaces/curriculum"
+
 interface State {
   index?: string
 }
 
 interface Props {
   concepts: any[]
+  curriculum?: Curriculum
   index?: string
   dispatch: any
   isLoading: boolean
@@ -30,12 +33,20 @@ class ConceptListComponent extends React.Component<Props, State> {
   }
 
   public componentDidMount() {
-    this.loadData()
+    if (this.props.curriculum) {
+      this.loadData(this.props.curriculum)
+    }
   }
 
-  public loadData() {
+  public componentWillReceiveProps(nextProps: Props) {
+    if (nextProps.curriculum && !this.props.curriculum) {
+      this.loadData(nextProps.curriculum)
+    }
+  }
+
+  public loadData(curriculum: Curriculum) {
     this.props.dispatch(setEntity({ isLoading: true }))
-    this.props.dispatch(fetchWordsAction(this.state.index!))
+    this.props.dispatch(fetchWordsAction(curriculum))
   }
 
   public render() {
@@ -83,7 +94,8 @@ class ConceptListComponent extends React.Component<Props, State> {
 const mapStateToProps = (state: any, ownProps: any) => ({
   concepts: state.entities.words || [],
   isLoading: state.entities.isLoading === true,
-  searchQuery: state.entities.searchQuery
+  searchQuery: state.entities.searchQuery,
+  curriculum: state.entities.curriculum
 })
 
 export default connect(mapStateToProps)(ConceptListComponent)

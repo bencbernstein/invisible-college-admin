@@ -63,7 +63,7 @@ class Search extends React.Component<Props, State> {
       <FlexedDiv
         style={{
           borderBottom: `1px solid ${colors.gray}`,
-          width: "200px",
+          width: "175px",
           justifyContent: "flex-start"
         }}
       >
@@ -73,7 +73,7 @@ class Search extends React.Component<Props, State> {
           onChange={e => this.handleInputChange(e.target.value)}
           value={this.props.searchQuery || ""}
           type="text"
-          style={{ borderBottom: 0 }}
+          style={{ borderBottom: 0, padding: "3px 5px", fontSize: "16px" }}
           placeholder="Search..."
         />
       </FlexedDiv>

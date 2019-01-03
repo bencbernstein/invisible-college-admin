@@ -43,19 +43,6 @@ export const ErrorMessage = styled.p`
   text-align: center;
 `
 
-export const BackgroundImage = styled.img`
-  position: fixed;
-  min-height: 100%;
-  opacity: 0.4;
-  min-width: 100%;
-  width: auto;
-  height: auto;
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  margin: auto;
-`
-
 export const BoldSpan = styled.span`
   color: ${colors.blue};
   font-family: BrandonGrotesqueBold;

@@ -19,6 +19,12 @@ const headerProps = (props: Props) => `
   text-transform: uppercase;
 `
 
+const LargeThin = styled.p`
+  font-size: 2.3em;
+  letter-spacing: 1px;
+  margin: 0;
+`
+
 const Large = styled.h2`
   ${(p: Props) => headerProps(p)}
 `
@@ -43,6 +49,7 @@ const ForInput = Small.extend`
 
 export default {
   l: Large,
+  largeThin: LargeThin,
   m: Medium,
   xl: ExtraLarge,
   s: Small,
