@@ -6,7 +6,7 @@ import Text from "../common/text"
 import Input from "../common/input"
 import { Form, BoldSpan, ErrorMessage, MainHeader } from "./components"
 
-import { loginUserAction } from "../../actions"
+import { loginUserAction, createUserAction } from "../../actions"
 import { User } from "../../interfaces/user"
 
 export interface Props {
@@ -57,22 +57,23 @@ class Login extends React.Component<Props, State> {
     const { email, password, firstName, lastName, view } = this.state
 
     if (!email || !password) {
-      this.setState({ error: "Email and  password are required." })
-    } else if (view === View.SignUp) {
+      return this.setState({ error: "Email and  password are required." })
+    }
+
+    const setUser = (result: any) =>
+      result.type.includes("SUCCESS") &&
+      localStorage.setItem("user", JSON.stringify(result.response.user))
+
+    if (view === View.SignUp) {
       const error = this.invalidLogin(email, password, firstName, lastName)
-      if (error) {
-        this.setState({ error })
-      } else {
-        // const response = await createUser(email, password, firstName, lastName)
-        // response instanceof Error
-        //   ? this.setState({ error: response.message })
-        //   : this.props.login!(response, () => this.setState({ redirect: "/home" }))
-      }
+      if (error) return this.setState({ error })
+      const result = await this.props.dispatch(
+        createUserAction(email, password, firstName, lastName)
+      )
+      setUser(result)
     } else if (view === View.Login) {
       const result = await this.props.dispatch(loginUserAction(email, password))
-      if (result.type.includes("SUCCESS")) {
-        localStorage.setItem("user", JSON.stringify(result.response.user))
-      }
+      setUser(result)
     }
   }
 

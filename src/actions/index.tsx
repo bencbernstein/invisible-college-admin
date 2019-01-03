@@ -3,7 +3,7 @@ import { CALL_API } from "../middleware/api"
 import { userAttrs } from "../interfaces/user"
 import { wordAttrs } from "../interfaces/concept"
 import { encodeUri } from "../lib/helpers"
-import { curriculumAttrs } from "../interfaces/curriculum"
+import { Curriculum, curriculumAttrs } from "../interfaces/curriculum"
 
 const queueAttrs =
   "id entity type createdOn accessLevel curriculum curriculumId part items { id tags decisions { indexes accepted id userId userAccessLevel } }"
@@ -27,6 +27,15 @@ const types = (str: string) => [
   `${str}_FAILURE`
 ]
 
+export const setEntity = (response: any) => (dispatch: any) =>
+  dispatch({
+    type: `SET_${camelCaseToUpperCase(Object.keys(response)[0])}`,
+    response
+  })
+
+export const removeEntity = (entity: string) => (dispatch: any) =>
+  dispatch({ type: "REMOVE_ENTITY", entity })
+
 export const loginUserAction = (
   email: string,
   password: string,
@@ -35,6 +44,22 @@ export const loginUserAction = (
   dispatch({
     [CALL_API]: {
       query: `mutation { ${route}(email: "${email}", password: "${password}") { ${userAttrs} } }`,
+      types: types(camelCaseToUpperCase(route)),
+      schema: "user",
+      route
+    }
+  })
+
+export const createUserAction = (
+  email: string,
+  password: string,
+  firstName: string,
+  lastName: string,
+  route: string = "createUser"
+) => (dispatch: any) =>
+  dispatch({
+    [CALL_API]: {
+      query: `mutation { ${route}(email: "${email}", password: "${password}", firstName: "${firstName}", lastName: "${lastName}") { ${userAttrs} } }`,
       types: types(camelCaseToUpperCase(route)),
       schema: "user",
       route
@@ -51,12 +76,6 @@ export const getStatsAction = (id: string, route: string = "getStats") => (
       schema: ["user", "ranks"],
       route
     }
-  })
-
-export const setEntity = (response: any) => (dispatch: any) =>
-  dispatch({
-    type: `SET_${camelCaseToUpperCase(Object.keys(response)[0])}`,
-    response
   })
 
 export const fetchTextsAction = (
@@ -76,12 +95,14 @@ export const fetchTextsAction = (
     }
   })
 
-export const fetchTextAction = (id: string, route: string = "text") => (
-  dispatch: any
-) =>
+export const fetchTextAction = (
+  index: string,
+  id: string,
+  route: string = "text"
+) => (dispatch: any) =>
   dispatch({
     [CALL_API]: {
-      query: `query { ${route}(id: "${id}") { text { _id _source { title sections_count } } esPassage { _id _source { section sentences } } } }`,
+      query: `query { ${route}(index: "${index}", id: "${id}") { text { _id _source { title author sections_count } } esPassage { _id _source { section sentences } } } }`,
       types: types(camelCaseToUpperCase(route)),
       schema: ["text", "esPassage"],
       route
@@ -103,10 +124,13 @@ export const fetchWordsByValuesAction = (
     }
   })
 
-export const fetchWordsAction = (route: string = "words") => (dispatch: any) =>
+export const fetchWordsAction = (
+  curriculum: Curriculum,
+  route: string = "words"
+) => (dispatch: any) =>
   dispatch({
     [CALL_API]: {
-      query: `query { ${route}{ id value } }`,
+      query: `query { ${route}(curriculumId: "${curriculum.id}"){ id value } }`,
       types: types(camelCaseToUpperCase(route)),
       schema: "words",
       route
@@ -477,6 +501,63 @@ export const clearUserHistoryAction = (
     [CALL_API]: {
       query: `mutation { ${route}(id: "${id}") { id } }`,
       types: types(camelCaseToUpperCase(route)),
+      route
+    }
+  })
+
+export const removeTextAction = (
+  index: string,
+  id: string,
+  route: string = "removeText"
+) => (dispatch: any) =>
+  dispatch({
+    [CALL_API]: {
+      query: `mutation { ${route}(index: "${index}", id: "${id}") }`,
+      types: types(camelCaseToUpperCase(route)),
+      route
+    }
+  })
+
+export const updateTextAction = (
+  index: string,
+  id: string,
+  update: any,
+  route: string = "updateText"
+) => (dispatch: any) =>
+  dispatch({
+    [CALL_API]: {
+      query: `mutation { ${route}(index: "${index}", id: "${id}", update: "${encodeUri(
+        update
+      )}") }`,
+      types: types(camelCaseToUpperCase(route)),
+      route
+    }
+  })
+
+export const findAddressesAction = (
+  index: string,
+  id: string,
+  curriculumId: string,
+  route: string = "findAddresses"
+) => (dispatch: any) =>
+  dispatch({
+    [CALL_API]: {
+      query: `mutation { ${route}(index: "${index}", id: "${id}", curriculumId: "${curriculumId}") }`,
+      types: types(camelCaseToUpperCase(route)),
+      route
+    }
+  })
+
+export const fetchPassagesAndAddressesAction = (
+  id: string,
+  route: string = "fetchPassagesAndAddresses"
+) => (dispatch: any) =>
+  dispatch({
+    [CALL_API]: {
+      query: `query { ${route}(esId: "${id}") }`,
+      types: types(camelCaseToUpperCase(route)),
+      schema: "data",
+      parseJson: true,
       route
     }
   })

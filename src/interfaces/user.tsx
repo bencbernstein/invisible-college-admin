@@ -1,11 +1,7 @@
-export interface Bookmark {
-  textId: string
-  sentenceIdx: number
-}
-
 export interface User {
   id: string
   email: string
+  admin: boolean
   password: string
   firstName: string
   lastName: string
@@ -15,7 +11,7 @@ export interface User {
   passagesRead: number
   rank: number
   level: number
-  bookmarks: Bookmark[]
+  curricula: string[]
 }
 
 export interface Rank {
@@ -31,4 +27,4 @@ export interface StatsResult {
 }
 
 export const userAttrs =
-  "id email firstName lastName questionsAnswered wordsLearned passagesRead rank level"
+  "id email admin firstName lastName questionsAnswered wordsLearned passagesRead rank level curricula"

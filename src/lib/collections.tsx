@@ -1,1 +1,1 @@
-export default ["simple english wikipedia"]
+export default ["architecture", "simple_english_wikipedia"]
