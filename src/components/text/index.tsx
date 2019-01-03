@@ -72,7 +72,7 @@ class TextComponent extends React.Component<Props, State> {
 
   public componentWillReceiveProps(nextProps: Props) {
     const { text, isRob } = nextProps
-    if (!text || isEqual(text, this.props.text)) return
+    if (!text || (this.state.title && isEqual(text, this.props.text))) return
     const { author, title } = text._source
     this.setState({ author, title })
     if (isRob) {
