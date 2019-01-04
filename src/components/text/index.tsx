@@ -94,14 +94,10 @@ class TextComponent extends React.Component<Props, State> {
   }
 
   private loadPassage(section: number) {
-    this.props.dispatch(setEntity({ isLoading: true }))
-    this.props.dispatch(
-      fetchEsPassageBySectionAction(
-        this.state.index,
-        this.props.text._id,
-        section
-      )
-    )
+    const index = this.state.index
+    const { dispatch, text } = this.props
+    dispatch(setEntity({ isLoading: true }))
+    dispatch(fetchEsPassageBySectionAction(index, text._id, section))
   }
 
   private async downloadAddressCsv(id: string) {
@@ -109,6 +105,9 @@ class TextComponent extends React.Component<Props, State> {
       fetchPassagesAndAddressesAction(id)
     )
     const addresses = result.response.data
+    addresses.forEach(
+      (address: any) => (address.context = address.context.replace(/,/g, ""))
+    )
     if (!addresses) return
     this.setState({ addresses })
   }
