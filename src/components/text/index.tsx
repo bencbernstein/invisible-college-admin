@@ -24,7 +24,7 @@ import {
 
 import { User } from "../../interfaces/user"
 import { colors } from "../../lib/colors"
-import { sleep } from "../../lib/helpers"
+import { sleep, cleanPageNumbers } from "../../lib/helpers"
 import nextImg from "../../lib/images/icon-next.png"
 import deleteIcon from "../../lib/images/icon-delete.png"
 import blankLinkStyle from "../common/blankLinkStyle"
@@ -105,10 +105,16 @@ class TextComponent extends React.Component<Props, State> {
       fetchPassagesAndAddressesAction(id)
     )
     const addresses = result.response.data
-    addresses.forEach(
-      (address: any) => (address.context = address.context.replace(/,/g, ""))
-    )
     if (!addresses) return
+    addresses.forEach(
+      (a: any) =>
+        (a.context = cleanPageNumbers(
+          a.context
+            .replace(/"/g, '""')
+            .replace(/\r?\n?/g, "")
+            .trim()
+        ))
+    )
     this.setState({ addresses })
   }
 
@@ -140,9 +146,11 @@ class TextComponent extends React.Component<Props, State> {
           <FlexedDiv justifyContent="flex-start" flex={1}>
             <Icon
               onClick={async () => {
-                await this.props.dispatch(removeTextAction(index, id))
-                await sleep(1)
-                this.setState({ redirect: `/library/${index}` })
+                if (window.confirm(`Delete ${text._source.title}?`)) {
+                  await this.props.dispatch(removeTextAction(index, id))
+                  await sleep(1)
+                  this.setState({ redirect: `/library/${index}` })
+                }
               }}
               pointer={true}
               src={deleteIcon}
@@ -202,7 +210,9 @@ class TextComponent extends React.Component<Props, State> {
 
         <div style={{ textAlign: "left" }}>
           {esPassage._source.sentences.map((s: string, i: number) => (
-            <StyledText.garamond key={i}>{s}</StyledText.garamond>
+            <StyledText.garamond key={i}>
+              {cleanPageNumbers(s)}
+            </StyledText.garamond>
           ))}
         </div>
 
@@ -242,7 +252,7 @@ class TextComponent extends React.Component<Props, State> {
               filename={(title || "").replace(/ /g, "_").toLowerCase() + ".csv"}
               style={blankLinkStyle}
               asyncOnClick={true}
-              headers={["address", "context"]}
+              headers={["address", "page_number", "context", "word_count"]}
               onClick={(event: any, done: any) => {
                 if (addresses!.length > 0) return done()
                 this.props.dispatch(

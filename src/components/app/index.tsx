@@ -64,6 +64,7 @@ interface Props {
   isRob: boolean
   job?: Job
   dispatch: any
+  curricula: Curriculum[]
   curriculum?: Curriculum
 }
 
@@ -83,7 +84,7 @@ class App extends React.Component<Props, State> {
   }
 
   public componentWillReceiveProps(nextProps: Props) {
-    const { user, job } = nextProps
+    const { user, job, curricula, curriculum } = nextProps
 
     if (user && !this.props.user) {
       const isRob = user.id === CONFIG.ROB_ID
@@ -94,6 +95,13 @@ class App extends React.Component<Props, State> {
     if (job && job.id && job.id !== get(this.props.job, "id")) {
       const interval = setInterval(() => this.pollTask(job), 1000)
       this.setState({ interval })
+    }
+
+    if (!curriculum && user && curricula.length) {
+      const curriculum =
+        curricula.filter(({ id }) => user.curricula.indexOf(id) > -1)[0] ||
+        curricula[0]
+      this.props.dispatch(setEntity({ curriculum }))
     }
   }
 
@@ -122,7 +130,7 @@ class App extends React.Component<Props, State> {
 
   private async findAddresses(job: Job, esId: string) {
     const { curriculum, dispatch } = this.props
-    job.text = job.text.replace("Processing", "Searching addresses in")
+    job.text = job.text.replace("Processing", "Searching for addresses in")
     dispatch(setEntity({ job }))
     await sleep(2)
     return dispatch(
@@ -225,6 +233,7 @@ const mapStateToProps = (state: any, ownProps: any) => ({
   user: state.entities.user,
   job: state.entities.job,
   error: state.entities.error,
+  curricula: state.entities.curricula || [],
   curriculum: state.entities.curriculum,
   isRob: state.entities.isRob
 })

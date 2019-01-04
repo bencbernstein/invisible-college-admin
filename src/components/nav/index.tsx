@@ -10,7 +10,7 @@ import Header from "../common/header"
 
 import { Modal, ModalButton, Button } from "./components"
 
-import { setEntity, removeEntity } from "../../actions"
+import { removeEntity, setEntity } from "../../actions"
 import { User } from "../../interfaces/user"
 
 import { formatName } from "../../lib/helpers"
@@ -39,27 +39,6 @@ class Nav extends React.Component<Props, State> {
     this.state = {
       displayModal: false
     }
-  }
-
-  public componentDidMount() {
-    const { curricula, user } = this.props
-    if (curricula.length && !this.props.curriculum && user) {
-      const curriculum = curricula.filter(
-        ({ id }) => user.curricula.indexOf(id) > -1
-      )[0]
-      this.setCurriculum(curriculum)
-    }
-  }
-
-  public componentWillReceiveProps(nextProps: Props) {
-    const { curricula, curriculum } = nextProps
-    if (curricula.length && !curriculum) {
-      this.setCurriculum(curricula[0])
-    }
-  }
-
-  private setCurriculum(curriculum: Curriculum) {
-    this.props.dispatch(setEntity({ curriculum }))
   }
 
   public logout() {
@@ -103,7 +82,7 @@ class Nav extends React.Component<Props, State> {
     }
 
     const links = isRob
-      ? ["Concepts", "Library", "Passages"]
+      ? ["Concepts", "Library"]
       : [
           "Curricula",
           "Library",
@@ -124,26 +103,28 @@ class Nav extends React.Component<Props, State> {
         <FlexedDiv style={{ marginBottom: "5px" }}>
           <FlexedDiv flex={1} justifyContent="flex-start">
             <Header.s margin="0 10px 0 0">{get(curriculum, "name")}</Header.s>
-            <select
-              onChange={e => {
-                const curriculum = curricula.find(
-                  ({ id }) => id === e.target.value
-                )
-                this.setCurriculum(curriculum!)
-              }}
-              style={{ width: "15px" }}
-              value={get(curriculum, "id")}
-            >
-              {curricula.map(({ id, name }) => (
-                <option
-                  disabled={!user.admin && user.curricula.indexOf(id) === -1}
-                  key={id}
-                  value={id}
-                >
-                  {name}
-                </option>
-              ))}
-            </select>
+            {!isRob && (
+              <select
+                onChange={e => {
+                  const curriculum = curricula.find(
+                    ({ id }) => id === e.target.value
+                  )
+                  this.props.dispatch(setEntity({ curriculum }))
+                }}
+                style={{ width: "15px" }}
+                value={get(curriculum, "id")}
+              >
+                {curricula.map(({ id, name }) => (
+                  <option
+                    disabled={!user.admin && user.curricula.indexOf(id) === -1}
+                    key={id}
+                    value={id}
+                  >
+                    {name}
+                  </option>
+                ))}
+              </select>
+            )}
           </FlexedDiv>
 
           <FlexedDiv>{menuItems}</FlexedDiv>
