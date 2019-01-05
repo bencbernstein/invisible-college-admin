@@ -65,7 +65,6 @@ class TextListComponent extends React.Component<Props, State> {
     const data = await fetch(url, params)
       .then(res => res.json())
       .catch(error => error)
-    console.log(data)
 
     if (data.id) {
       job.id = data.id
