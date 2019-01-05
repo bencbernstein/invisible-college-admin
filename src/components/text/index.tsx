@@ -2,7 +2,7 @@ import * as React from "react"
 import { Redirect } from "react-router"
 import { connect } from "react-redux"
 import styled from "styled-components"
-import { pickBy, isEqual } from "lodash"
+import { pickBy, isEqual, initial } from "lodash"
 import { CSVLink } from "react-csv"
 
 import Header from "../common/header"
@@ -27,6 +27,7 @@ import { colors } from "../../lib/colors"
 import { sleep, cleanPageNumbers } from "../../lib/helpers"
 import nextImg from "../../lib/images/icon-next.png"
 import deleteIcon from "../../lib/images/icon-delete.png"
+import backIcon from "../../lib/images/icon-back.png"
 import blankLinkStyle from "../common/blankLinkStyle"
 
 interface State {
@@ -145,15 +146,15 @@ class TextComponent extends React.Component<Props, State> {
         <FlexedDiv alignItems="flex-start">
           <FlexedDiv justifyContent="flex-start" flex={1}>
             <Icon
-              onClick={async () => {
-                if (window.confirm(`Delete ${text._source.title}?`)) {
-                  await this.props.dispatch(removeTextAction(index, id))
-                  await sleep(1)
-                  this.setState({ redirect: `/library/${index}` })
-                }
-              }}
+              onClick={() =>
+                this.setState({
+                  redirect: initial(window.location.pathname.split("/")).join(
+                    "/"
+                  )
+                })
+              }
               pointer={true}
-              src={deleteIcon}
+              src={backIcon}
             />
           </FlexedDiv>
 
@@ -174,7 +175,10 @@ class TextComponent extends React.Component<Props, State> {
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
-              flex: 10
+              flex: 10,
+              border: `1px solid ${colors.lightGray}`,
+              borderRadius: "5px",
+              padding: "5px"
             }}
           >
             {displayInputs || !title ? (
@@ -201,10 +205,23 @@ class TextComponent extends React.Component<Props, State> {
               <StyledText.regular margin="5px 0">{author}</StyledText.regular>
             )}
           </form>
-          <div style={{ flex: 1 }} />
+
+          <FlexedDiv justifyContent="flex-end" flex={1}>
+            <Icon
+              onClick={async () => {
+                if (window.confirm(`Delete ${text._source.title}?`)) {
+                  await this.props.dispatch(removeTextAction(index, id))
+                  await sleep(1)
+                  this.setState({ redirect: `/library/${index}` })
+                }
+              }}
+              pointer={true}
+              src={deleteIcon}
+            />
+          </FlexedDiv>
         </FlexedDiv>
 
-        <StyledText.s margin="0 0 15px 0" color={colors.gray}>
+        <StyledText.s margin="5px 0 15px 0" color={colors.gray}>
           Page {current + 1} of {totalPages}
         </StyledText.s>
 
@@ -286,6 +303,7 @@ const InputHeader = styled.textarea`
   margin: 0;
   border-radius: 0;
   border: none;
+  resize: none;
 `
 
 const InputSubHeader = styled.input`

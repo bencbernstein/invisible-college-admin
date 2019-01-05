@@ -62,7 +62,11 @@ class TextListComponent extends React.Component<Props, State> {
     formData.append("text", file)
     const url = `${CONFIG.MINE_API_URL}/index-texts?index=${this.state.index}`
     const params = { body: formData, method: "POST" }
-    const data = await fetch(url, params).then(res => res.json())
+    const data = await fetch(url, params)
+      .then(res => res.json())
+      .catch(error => error)
+    console.log(data)
+
     if (data.id) {
       job.id = data.id
       this.props.dispatch(setEntity({ job }))
