@@ -167,7 +167,7 @@ class Login extends React.Component<Props, State> {
           value={isLoggingIn ? "Log In" : "Create Account"}
         />
 
-        {isLoggingIn && (
+        {false && isLoggingIn && (
           <Text.l
             pointer={true}
             onClick={() => this.setState({ view: View.SignUp })}
