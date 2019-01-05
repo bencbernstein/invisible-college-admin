@@ -125,3 +125,9 @@ export const lastPath = (window: Window): string =>
 
 export const unixToDateString = (timestamp: string) =>
   new Date(parseInt(timestamp, 10)).toLocaleDateString()
+
+export const cleanPageNumbers = (str: string) =>
+  str
+    .replace(/<page>.*?<\/page>/g, "")
+    .replace("<page>", "")
+    .replace("</page>", " ")

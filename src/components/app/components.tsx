@@ -21,5 +21,6 @@ export const JobModal = styled.div`
   margin: 0 auto;
   background-color: ${(p: JobModalProps) => p.color};
   color: white;
-  font-size: 11px;
+  font-size: 14px;
+  padding: 3px 0;
 `

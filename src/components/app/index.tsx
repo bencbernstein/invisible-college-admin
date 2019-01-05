@@ -64,6 +64,7 @@ interface Props {
   isRob: boolean
   job?: Job
   dispatch: any
+  curricula: Curriculum[]
   curriculum?: Curriculum
 }
 
@@ -83,7 +84,7 @@ class App extends React.Component<Props, State> {
   }
 
   public componentWillReceiveProps(nextProps: Props) {
-    const { user, job } = nextProps
+    const { user, job, curricula, curriculum } = nextProps
 
     if (user && !this.props.user) {
       const isRob = user.id === CONFIG.ROB_ID
@@ -95,33 +96,53 @@ class App extends React.Component<Props, State> {
       const interval = setInterval(() => this.pollTask(job), 1000)
       this.setState({ interval })
     }
+
+    if (!curriculum && user && curricula.length) {
+      const curriculum =
+        curricula.filter(({ id }) => user.curricula.indexOf(id) > -1)[0] ||
+        curricula[0]
+      this.props.dispatch(setEntity({ curriculum }))
+    }
   }
 
   private async pollTask(job: Job) {
-    const { dispatch, isRob, curriculum } = this.props
-    const url = `${CONFIG.MINE_API_URL}/tasks/${job.id}`
-    const result = await fetch(url, { method: "GET" })
+    const result = await fetch(`${CONFIG.MINE_API_URL}/tasks/${job.id}`, {
+      method: "GET"
+    })
       .then(res => res.json())
       .catch(error => console.log(error))
-    if (!result || !curriculum) return
-
+    if (!result) return
     const { status, es_id } = result.data
     if (["finished", "failed"].indexOf(status) === -1) return
 
-    if (isRob && job.text.includes("Processing")) {
-      job.text = job.text.replace("Processing", "Searching addresses in")
-      dispatch(setEntity({ job }))
-      await this.props.dispatch(
-        findAddressesAction(CONFIG.ARCHITECTURE_INDEX, es_id, curriculum.id)
-      )
+    clearInterval(this.state.interval)
+    if (this.props.isRob && job.text.includes("Processing")) {
+      await this.findAddresses(job, es_id)
     }
 
     job.color = status === "finished" ? colors.green : colors.red
     job.text = status === "finished" ? "Success" : "Task Failed"
-    clearInterval(this.state.interval)
+    this.props.dispatch(setEntity({ job }))
+    await sleep(2)
+    this.props.dispatch(removeEntity("job"))
+    this.reloadPostUpload()
+  }
+
+  private async findAddresses(job: Job, esId: string) {
+    const { curriculum, dispatch } = this.props
+    job.text = job.text.replace("Processing", "Searching for addresses in")
     dispatch(setEntity({ job }))
     await sleep(2)
-    dispatch(removeEntity("job"))
+    return dispatch(
+      findAddressesAction(CONFIG.ARCHITECTURE_INDEX, esId, curriculum!.id)
+    )
+  }
+
+  private reloadPostUpload() {
+    const path = window.location.pathname
+    if (path.includes("/library/") && path.split("/").length === 3) {
+      window.location.reload()
+    }
   }
 
   private async checkForAuth() {
@@ -212,6 +233,7 @@ const mapStateToProps = (state: any, ownProps: any) => ({
   user: state.entities.user,
   job: state.entities.job,
   error: state.entities.error,
+  curricula: state.entities.curricula || [],
   curriculum: state.entities.curriculum,
   isRob: state.entities.isRob
 })

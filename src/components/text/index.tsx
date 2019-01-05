@@ -2,7 +2,7 @@ import * as React from "react"
 import { Redirect } from "react-router"
 import { connect } from "react-redux"
 import styled from "styled-components"
-import { pickBy, isEqual } from "lodash"
+import { pickBy, isEqual, initial } from "lodash"
 import { CSVLink } from "react-csv"
 
 import Header from "../common/header"
@@ -24,9 +24,10 @@ import {
 
 import { User } from "../../interfaces/user"
 import { colors } from "../../lib/colors"
-import { sleep } from "../../lib/helpers"
+import { sleep, cleanPageNumbers } from "../../lib/helpers"
 import nextImg from "../../lib/images/icon-next.png"
 import deleteIcon from "../../lib/images/icon-delete.png"
+import backIcon from "../../lib/images/icon-back.png"
 import blankLinkStyle from "../common/blankLinkStyle"
 
 interface State {
@@ -94,14 +95,10 @@ class TextComponent extends React.Component<Props, State> {
   }
 
   private loadPassage(section: number) {
-    this.props.dispatch(setEntity({ isLoading: true }))
-    this.props.dispatch(
-      fetchEsPassageBySectionAction(
-        this.state.index,
-        this.props.text._id,
-        section
-      )
-    )
+    const index = this.state.index
+    const { dispatch, text } = this.props
+    dispatch(setEntity({ isLoading: true }))
+    dispatch(fetchEsPassageBySectionAction(index, text._id, section))
   }
 
   private async downloadAddressCsv(id: string) {
@@ -110,6 +107,15 @@ class TextComponent extends React.Component<Props, State> {
     )
     const addresses = result.response.data
     if (!addresses) return
+    addresses.forEach(
+      (a: any) =>
+        (a.context = cleanPageNumbers(
+          a.context
+            .replace(/"/g, '""')
+            .replace(/\r?\n?/g, "")
+            .trim()
+        ))
+    )
     this.setState({ addresses })
   }
 
@@ -140,13 +146,15 @@ class TextComponent extends React.Component<Props, State> {
         <FlexedDiv alignItems="flex-start">
           <FlexedDiv justifyContent="flex-start" flex={1}>
             <Icon
-              onClick={async () => {
-                await this.props.dispatch(removeTextAction(index, id))
-                await sleep(1)
-                this.setState({ redirect: `/library/${index}` })
-              }}
+              onClick={() =>
+                this.setState({
+                  redirect: initial(window.location.pathname.split("/")).join(
+                    "/"
+                  )
+                })
+              }
               pointer={true}
-              src={deleteIcon}
+              src={backIcon}
             />
           </FlexedDiv>
 
@@ -167,7 +175,10 @@ class TextComponent extends React.Component<Props, State> {
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
-              flex: 10
+              flex: 10,
+              border: `1px solid ${colors.lightGray}`,
+              borderRadius: "5px",
+              padding: "5px"
             }}
           >
             {displayInputs || !title ? (
@@ -194,16 +205,31 @@ class TextComponent extends React.Component<Props, State> {
               <StyledText.regular margin="5px 0">{author}</StyledText.regular>
             )}
           </form>
-          <div style={{ flex: 1 }} />
+
+          <FlexedDiv justifyContent="flex-end" flex={1}>
+            <Icon
+              onClick={async () => {
+                if (window.confirm(`Delete ${text._source.title}?`)) {
+                  await this.props.dispatch(removeTextAction(index, id))
+                  await sleep(1)
+                  this.setState({ redirect: `/library/${index}` })
+                }
+              }}
+              pointer={true}
+              src={deleteIcon}
+            />
+          </FlexedDiv>
         </FlexedDiv>
 
-        <StyledText.s margin="0 0 15px 0" color={colors.gray}>
+        <StyledText.s margin="5px 0 15px 0" color={colors.gray}>
           Page {current + 1} of {totalPages}
         </StyledText.s>
 
         <div style={{ textAlign: "left" }}>
           {esPassage._source.sentences.map((s: string, i: number) => (
-            <StyledText.garamond key={i}>{s}</StyledText.garamond>
+            <StyledText.garamond key={i}>
+              {cleanPageNumbers(s)}
+            </StyledText.garamond>
           ))}
         </div>
 
@@ -243,7 +269,7 @@ class TextComponent extends React.Component<Props, State> {
               filename={(title || "").replace(/ /g, "_").toLowerCase() + ".csv"}
               style={blankLinkStyle}
               asyncOnClick={true}
-              headers={["address", "context"]}
+              headers={["address", "page_number", "context", "word_count"]}
               onClick={(event: any, done: any) => {
                 if (addresses!.length > 0) return done()
                 this.props.dispatch(
@@ -277,6 +303,7 @@ const InputHeader = styled.textarea`
   margin: 0;
   border-radius: 0;
   border: none;
+  resize: none;
 `
 
 const InputSubHeader = styled.input`

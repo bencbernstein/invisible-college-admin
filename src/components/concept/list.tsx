@@ -23,6 +23,7 @@ interface Props {
   index?: string
   dispatch: any
   isLoading: boolean
+  isRob: boolean
   searchQuery?: string
 }
 
@@ -50,7 +51,7 @@ class ConceptListComponent extends React.Component<Props, State> {
   }
 
   public render() {
-    const { concepts, isLoading, searchQuery } = this.props
+    const { concepts, isLoading, searchQuery, isRob } = this.props
 
     const filtered = concepts.filter(
       ({ value }) =>
@@ -59,6 +60,15 @@ class ConceptListComponent extends React.Component<Props, State> {
     )
 
     const alphabetized = alphabetize(filtered, "value")
+
+    const link = (id: string, value: string) =>
+      isRob ? (
+        <StyledText.regular key={id}>{value}</StyledText.regular>
+      ) : (
+        <Link style={blankLinkStyle} key={id} to={`/concept/enrich/${id}`}>
+          <StyledText.regular>{value}</StyledText.regular>
+        </Link>
+      )
 
     return (
       <div style={{ marginTop: "30px" }}>
@@ -75,13 +85,7 @@ class ConceptListComponent extends React.Component<Props, State> {
                   {divider}
                 </StyledText.xxl>
               ) : (
-                <Link
-                  style={blankLinkStyle}
-                  key={i}
-                  to={`/concept/enrich/${id}`}
-                >
-                  <StyledText.regular>{value}</StyledText.regular>
-                </Link>
+                link(id, value)
               )
             )}
           </Grid>
@@ -94,6 +98,7 @@ class ConceptListComponent extends React.Component<Props, State> {
 const mapStateToProps = (state: any, ownProps: any) => ({
   concepts: state.entities.words || [],
   isLoading: state.entities.isLoading === true,
+  isRob: state.entities.isRob === true,
   searchQuery: state.entities.searchQuery,
   curriculum: state.entities.curriculum
 })
