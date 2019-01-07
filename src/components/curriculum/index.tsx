@@ -112,11 +112,12 @@ class CurriculumComponent extends React.Component<Props, State> {
     const createNewForm = (
       <form
         onSubmit={this.createCurriculum.bind(this)}
-        style={{ display: "flex", justifyContent: "flex-start" }}
+        style={{ display: "flex", justifyContent: "center" }}
       >
         <Input.m
           margin="0 25px 0 0"
           type="text"
+          spellCheck={false}
           placeholder="New"
           value={newCurriculumName || ""}
           onChange={e => this.setState({ newCurriculumName: e.target.value })}

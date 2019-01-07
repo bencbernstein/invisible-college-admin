@@ -2,6 +2,7 @@ import { CALL_API } from "../middleware/api"
 
 import { userAttrs } from "../interfaces/user"
 import { wordAttrs } from "../interfaces/concept"
+import { sequenceAttrs } from "../interfaces/sequence"
 import { encodeUri } from "../lib/helpers"
 import { Curriculum, curriculumAttrs } from "../interfaces/curriculum"
 
@@ -558,6 +559,114 @@ export const fetchPassagesAndAddressesAction = (
       types: types(camelCaseToUpperCase(route)),
       schema: "data",
       parseJson: true,
+      route
+    }
+  })
+
+export const fetchSequencesAction = (route: string = "sequences") => (
+  dispatch: any
+) =>
+  dispatch({
+    [CALL_API]: {
+      query: `query { ${route} { ${sequenceAttrs} } }`,
+      types: types(camelCaseToUpperCase(route)),
+      schema: "sequences",
+      route
+    }
+  })
+
+export const fetchSequenceAction = (id: string, route: string = "sequence") => (
+  dispatch: any
+) =>
+  dispatch({
+    [CALL_API]: {
+      query: `query { ${route}(id: "${id}") { ${sequenceAttrs} } }`,
+      types: types(camelCaseToUpperCase(route)),
+      schema: "sequence",
+      route
+    }
+  })
+
+export const createSequenceAction = (
+  name: string,
+  route: string = "createSequence"
+) => (dispatch: any) =>
+  dispatch({
+    [CALL_API]: {
+      query: `mutation { ${route}(name: "${name}") { ${sequenceAttrs} } }`,
+      types: types(camelCaseToUpperCase(route)),
+      route
+    }
+  })
+
+export const deleteSequenceAction = (
+  id: string,
+  route: string = "deleteSequence"
+) => (dispatch: any) =>
+  dispatch({
+    [CALL_API]: {
+      query: `mutation { ${route}(id: "${id}") }`,
+      types: types(camelCaseToUpperCase(route)),
+      route
+    }
+  })
+
+export const addToSequenceAction = (
+  id: string,
+  documentType: string,
+  documentId: string,
+  description: string,
+  route: string = "addToSequence"
+) => (dispatch: any) =>
+  dispatch({
+    [CALL_API]: {
+      query: `mutation { ${route}(id: "${id}", documentType: "${documentType}",  documentId: "${documentId}", description: "${description}") { ${sequenceAttrs} } }`,
+      types: types(camelCaseToUpperCase(route)),
+      schema: "sequence",
+      route
+    }
+  })
+
+export const removeFromSequenceAction = (
+  id: string,
+  idx: number,
+  route: string = "removeFromSequence"
+) => (dispatch: any) =>
+  dispatch({
+    [CALL_API]: {
+      query: `mutation { ${route}(id: "${id}", idx: "${idx}") { ${sequenceAttrs} } }`,
+      types: types(camelCaseToUpperCase(route)),
+      schema: "sequence",
+      route
+    }
+  })
+
+export const fetchSequenceQuestionTypesAction = (
+  id: string,
+  documentType: string,
+  route: string = "sequenceQuestionTypes"
+) => (dispatch: any) =>
+  dispatch({
+    [CALL_API]: {
+      query: `query { ${route}(id: "${id}", documentType: "${documentType}") { id TYPE } }`,
+      types: types(camelCaseToUpperCase(route)),
+      schema: "sequenceQuestionTypes",
+      route
+    }
+  })
+
+export const updateSequenceQuestionAction = (
+  id: string,
+  idx: number,
+  questionId: string,
+  questionType: string,
+  route: string = "updateSequenceQuestion"
+) => (dispatch: any) =>
+  dispatch({
+    [CALL_API]: {
+      query: `mutation { ${route}(id: "${id}", idx: "${idx}", questionId: "${questionId}", questionType: "${questionType}") { ${sequenceAttrs} } }`,
+      types: types(camelCaseToUpperCase(route)),
+      schema: "sequence",
       route
     }
   })

@@ -59,7 +59,8 @@ class Nav extends React.Component<Props, State> {
 
     const link = (item: any): any => {
       const path = item.toLowerCase().replace(" ", "-")
-      const isViewing = window.location.pathname.indexOf(path) > -1
+      const isViewing =
+        path.indexOf(window.location.pathname.split("/")[1]) > -1
       const color =
         item === "Play"
           ? colors.green
@@ -88,15 +89,18 @@ class Nav extends React.Component<Props, State> {
           "Library",
           "Discover",
           "Concepts",
-          "Images",
-          "Passages",
           "Queues",
-          "Play"
+          "Images",
+          "Passages"
         ]
 
-    const menuItems = links
-      .map(link)
-      .reduce((prev: any, curr: any, i: number) => [prev, "/", curr])
+    const gameLinks = ["Sequences", "Questions", "Play"]
+
+    const menuItems = (links: string[]) =>
+      links
+        .sort()
+        .map(link)
+        .reduce((prev: any, curr: any, i: number) => [prev, "/", curr])
 
     return (
       <div style={{ marginBottom: "25px" }}>
@@ -127,7 +131,14 @@ class Nav extends React.Component<Props, State> {
             )}
           </FlexedDiv>
 
-          <FlexedDiv>{menuItems}</FlexedDiv>
+          <div style={{ flex: 8 }}>
+            <FlexedDiv justifyContent="center">{menuItems(links)}</FlexedDiv>
+            {!isRob && (
+              <FlexedDiv justifyContent="center">
+                {menuItems(gameLinks)}
+              </FlexedDiv>
+            )}
+          </div>
 
           <FlexedDiv
             flex={1}

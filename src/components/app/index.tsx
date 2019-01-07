@@ -18,6 +18,9 @@ import ErrorMessage from "../error"
 import Play from "../home"
 import Question from "../question"
 import Passages from "../passage/list"
+import SequencesList from "../sequence/list"
+import SequenceComponent from "../sequence"
+import SequenceNav from "../sequence/nav"
 import Queues from "../queue/list"
 import FilterPassage from "../passage/filter"
 import Images from "../image/list"
@@ -34,6 +37,7 @@ import ProtectedRoute, { ProtectedRouteProps } from "./protectedRoute"
 import { User } from "../../interfaces/user"
 import { Job } from "../../interfaces/job"
 import { Curriculum } from "../../interfaces/curriculum"
+import { Sequence } from "../../interfaces/sequence"
 
 import {
   setEntity,
@@ -44,11 +48,17 @@ import {
 import { colors } from "../../lib/colors"
 import { sleep } from "../../lib/helpers"
 
-const contained = (Component: any, noSearch: boolean = false, job?: any) => (
+const contained = (
+  Component: any,
+  noSearch: boolean = false,
+  job?: any,
+  sequence?: any
+) => (
   <Container>
     <Nav noSearch={noSearch} />
     <Component />
     {job && <JobModal color={job.color}>{job.text}</JobModal>}
+    {sequence && <SequenceNav />}
     <ErrorMessage />
   </Container>
 )
@@ -63,6 +73,7 @@ interface Props {
   user?: User
   isRob: boolean
   job?: Job
+  sequence?: Sequence
   dispatch: any
   curricula: Curriculum[]
   curriculum?: Curriculum
@@ -114,14 +125,16 @@ class App extends React.Component<Props, State> {
     if (!result) return
     const { status, es_id } = result.data
     if (["finished", "failed"].indexOf(status) === -1) return
+    const failed = status === "failed" || result.data.error
 
     clearInterval(this.state.interval)
-    if (this.props.isRob && job.text.includes("Processing")) {
+
+    if (!failed && this.props.isRob && job.text.includes("Processing")) {
       await this.findAddresses(job, es_id)
     }
 
-    job.color = status === "finished" ? colors.green : colors.red
-    job.text = status === "finished" ? "Success" : "Task Failed"
+    job.color = failed ? colors.red : colors.green
+    job.text = failed ? "Task Failed" : "Success"
     this.props.dispatch(setEntity({ job }))
     await sleep(2)
     this.props.dispatch(removeEntity("job"))
@@ -160,7 +173,7 @@ class App extends React.Component<Props, State> {
 
   public render() {
     const { checkedAuth, isAuthenticated } = this.state
-    const { isRob } = this.props
+    const { isRob, sequence, job } = this.props
     if (!checkedAuth) return null
 
     const defaultProtectedRouteProps: ProtectedRouteProps = {
@@ -186,6 +199,13 @@ class App extends React.Component<Props, State> {
       { path: "/passages", Component: Passages, exact: true, noSearch: true },
       { path: "/question", Component: Question, noNav: true },
       { path: "/library", Component: IndexesList, exact: true, noSearch: true },
+      {
+        path: "/sequences",
+        Component: SequencesList,
+        exact: true,
+        noSearch: true
+      },
+      { path: "/sequence/:id", Component: SequenceComponent, noSearch: true },
       { path: "/library/:index", Component: TextList, exact: true },
       { path: "/library/:index/:id", Component: Text, noSearch: true },
       { path: "/passage/filter/:id", Component: FilterPassage, noSearch: true },
@@ -213,7 +233,7 @@ class App extends React.Component<Props, State> {
               noNav ? (
                 <Component />
               ) : (
-                contained(Component, noSearch, this.props.job)
+                contained(Component, noSearch, job, sequence)
               )
             }
           />
@@ -235,6 +255,7 @@ const mapStateToProps = (state: any, ownProps: any) => ({
   error: state.entities.error,
   curricula: state.entities.curricula || [],
   curriculum: state.entities.curriculum,
+  sequence: state.entities.sequence,
   isRob: state.entities.isRob
 })
 
