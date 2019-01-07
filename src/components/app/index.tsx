@@ -125,9 +125,8 @@ class App extends React.Component<Props, State> {
     if (!result) return
     const { status, es_id } = result.data
     if (["finished", "failed"].indexOf(status) === -1) return
-    const failed = status === "failed" || result.data.error
-
     clearInterval(this.state.interval)
+    const failed = status === "failed" || result.data.error
 
     if (!failed && this.props.isRob && job.text.includes("Processing")) {
       await this.findAddresses(job, es_id)

@@ -670,3 +670,18 @@ export const updateSequenceQuestionAction = (
       route
     }
   })
+
+export const updateSequenceQuestionIndexAction = (
+  id: string,
+  idx: number,
+  newIdx: number,
+  route: string = "updateSequenceQuestionIndex"
+) => (dispatch: any) =>
+  dispatch({
+    [CALL_API]: {
+      query: `mutation { ${route}(id: "${id}", idx: ${idx}, newIdx: ${newIdx}) { ${sequenceAttrs} } }`,
+      types: types(camelCaseToUpperCase(route)),
+      schema: "sequence",
+      route
+    }
+  })

@@ -14,6 +14,7 @@ import {
   removeFromSequenceAction,
   fetchSequenceQuestionTypesAction,
   updateSequenceQuestionAction,
+  updateSequenceQuestionIndexAction,
   removeEntity
 } from "../../actions"
 
@@ -61,6 +62,20 @@ class SequenceComponent extends React.Component<Props, State> {
     this.props.dispatch(fetchSequenceAction(id))
   }
 
+  private updateIndex(e: any, idx: number) {
+    e.preventDefault()
+    const { id, questions } = this.props.sequence
+    const newIdx = parseInt(this.state.input, 10) - 1
+    if (
+      newIdx !== undefined &&
+      newIdx >= 0 &&
+      newIdx !== idx &&
+      newIdx < questions.length
+    ) {
+      this.props.dispatch(updateSequenceQuestionIndexAction(id, idx, newIdx))
+    }
+  }
+
   public render() {
     const { isEditingIndex, isEditingType, input } = this.state
     const { sequence, sequenceQuestionTypes, dispatch } = this.props
@@ -79,17 +94,19 @@ class SequenceComponent extends React.Component<Props, State> {
 
       return (
         <FlexedDiv key={idx}>
-          <Input.m
-            onFocus={() => this.setState({ isEditingIndex: idx })}
-            onBlur={() =>
-              this.setState({ isEditingIndex: undefined, input: "" })
-            }
-            onChange={e => this.setState({ input: e.target.value })}
-            width="40px"
-            margin="0 15px"
-            value={isEditingIndex === idx ? input : idx + 1}
-            type="text"
-          />
+          <form onSubmit={e => this.updateIndex(e, idx)}>
+            <Input.m
+              onFocus={() => this.setState({ isEditingIndex: idx })}
+              onBlur={() =>
+                this.setState({ isEditingIndex: undefined, input: "" })
+              }
+              onChange={e => this.setState({ input: e.target.value })}
+              width="40px"
+              margin="0 15px"
+              value={isEditingIndex === idx ? input : idx + 1}
+              type="text"
+            />
+          </form>
 
           <QuestionBox>
             <Text.regular style={{ textAlign: "left" }}>
