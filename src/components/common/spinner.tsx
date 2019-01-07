@@ -10,10 +10,21 @@ const rotate360 = keyframes`
   }
 `
 
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+`
+
 const LoadingSpinner = styled.img`
   height: 40px;
   width: auto;
-  animation: ${rotate360} 5s linear infinite;
+  opacity: 0;
+  animation: ${rotate360} 5s linear infinite, ${fadeIn} 0.2s forwards;
+  animation-delay: 0.2s;
 `
 
 class Spinner extends React.Component<any, any> {

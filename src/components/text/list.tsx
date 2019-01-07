@@ -70,7 +70,7 @@ class TextListComponent extends React.Component<Props, State> {
       job.id = data.id
       this.props.dispatch(setEntity({ job }))
     } else {
-      console.log("ERR: ", data)
+      console.log("ERR: ", data.message)
       this.props.dispatch(removeEntity("job"))
     }
   }

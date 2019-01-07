@@ -2,6 +2,7 @@ import styled from "styled-components"
 
 interface Props {
   color?: string
+  hoverColor?: string
   bold?: boolean
   pointer?: boolean
   center?: boolean
@@ -20,6 +21,9 @@ const Regular = styled.p`
       ? "BrandonGrotesqueBold"
       : "BrandonGrotesque"};
   margin: ${(p: Props) => p.margin || "2.5px 0px"};
+  &:hover {
+    color: ${(p: Props) => p.hoverColor || ""};
+  }
   cursor: ${(p: Props) => (p.pointer ? "pointer" : "")};
 `
 

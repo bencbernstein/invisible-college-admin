@@ -1,29 +1,32 @@
 import * as React from "react"
 import { Link } from "react-router-dom"
 import { connect } from "react-redux"
+import styled from "styled-components"
 import { sortBy, isEqual } from "lodash"
 
 import Text from "../common/text"
 import Spinner from "../common/spinner"
 import Input from "../common/input"
+import Icon from "../common/icon"
 
 import {
   fetchPassages,
   updatePassageAction,
-  removePassageAction
+  removePassageAction,
+  addToSequenceAction
 } from "../../actions"
-import { colors } from "../../lib/colors"
-import Icon from "../common/icon"
+import { Curriculum } from "../../interfaces/curriculum"
+import { Sequence } from "../../interfaces/sequence"
 
+import { colors } from "../../lib/colors"
 import deleteIcon from "../../lib/images/icon-delete.png"
 import blankLinkStyle from "../common/blankLinkStyle"
-
-import { Curriculum } from "../../interfaces/curriculum"
 
 interface Props {
   queue: any
   passages: any[]
   curriculum?: Curriculum
+  sequence?: Sequence
   dispatch: any
   isLoading: boolean
 }
@@ -32,6 +35,15 @@ interface State {
   input: string
   isEditing?: number
 }
+
+const PassageText = styled.div`
+  border-radius: 10px;
+  padding: 5px 10px;
+  cursor: pointer;
+  &:hover {
+    background-color: ${colors.lightestGray};
+  }
+`
 
 class PassageListComponent extends React.Component<Props, State> {
   constructor(props: any) {
@@ -70,50 +82,67 @@ class PassageListComponent extends React.Component<Props, State> {
   }
 
   public render() {
-    const { passages, isLoading, curriculum } = this.props
+    const { passages, isLoading, curriculum, sequence, dispatch } = this.props
     const { isEditing, input } = this.state
 
     if (isLoading || !curriculum) return <Spinner />
 
-    const passage = (data: any, i: number) => (
-      <div
-        key={i}
-        style={{ margin: "12px 0", display: "flex", alignItems: "center" }}
-      >
-        <Icon
-          onClick={async () => {
-            await this.props.dispatch(removePassageAction(data.id))
-            this.loadData(curriculum)
+    const passage = (data: any, i: number) => {
+      const PassageTextBox = sequence ? PassageText : styled.div``
+      const text = data.tagged.map((tag: any) => tag.value).join(" ")
+
+      const passageText = (
+        <PassageTextBox
+          onClick={() => {
+            if (!sequence) return
+            dispatch(addToSequenceAction(sequence.id, "passage", data.id, text))
           }}
-          pointer={true}
-          small={true}
-          src={deleteIcon}
-        />
+          key={i}
+        >
+          <Text.regular key={i}>{text}</Text.regular>
+          <Text.s margin="0 5px" color={colors.mediumLGray}>
+            {data.title}
+          </Text.s>
+        </PassageTextBox>
+      )
 
-        <form onSubmit={e => this.updateDifficulty(e, data)}>
-          <Input.m
-            onFocus={() => this.setState({ isEditing: i })}
-            onBlur={() => this.setState({ isEditing: undefined, input: "" })}
-            onChange={e => this.setState({ input: e.target.value })}
-            width="40px"
-            margin="0 15px"
-            value={isEditing === i ? input : data.difficulty}
-            type="text"
+      if (sequence) return passageText
+
+      return (
+        <div
+          key={i}
+          style={{ margin: "12px 0", display: "flex", alignItems: "center" }}
+        >
+          <Icon
+            onClick={async () => {
+              await dispatch(removePassageAction(data.id))
+              this.loadData(curriculum)
+            }}
+            pointer={true}
+            small={true}
+            src={deleteIcon}
           />
-        </form>
 
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <Link style={blankLinkStyle} to={`/passage/enrich/${data.id}`}>
-            <Text.regular key={i}>
-              {data.tagged.map((tag: any) => tag.value).join(" ")}
-            </Text.regular>
-            <Text.s margin="0 5px" color={colors.mediumLGray}>
-              {data.title}
-            </Text.s>
-          </Link>
+          <form onSubmit={e => this.updateDifficulty(e, data)}>
+            <Input.m
+              onFocus={() => this.setState({ isEditing: i })}
+              onBlur={() => this.setState({ isEditing: undefined, input: "" })}
+              onChange={e => this.setState({ input: e.target.value })}
+              width="40px"
+              margin="0 15px"
+              value={isEditing === i ? input : data.difficulty}
+              type="text"
+            />
+          </form>
+
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <Link style={blankLinkStyle} to={`/passage/enrich/${data.id}`}>
+              {passageText}
+            </Link>
+          </div>
         </div>
-      </div>
-    )
+      )
+    }
 
     return <div>{sortBy(passages, "difficulty").map(passage)}</div>
   }
@@ -122,7 +151,8 @@ class PassageListComponent extends React.Component<Props, State> {
 const mapStateToProps = (state: any, ownProps: any) => ({
   passages: state.entities.passages || [],
   curriculum: state.entities.curriculum,
-  isLoading: state.entities.isLoading
+  isLoading: state.entities.isLoading,
+  sequence: state.entities.sequence
 })
 
 export default connect(mapStateToProps)(PassageListComponent)
