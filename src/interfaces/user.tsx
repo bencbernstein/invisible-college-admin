@@ -5,12 +5,12 @@ export interface User {
   password: string
   firstName: string
   lastName: string
-  questionsAnswered: number
-  accessLevel: number
-  wordsLearned: number
-  passagesRead: number
-  rank: number
-  level: number
+  questionsAnswered?: number
+  accessLevel?: number
+  wordsLearned?: number
+  passagesRead?: number
+  rank?: number
+  level?: number
   curricula: string[]
 }
 
