@@ -132,7 +132,7 @@ interface PromptTextProps {
 export const PromptText = Text.l.extend`
   text-align: ${(p: PromptTextProps) => p.textAlign && "center"};
   position: relative;
-  font-size: ${(p: PromptTextProps) => p.large && "1.2em"};
+  font-size: ${(p: PromptTextProps) => p.large && "1.8em"};
   bottom: ${(p: PromptTextProps) =>
     !p.isReadMode && p.bottom && `${p.bottom}px`};
 `
@@ -249,15 +249,15 @@ export const Button = styled.p`
   max-height: 90%;
   max-width: 90%;
   box-sizing: border-box;
-  min-height: 45px;
-  min-width: ${(p: ChoiceProps) => (p.isSpell ? "45px" : "120px")};
+  min-height: 50px;
+  min-width: ${(p: ChoiceProps) => (p.isSpell ? "50px" : "175px")};
   box-shadow: 0 0 10px rgba(0,0,0,0.25);
   padding: 10px;
   align-items: center;
   justify-content: center;
   display: flex;
   margin: 0;
-  font-size: 0.95em;
+  font-size: 1.5em;
 `
 
 export const Image = styled.img`

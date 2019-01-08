@@ -57,6 +57,7 @@ interface State {
   onCorrectElement?: Image | Factoid
   promptIsOverflowing?: boolean
   question?: Question
+  questionsCount: number
 }
 
 class QuestionComponent extends React.Component<Props, State> {
@@ -66,7 +67,8 @@ class QuestionComponent extends React.Component<Props, State> {
     this.state = {
       correct: true,
       qStartTime: moment(),
-      guessedCorrectly: []
+      guessedCorrectly: [],
+      questionsCount: 0
     }
   }
 
@@ -74,8 +76,15 @@ class QuestionComponent extends React.Component<Props, State> {
     this.setupGame()
   }
 
+  public componentWillReceiveProps(nextProps: Props) {
+    const questionsCount = nextProps.questions.length
+    if (questionsCount !== this.props.questions.length) {
+      this.setState({ questionsCount })
+    }
+  }
+
   private async setupGame() {
-    const id = window.location.search.split("?id=")[1]
+    const id = window.location.search.split("?name=")[1]
     await this.props.dispatch(fetchQuestionsForSequenceAction(id))
     this.nextQuestion(0)
   }
@@ -85,8 +94,11 @@ class QuestionComponent extends React.Component<Props, State> {
     this.setState({ isBetweenQuestions: true })
     await sleep(sleepDuration)
     const question = questions.shift()
-    if (!question) return
-    this.setQuestion(question!)
+    if (!question) {
+      this.setState({ displayIntermission: true })
+    } else {
+      this.setQuestion(question)
+    }
   }
 
   private setQuestion(question: Question) {
@@ -145,6 +157,8 @@ class QuestionComponent extends React.Component<Props, State> {
   }
 
   public render() {
+    const { questions } = this.props
+
     const {
       correct,
       displayAnswerSpace,
@@ -157,7 +171,8 @@ class QuestionComponent extends React.Component<Props, State> {
       onCorrectElement,
       promptIsOverflowing,
       redirect,
-      qStartTime
+      qStartTime,
+      questionsCount
     } = this.state
 
     if (redirect) return <Redirect to={redirect} />
@@ -178,7 +193,9 @@ class QuestionComponent extends React.Component<Props, State> {
             qStartTime={qStartTime}
             isBetweenQuestions={isBetweenQuestions}
             question={question}
-            completion={0.5}
+            completion={
+              (questionsCount - questions.length - 1) / questionsCount
+            }
             flex={flexes.top}
             isWordQType={question.passageOrWord === "word"}
           />
@@ -230,13 +247,14 @@ class QuestionComponent extends React.Component<Props, State> {
             />
           )}
 
-          {redHerrings.length > 0 && (
+          {question && redHerrings.length > 0 && (
             <Choices
               flex={flexes.choices}
               answer={answer}
               isBetweenQuestions={isBetweenQuestions}
               guess={guess}
               guessed={this.guessed.bind(this)}
+              id={question.id}
               redHerrings={redHerrings}
               type={TYPE}
             />

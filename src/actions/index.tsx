@@ -688,12 +688,12 @@ export const updateSequenceQuestionIndexAction = (
   })
 
 export const fetchQuestionsForSequenceAction = (
-  id: string,
+  name: string,
   route: string = "questionsForSequence"
 ) => (dispatch: any) =>
   dispatch({
     [CALL_API]: {
-      query: `query { ${route}(id: "${id}") { ${questionAttrs} } }`,
+      query: `query { ${route}(name: "${name}") { ${questionAttrs} } }`,
       types: types(camelCaseToUpperCase(route)),
       schema: "questions",
       route
