@@ -5,7 +5,6 @@ import FlexedDiv from "../common/flexedDiv"
 import Input from "../common/input"
 import Icon from "../common/icon"
 
-import magnifyingGlass from "../../lib/images/icon-magnifying-glass.png"
 import { colors } from "../../lib/colors"
 
 import { fetchTextsAction, setEntity, fetchImagesAction } from "../../actions"
@@ -67,7 +66,10 @@ class Search extends React.Component<Props, State> {
           justifyContent: "flex-start"
         }}
       >
-        <Icon small={true} src={magnifyingGlass} />
+        <Icon
+          small={true}
+          src={require("../../lib/images/icon-magnifying-glass.png")}
+        />
         <Input.m
           spellCheck={false}
           onChange={e => this.handleInputChange(e.target.value)}
