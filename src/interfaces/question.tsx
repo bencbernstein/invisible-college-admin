@@ -27,7 +27,7 @@ export interface InteractivePart {
 }
 
 export interface Question {
-  _id: string
+  id: string
   TYPE: string
   prompt: PromptPart[]
   answer: AnswerPart[]

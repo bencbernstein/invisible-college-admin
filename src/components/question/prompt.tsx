@@ -80,24 +80,21 @@ export default class Prompt extends React.Component<Props, State> {
         {p.value}
       </Span>
     )
+    const isNotSentenceConnector = (p: PromptPart) => !p.isSentenceConnector
+    let promptValue = prompt.filter(isNotSentenceConnector).map(promptPart)
+    if (questionType !== "word") {
+      promptValue = promptValue.reduce((prev: any[], curr: any, i: number) => [
+        prev,
+        isPunc(prompt[i].value) ? "" : " ",
+        curr
+      ])
+    }
 
     const isImage =
       type === "Word to Image (reverse)" &&
       isString(prompt[0].value) &&
       prompt[0].value!.startsWith("data:image")
-
     const length = prompt.map(p => p.value).join("").length
-
-    const promptValue =
-      questionType === "word"
-        ? prompt.map(promptPart)
-        : prompt
-            .map(promptPart)
-            .reduce((prev: any[], curr: any, i: number) => [
-              prev,
-              isPunc(prompt[i].value) ? "" : " ",
-              curr
-            ])
 
     const promptComponent = isImage ? (
       <PromptImage src={prompt[0].value} />
@@ -106,7 +103,7 @@ export default class Prompt extends React.Component<Props, State> {
         textAlign={questionType === "word"}
         bottom={this.state.bottom}
         isReadMode={isReadMode}
-        large={length < 50}
+        large={length < 100}
         margin={isReadMode ? "20px 0" : "0"}
       >
         {promptValue}
