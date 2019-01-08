@@ -1,10 +1,8 @@
 import * as React from "react"
 import { Redirect } from "react-router"
-import { range } from "lodash"
 import * as moment from "moment"
 
 import Icon from "../common/icon"
-import { StarContainer } from "./components"
 import FlexedDiv from "../common/flexedDiv"
 import ProgressBar from "./progressBar"
 
@@ -15,7 +13,6 @@ import flame from "../../lib/images/gameplay/icon-speedy.png"
 
 import { Question } from "../../interfaces/question"
 
-import grayStar from "../../lib/images/gameplay/icon-star-gray.png"
 import yellowStar from "../../lib/images/gameplay/icon-star-yellow.png"
 
 import { sleep } from "../../lib/helpers"
@@ -89,7 +86,7 @@ export default class Prompt extends React.Component<Props, State> {
 
   public render() {
     const { flex, completion } = this.props
-    const { notifications, redirect, starCount } = this.state
+    const { notifications, redirect } = this.state
 
     if (redirect) {
       return <Redirect to={redirect} />
@@ -121,18 +118,6 @@ export default class Prompt extends React.Component<Props, State> {
             ))}
           </FlexedDiv>
         </FlexedDiv>
-
-        <StarContainer justifyContent="center">
-          {starCount !== undefined &&
-            range(1, 11).map(n => (
-              <Icon
-                margin="2px 1px"
-                small={true}
-                key={n}
-                src={n <= starCount ? yellowStar : grayStar}
-              />
-            ))}
-        </StarContainer>
       </div>
     )
   }

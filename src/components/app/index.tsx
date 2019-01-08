@@ -125,9 +125,8 @@ class App extends React.Component<Props, State> {
     if (!result) return
     const { status, es_id } = result.data
     if (["finished", "failed"].indexOf(status) === -1) return
-    const failed = status === "failed" || result.data.error
-
     clearInterval(this.state.interval)
+    const failed = status === "failed" || result.data.error
 
     if (!failed && this.props.isRob && job.text.includes("Processing")) {
       await this.findAddresses(job, es_id)
@@ -193,11 +192,21 @@ class App extends React.Component<Props, State> {
       { path: "/concept/enrich/:id", Component: Concept, noSearch: true },
       { path: "/images", Component: Images, exact: true },
       { path: "/queues", Component: Queues, exact: true, noSearch: true },
-      { path: "/play", Component: Play, exact: true, noNav: true },
+      {
+        path: "/play",
+        Component: Play,
+        exact: true,
+        noNav: true
+      },
       { path: "/admin-play", Component: Admin, exact: true, noNav: true },
       { path: "/discover", Component: Discover, exact: true, noSearch: true },
       { path: "/passages", Component: Passages, exact: true, noSearch: true },
-      { path: "/question", Component: Question, noNav: true },
+      {
+        path: "/question",
+        Component: Question,
+        publicRoute: true,
+        noNav: true
+      },
       { path: "/library", Component: IndexesList, exact: true, noSearch: true },
       {
         path: "/sequences",

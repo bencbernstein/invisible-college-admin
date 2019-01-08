@@ -6,7 +6,6 @@ import { Box } from "./components"
 import { colors } from "../../../lib/colors"
 
 interface Props {
-  level: number
   continue: () => void
 }
 
@@ -17,18 +16,11 @@ export default class Intermission extends React.Component<Props, any> {
   }
 
   public render() {
-    const { level } = this.props
-
     return (
       <Box style={{ zIndex: 200 }}>
-        <div style={{ textAlign: "center" }}>
-          <Header.xl margin="0" color={colors.yellow}>
-            {level}
-          </Header.xl>
-          <Header.m margin="0" color={colors.blue}>
-            Level Up!
-          </Header.m>
-        </div>
+        <Header.xl margin="0" color={colors.yellow}>
+          You won!
+        </Header.xl>
 
         <Button.regularWc
           style={{
