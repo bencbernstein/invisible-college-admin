@@ -5,6 +5,7 @@ import { wordAttrs } from "../interfaces/concept"
 import { sequenceAttrs } from "../interfaces/sequence"
 import { encodeUri } from "../lib/helpers"
 import { Curriculum, curriculumAttrs } from "../interfaces/curriculum"
+import { questionAttrs } from "../interfaces/question"
 
 const queueAttrs =
   "id entity type createdOn accessLevel curriculum curriculumId part items { id tags decisions { indexes accepted id userId userAccessLevel } }"
@@ -682,6 +683,19 @@ export const updateSequenceQuestionIndexAction = (
       query: `mutation { ${route}(id: "${id}", idx: ${idx}, newIdx: ${newIdx}) { ${sequenceAttrs} } }`,
       types: types(camelCaseToUpperCase(route)),
       schema: "sequence",
+      route
+    }
+  })
+
+export const fetchQuestionsForSequenceAction = (
+  id: string,
+  route: string = "questionsForSequence"
+) => (dispatch: any) =>
+  dispatch({
+    [CALL_API]: {
+      query: `query { ${route}(id: "${id}") { ${questionAttrs} } }`,
+      types: types(camelCaseToUpperCase(route)),
+      schema: "questions",
       route
     }
   })
