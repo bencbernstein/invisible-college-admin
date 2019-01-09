@@ -35,8 +35,8 @@ class Login extends React.Component<Props, State> {
     super(props)
 
     this.state = {
-      email: "oliver@gmail.com",
-      password: "password",
+      email: "",
+      password: "",
       firstName: "",
       lastName: "",
       view: View.Login
