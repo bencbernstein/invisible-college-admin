@@ -3,42 +3,54 @@ import { Redirect } from "react-router"
 import { connect } from "react-redux"
 import { range, values, isEqual } from "lodash"
 
+import history from "../../history"
+
 import DefinitionComponent from "./definition"
 import Gallery from "./gallery"
 import OtherFormsComponent from "./otherForms"
 import RootsComponent from "./roots"
 import SynonymsComponent from "./synonyms"
 import TagsComponent from "./tags"
-import UnverifiedComponent from "./unverified"
+// import UnverifiedComponent from "./unverified"
 
 import Header from "../common/header"
+import FlexedDiv from "../common/flexedDiv"
 import Input from "../common/input"
+import CommonIcon from "../common/icon"
+import BottomNav from "../common/bottomNav"
+import Icon from "../common/icon"
 
 import { Word } from "../../interfaces/concept"
+import { Curriculum } from "../../interfaces/curriculum"
+import { User } from "../../interfaces/user"
 import {
   fetchWordAction,
   removeImageFromWordAction,
   updateWordAction,
-  setEntity
+  setEntity,
+  removeCurriculumFromWordAction,
+  deleteQueueAction,
+  updateQueueItemAction
 } from "../../actions"
 
 import { lastPath } from "../../lib/helpers"
 import CONFIG from "../../lib/config"
 import Spinner from "../common/spinner"
-
-interface Enriching {
-  isEnriching: string
-  next: string
-}
+import deleteIcon from "../../lib/images/icon-delete.png"
+import backIcon from "../../lib/images/icon-back.png"
+import nextImg from "../../lib/images/icon-next.png"
 
 interface State {
   word?: Word
   redirect?: string
-  enriching?: Enriching
+  isQueue: boolean
 }
 
 interface Props {
   word?: Word
+  user: User
+  curriculum?: Curriculum
+  queue?: any
   isLoading: boolean
   images: any[]
   dispatch: any
@@ -47,7 +59,9 @@ interface Props {
 class WordComponent extends React.Component<Props, State> {
   constructor(props: any) {
     super(props)
-    this.state = {}
+    this.state = {
+      isQueue: window.location.search.includes("?q=1")
+    }
   }
 
   public componentDidMount() {
@@ -124,13 +138,67 @@ class WordComponent extends React.Component<Props, State> {
     this.setState({ word })
   }
 
+  private queueItemIndex(id: string) {
+    return this.props.queue.items.findIndex((item: any) => item.id === id)
+  }
+
+  private async nextWord(current: number, next: number) {
+    const { queue, user, word, dispatch } = this.props
+
+    const currentItem = queue.items[current]
+    const nextItem = queue.items[next]
+
+    const decision: any = {}
+    decision.userId = user.id
+    decision.userAccessLevel = user.accessLevel || 1
+    decision.id = word!.id
+    currentItem.decisions = currentItem.decisions
+      .filter((d: any) => d.userId !== user.id)
+      .concat(decision)
+
+    this.updateWord()
+    await dispatch(updateQueueItemAction(queue.id, current, currentItem))
+
+    if (nextItem) {
+      history.push("/concept/enrich/" + nextItem.id)
+      this.loadData()
+    } else {
+      await this.props.dispatch(setEntity({ isLoading: true }))
+      await this.props.dispatch(deleteQueueAction(queue.id))
+      this.setState({ redirect: "/queues" })
+    }
+  }
+
   public render() {
-    const { word, enriching, redirect } = this.state
-    const { images, isLoading } = this.props
+    const { word, redirect, isQueue } = this.state
+    const { images, isLoading, curriculum } = this.props
 
     if (isLoading) return <Spinner />
-    if (!word) return null
+    if (!word || !curriculum) return null
     if (redirect) return <Redirect to={redirect} />
+
+    const itemIdx = isQueue && this.queueItemIndex(word.id)
+
+    const queueNavigation = (
+      <BottomNav>
+        <CommonIcon
+          pointer={true}
+          large={true}
+          disable={itemIdx === 0}
+          margin="0 25px 0 0"
+          onClick={() => this.nextWord(itemIdx, itemIdx - 1)}
+          flipHorizontal={true}
+          src={nextImg}
+        />
+        <CommonIcon
+          pointer={true}
+          large={true}
+          margin="0 0 0 25px"
+          onClick={() => this.nextWord(itemIdx, itemIdx + 1)}
+          src={nextImg}
+        />
+      </BottomNav>
+    )
 
     const roots = <RootsComponent key={1} word={word} />
     const definition = (
@@ -163,14 +231,14 @@ class WordComponent extends React.Component<Props, State> {
         word={word}
       />
     )
-    const unverifiedComponent = (attr: string) => (
-      <UnverifiedComponent
-        key={6}
-        attr={attr}
-        word={word}
-        addUnverified={this.addUnverified.bind(this)}
-      />
-    )
+    // const unverifiedComponent = (attr: string) => (
+    //   <UnverifiedComponent
+    //     key={6}
+    //     attr={attr}
+    //     word={word}
+    //     addUnverified={this.addUnverified.bind(this)}
+    //   />
+    // )
     const obscurity = (
       <div key={7}>
         <Header.s style={{ marginTop: "30px" }}>obscurity</Header.s>
@@ -202,13 +270,30 @@ class WordComponent extends React.Component<Props, State> {
     }
 
     return (
-      <div>
-        {enriching && enriching.isEnriching !== "all"
-          ? [
-              attrComponents[enriching.isEnriching],
-              unverifiedComponent(enriching.isEnriching)
-            ]
-          : values(attrComponents)}
+      <div style={{ marginBottom: isQueue ? "50px" : "" }}>
+        <FlexedDiv justifyContent="space-between">
+          <Icon
+            onClick={() => this.setState({ redirect: "/concepts" })}
+            pointer={true}
+            src={backIcon}
+          />
+
+          <Icon
+            onClick={async () => {
+              if (word && window.confirm(`Delete ${word.value}?`)) {
+                await this.props.dispatch(
+                  removeCurriculumFromWordAction(curriculum.id, word.id)
+                )
+                this.setState({ redirect: "/concepts" })
+              }
+            }}
+            pointer={true}
+            src={deleteIcon}
+          />
+        </FlexedDiv>
+
+        {values(attrComponents)}
+        {isQueue && queueNavigation}
       </div>
     )
   }
@@ -217,6 +302,9 @@ class WordComponent extends React.Component<Props, State> {
 const mapStateToProps = (state: any, ownProps: any) => ({
   word: state.entities.word,
   images: state.entities.images || [],
+  curriculum: state.entities.curriculum,
+  queue: state.entities.queue,
+  user: state.entities.user,
   isLoading: state.entities.isLoading === true
 })
 

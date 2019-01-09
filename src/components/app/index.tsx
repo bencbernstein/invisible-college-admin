@@ -95,7 +95,7 @@ class App extends React.Component<Props, State> {
   }
 
   public componentWillReceiveProps(nextProps: Props) {
-    const { user, job, curricula, curriculum } = nextProps
+    const { user, job, curricula, curriculum, isRob } = nextProps
 
     if (user && !this.props.user) {
       const isRob = user.id === CONFIG.ROB_ID
@@ -109,10 +109,22 @@ class App extends React.Component<Props, State> {
     }
 
     if (!curriculum && user && curricula.length) {
-      const curriculum =
-        curricula.filter(({ id }) => user.curricula.indexOf(id) > -1)[0] ||
-        curricula[0]
-      this.props.dispatch(setEntity({ curriculum }))
+      const saved = localStorage.getItem("curriculum")
+      if (isRob) {
+        const curriculum = curricula.find(
+          c => c.id === CONFIG.PINBALL_PUBLISHING_ID
+        )
+        this.props.dispatch(setEntity({ curriculum }))
+      } else {
+        const availableForUser = curricula.filter(
+          c => user.admin || user.curricula.indexOf(c.id) > -1
+        )
+        const curriculum =
+          availableForUser.find(c => c.id === saved) ||
+          availableForUser[0] ||
+          curricula[0]
+        this.props.dispatch(setEntity({ curriculum }))
+      }
     }
   }
 

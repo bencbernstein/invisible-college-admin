@@ -57,7 +57,7 @@ class TextComponent extends React.Component<Props, State> {
 
     const path = window.location.pathname.split("/")
     const id = path.pop()!
-    const index = path.pop()!
+    const index = path.pop()!.replace(/-/g, "_")
 
     this.state = {
       isHovering: false,

@@ -42,10 +42,10 @@ class Nav extends React.Component<Props, State> {
   }
 
   public logout() {
+    this.setState({ redirect: "/login" })
     localStorage.removeItem("user")
     this.props.dispatch(removeEntity("isRob"))
     this.props.dispatch(removeEntity("user"))
-    this.setState({ redirect: "/login" })
   }
 
   public render() {
@@ -131,7 +131,7 @@ class Nav extends React.Component<Props, State> {
             )}
           </FlexedDiv>
 
-          <div style={{ flex: 8 }}>
+          <div>
             <FlexedDiv justifyContent="center">{menuItems(links)}</FlexedDiv>
             {!isRob && (
               <FlexedDiv justifyContent="center">

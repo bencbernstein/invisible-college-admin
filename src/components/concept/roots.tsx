@@ -1,7 +1,6 @@
 import * as React from "react"
 import styled from "styled-components"
 
-import Header from "../common/header"
 import Text from "../common/text"
 
 import { colors } from "../../lib/colors"
@@ -18,7 +17,7 @@ const Interpunct = styled.span`
   background-color: ${colors.gray};
 `
 
-const ComponentText = Text.l.extend`
+const ComponentText = Text.xl.extend`
   display: flex;
   align-items: center;
 `
@@ -41,28 +40,25 @@ class RootsComponent extends React.Component<Props, any> {
     const { word } = this.props
 
     if (!word.isDecomposable || !word.components) {
-      return null
+      return <Text.xl style={{ textAlign: "center" }}>{word.value}</Text.xl>
     }
 
     return (
-      <div>
-        <Header.s>components</Header.s>
-        <ComponentText>
-          {word
-            .components!.map(
-              (c: any, i: number): any => (
-                <Span key={c.value} highlight={c.isRoot}>
-                  {c.value}
-                </Span>
-              )
+      <ComponentText>
+        {word
+          .components!.map(
+            (c: any, i: number): any => (
+              <Span key={c.value} highlight={c.isRoot}>
+                {c.value}
+              </Span>
             )
-            .reduce((prev: any, curr: any, i: number) => [
-              prev,
-              <Interpunct key={i} />,
-              curr
-            ])}
-        </ComponentText>
-      </div>
+          )
+          .reduce((prev: any, curr: any, i: number) => [
+            prev,
+            <Interpunct key={i} />,
+            curr
+          ])}
+      </ComponentText>
     )
   }
 }

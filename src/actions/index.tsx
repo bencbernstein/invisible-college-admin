@@ -8,7 +8,7 @@ import { Curriculum, curriculumAttrs } from "../interfaces/curriculum"
 import { questionAttrs } from "../interfaces/question"
 
 const queueAttrs =
-  "id entity type createdOn accessLevel curriculum curriculumId part items { id tags decisions { indexes accepted id userId userAccessLevel } }"
+  "id entity type description createdOn accessLevel curriculum curriculumId part items { id tags decisions { indexes accepted id userId userAccessLevel } }"
 
 const imageAttrs = "id url caption location wordValues firstWordValue"
 const esPassageAttrs =
@@ -31,7 +31,9 @@ const types = (str: string) => [
 
 export const setEntity = (response: any) => (dispatch: any) =>
   dispatch({
-    type: `SET_${camelCaseToUpperCase(Object.keys(response)[0])}`,
+    type: `SET_${Object.keys(response)
+      .map(camelCaseToUpperCase)
+      .join("_AND_")}`,
     response
   })
 
@@ -282,7 +284,7 @@ export const createQueuesAction = (
 ) => (dispatch: any) =>
   dispatch({
     [CALL_API]: {
-      query: `mutation { ${route}(data: "${encodeUri(queues)}") }`,
+      query: `mutation { ${route}(data: "${encodeUri(queues)}") { id } }`,
       types: types(camelCaseToUpperCase(route)),
       route
     }
@@ -696,6 +698,34 @@ export const fetchQuestionsForSequenceAction = (
       query: `query { ${route}(name: "${name}") { ${questionAttrs} } }`,
       types: types(camelCaseToUpperCase(route)),
       schema: "questions",
+      route
+    }
+  })
+
+export const uploadConceptsAction = (
+  curriculumId: string,
+  words: string[],
+  route: string = "uploadConcepts"
+) => (dispatch: any) =>
+  dispatch({
+    [CALL_API]: {
+      query: `mutation { ${route}(curriculumId: "${curriculumId}", words: "${words.join(
+        ","
+      )}") { id } }`,
+      types: types(camelCaseToUpperCase(route)),
+      route
+    }
+  })
+
+export const removeCurriculumFromWordAction = (
+  curriculumId: string,
+  id: string,
+  route: string = "removeCurriculumFromWord"
+) => (dispatch: any) =>
+  dispatch({
+    [CALL_API]: {
+      query: `mutation { ${route}(curriculumId:"${curriculumId}", id: "${id}") { id } }`,
+      types: types(camelCaseToUpperCase(route)),
       route
     }
   })
