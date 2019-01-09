@@ -1,7 +1,7 @@
 import * as React from "react"
 import { Redirect } from "react-router"
 import { connect } from "react-redux"
-import { extend } from "lodash"
+import { extend, groupBy, values, sortBy } from "lodash"
 
 import Spinner from "../common/spinner"
 import Text from "../common/text"
@@ -21,6 +21,7 @@ import { unixToDateString } from "../../lib/helpers"
 
 interface State {
   redirect?: string
+  queues: any[]
 }
 
 interface Props {
@@ -34,16 +35,27 @@ interface Props {
 class QueueListComponent extends React.Component<Props, State> {
   constructor(props: any) {
     super(props)
-    this.state = {}
+    this.state = {
+      queues: []
+    }
   }
 
   public componentDidMount() {
     this.loadData()
   }
 
-  private loadData() {
+  private async loadData() {
     this.props.dispatch(setEntity({ isLoading: true }))
-    this.props.dispatch(fetchQueuesAction())
+    await this.props.dispatch(fetchQueuesAction())
+    const queues = values(groupBy(this.props.queues, "createdOn")).map(
+      (group: any[]) => {
+        const sorted = sortBy(group, "part")
+        const next = sorted[0]
+        next.total = sorted[sorted.length - 1].part
+        return next
+      }
+    )
+    this.setState({ queues })
   }
 
   private async deleteQueue(id: string) {
@@ -54,15 +66,16 @@ class QueueListComponent extends React.Component<Props, State> {
   private startQueue(queue: any) {
     this.props.dispatch(setEntity({ queue }))
     const entityId = queue.items[queue.userProgress[0]].id
-    const redirect =
-      "/" + queue.entity + "/" + queue.type + "/" + entityId + "?q=1"
+    const entity = queue.entity.replace("word", "concept")
+    const redirect = "/" + entity + "/" + queue.type + "/" + entityId + "?q=1"
     this.setState({ redirect })
   }
 
   public render() {
-    const { queues, isLoading, user, curriculum } = this.props
+    const { isLoading, user, curriculum } = this.props
+    const { queues, redirect } = this.state
 
-    if (this.state.redirect) return <Redirect to={this.state.redirect} />
+    if (redirect) return <Redirect to={redirect} />
     if (isLoading || !curriculum) return <Spinner />
 
     const queuesForCurriculum = queues.filter(
@@ -81,21 +94,33 @@ class QueueListComponent extends React.Component<Props, State> {
     })
 
     const queue = (data: any, i: number) => (
-      <div key={i}>
-        <FlexedDiv justifyContent="flex-start">
-          <Text.regular
-            onClick={() => this.startQueue(data)}
-            pointer={true}
-            margin="0 10px 0 0"
-          >
-            {data.type}-{data.entity} {data.part}
-          </Text.regular>
-          <ProgressBar
-            completion={data.userProgress[0] / data.userProgress[1]}
-          />
-          <Text.s color={colors.gray} margin="0 0 0 10px">
-            {data.userProgress[0]} out of {data.userProgress[1]} items completed
+      <div style={{ margin: "35px 0", textAlign: "center" }} key={i}>
+        <Text.l
+          onClick={() => this.startQueue(data)}
+          pointer={true}
+          style={{ textTransform: "capitalize" }}
+        >
+          {data.type}-{data.entity}
+          <span style={{ marginLeft: "5px" }}>
+            {data.part}/{data.total}
+          </span>
+        </Text.l>
+
+        <Text.garamond color={colors.lighterGray}>
+          {data.description}
+        </Text.garamond>
+
+        <ProgressBar completion={data.userProgress[0] / data.userProgress[1]} />
+
+        <FlexedDiv style={{ marginTop: "5px" }}>
+          <Text.s color={colors.gray}>
+            {data.userProgress[0]}/{data.userProgress[1]}
           </Text.s>
+
+          <Text.s color={colors.mediumGray} margin="5px">
+            Created {unixToDateString(data.createdOn)}
+          </Text.s>
+
           <Icon
             onClick={() => this.deleteQueue(data.id)}
             pointer={true}
@@ -104,14 +129,11 @@ class QueueListComponent extends React.Component<Props, State> {
             src={deleteIcon}
           />
         </FlexedDiv>
-        <Text.s color={colors.mediumGray} margin="5px">
-          created {unixToDateString(data.createdOn)}
-        </Text.s>
       </div>
     )
 
     return (
-      <div style={{ width: "600px", margin: "0 auto", marginTop: "30px" }}>
+      <div style={{ width: "400px", margin: "0 auto", marginTop: "30px" }}>
         {queuesWithProgress.map(queue)}
       </div>
     )

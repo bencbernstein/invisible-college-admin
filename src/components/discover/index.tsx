@@ -98,6 +98,7 @@ class Discover extends React.Component<Props, State> {
     const queues = chunks.map((items: any[], idx: number) => ({
       type: "filter",
       entity: "passage",
+      description: this.state.searchWords.join(", "),
       curriculumId: curriculum.id,
       curriculum: curriculum.name,
       part: chunks.length > 0 && idx + 1,
