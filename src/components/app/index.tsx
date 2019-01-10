@@ -16,6 +16,7 @@ import Concept from "../concept"
 import EnrichPassage from "../passage/enrich"
 import ErrorMessage from "../error"
 import Play from "../home"
+import Map from "../map"
 import Question from "../question"
 import Passages from "../passage/list"
 import SequencesList from "../sequence/list"
@@ -220,6 +221,7 @@ class App extends React.Component<Props, State> {
         noNav: true
       },
       { path: "/library", Component: IndexesList, exact: true, noSearch: true },
+      { path: "/map/:id", Component: Map, exact: true, noSearch: true },
       {
         path: "/sequences",
         Component: SequencesList,

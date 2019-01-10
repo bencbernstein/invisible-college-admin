@@ -101,6 +101,11 @@ class TextComponent extends React.Component<Props, State> {
     dispatch(fetchEsPassageBySectionAction(index, text._id, section))
   }
 
+  private goToMap() {
+    const id = this.props.text._id
+    this.setState({ redirect: "/map/" + id })
+  }
+
   private async downloadAddressCsv(id: string) {
     const result = await this.props.dispatch(
       fetchPassagesAndAddressesAction(id)
@@ -116,6 +121,7 @@ class TextComponent extends React.Component<Props, State> {
             .trim()
         ))
     )
+
     this.setState({ addresses })
   }
 
@@ -254,33 +260,49 @@ class TextComponent extends React.Component<Props, State> {
         </BottomNav>
 
         {isRob && (
-          <Button.regular
-            onClick={this.downloadAddressCsv.bind(this)}
-            disabled={!Array.isArray(addresses)}
-            style={{
-              margin: 0,
-              position: "fixed",
-              bottom: "25px",
-              right: "25px"
-            }}
-          >
-            <CSVLink
-              data={addresses || []}
-              filename={(title || "").replace(/ /g, "_").toLowerCase() + ".csv"}
-              style={blankLinkStyle}
-              asyncOnClick={true}
-              headers={["address", "page_number", "context", "word_count"]}
-              onClick={(event: any, done: any) => {
-                if (addresses!.length > 0) return done()
-                this.props.dispatch(
-                  setEntity({ error: { type: "No Results" } })
-                )
-                done(false)
+          <FlexedDiv justifyContent="flex-end" flex={1}>
+            <Button.regular
+              onClick={this.goToMap.bind(this)}
+              disabled={!Array.isArray(addresses)}
+              style={{
+                margin: 0,
+                position: "fixed",
+                bottom: "25px",
+                left: "25px"
               }}
             >
-              Download Address CSV
-            </CSVLink>
-          </Button.regular>
+              Map
+            </Button.regular>
+            <Button.regular
+              onClick={this.downloadAddressCsv.bind(this)}
+              disabled={!Array.isArray(addresses)}
+              style={{
+                margin: 0,
+                position: "fixed",
+                bottom: "25px",
+                right: "25px"
+              }}
+            >
+              <CSVLink
+                data={addresses || []}
+                filename={
+                  (title || "").replace(/ /g, "_").toLowerCase() + ".csv"
+                }
+                style={blankLinkStyle}
+                asyncOnClick={true}
+                headers={["address", "page_number", "context", "word_count"]}
+                onClick={(event: any, done: any) => {
+                  if (addresses!.length > 0) return done()
+                  this.props.dispatch(
+                    setEntity({ error: { type: "No Results" } })
+                  )
+                  done(false)
+                }}
+              >
+                Download Address CSV
+              </CSVLink>
+            </Button.regular>
+          </FlexedDiv>
         )}
       </div>
     )
